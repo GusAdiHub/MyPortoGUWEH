@@ -1,0 +1,1662 @@
+---
+// Interactive Multi-Game Developer Cyber Arcade Modal:
+// 1. Bug Blaster (Canvas Arcade Shooter)
+// 2. Speed Code Typer (30s WPM Challenge)
+// 3. Neural Memory Matrix (3x3 Sequence Hacker)
+// 4. Whack-a-Bug (30s reflex grid)
+// 5. Ping Reflex (reaction-time test in ms)
+// 6. Cyber Snake (classic neon serpent with Portal/Wall modes)
+---
+
+<!-- Floating Quick Arcade Pill next to G-Bot (Mobile & Desktop friendly) -->
+<button
+  type="button"
+  id="floating-arcade-btn"
+  class="fixed bottom-5 left-20 z-40 h-12 rounded-2xl glass-pill border border-[var(--border-focus)] px-3.5 shadow-[0_8px_25px_rgba(0,0,0,0.45)] hover:shadow-[0_0_20px_var(--accent-glow)] font-mono text-xs font-bold text-[var(--accent-primary)] flex items-center gap-2 cursor-pointer transition-transform duration-200 hover:scale-105 active:scale-95 select-none"
+  aria-label="Open Cyber Mini-Game Arcade"
+  title="Open Cyber Arcade (Shortcut: G)"
+>
+  <span class="text-base">🎮</span>
+  <span class="hidden sm:inline">ARCADE</span>
+</button>
+
+<!-- Cyber Arcade Modal -->
+<div
+  id="cyber-arcade-modal"
+  class="modal-backdrop fixed inset-0 z-50 hidden bg-black/80 p-3 sm:p-6 flex items-center justify-center select-none"
+  role="dialog"
+  aria-modal="true"
+  aria-label="Cyber Mini-Game Arcade"
+>
+  <div class="modal-panel w-full max-w-2xl rounded-2xl border border-[var(--border-focus)] bg-[var(--bg-surface)] shadow-2xl overflow-hidden font-mono text-xs">
+    <!-- Top Arcade Header & Game Selector Tabs -->
+    <div class="px-4 sm:px-5 py-3.5 bg-[var(--bg-elevated)] border-b border-[var(--border-subtle)] flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-2">
+        <span class="text-base">🕹️</span>
+        <span class="font-display font-bold text-sm sm:text-base text-[var(--text-primary)]">
+          CYBER_ARCADE
+        </span>
+        <span class="px-2 py-0.5 rounded-full bg-[var(--bg-base)] border border-[var(--border-subtle)] text-[10px] text-[var(--accent-secondary)]">
+          6 MINIGAMES
+        </span>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-1.5">
+        <div class="flex flex-wrap items-center gap-1 bg-[var(--bg-base)] p-1 rounded-xl border border-[var(--border-subtle)]">
+          <button
+            type="button"
+            data-arcade-tab="shooter"
+            class="arcade-tab-btn px-2.5 py-1 rounded-lg bg-[var(--accent-primary)] text-[#05070b] font-bold cursor-pointer transition-all text-[11px]"
+          >
+            👾 Bug Blaster
+          </button>
+          <button
+            type="button"
+            data-arcade-tab="snake"
+            class="arcade-tab-btn px-2.5 py-1 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer transition-all text-[11px]"
+          >
+            🐍 Cyber Snake
+          </button>
+          <button
+            type="button"
+            data-arcade-tab="typer"
+            class="arcade-tab-btn px-2.5 py-1 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer transition-all text-[11px]"
+          >
+            ⌨️ Code Typer
+          </button>
+          <button
+            type="button"
+            data-arcade-tab="memory"
+            class="arcade-tab-btn px-2.5 py-1 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer transition-all text-[11px]"
+          >
+            🧠 Memory Hack
+          </button>
+          <button
+            type="button"
+            data-arcade-tab="whack"
+            class="arcade-tab-btn px-2.5 py-1 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer transition-all text-[11px]"
+          >
+            🔨 Whack-a-Bug
+          </button>
+          <button
+            type="button"
+            data-arcade-tab="reflex"
+            class="arcade-tab-btn px-2.5 py-1 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer transition-all text-[11px]"
+          >
+            ⚡ Ping Reflex
+          </button>
+        </div>
+
+        <button
+          type="button"
+          id="arcade-close-btn"
+          class="px-2.5 py-1.5 rounded-xl bg-[var(--bg-base)] border border-[var(--border-subtle)] hover:border-[var(--accent-primary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer"
+          aria-label="Close Arcade"
+        >
+          ESC ✕
+        </button>
+      </div>
+    </div>
+
+    <!-- ==========================================
+         GAME 1: BUG BLASTER (Canvas Shooter)
+         ========================================== -->
+    <div id="arcade-panel-shooter" class="p-4 sm:p-6 space-y-4">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <div class="text-[var(--text-secondary)] text-[11px]">
+          <span data-lang="id">Gerakkan kursor / tombol <strong>← →</strong> untuk menembak bug sebelum menyentuh server!</span>
+          <span data-lang="en">Move mouse or press <strong>← →</strong> to blast falling bugs before they hit prod!</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <span class="px-2.5 py-1 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--accent-primary)] font-bold">
+            SCORE: <span id="shooter-score">0</span>
+          </span>
+          <span class="px-2.5 py-1 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--accent-secondary)] font-bold">
+            HI: <span id="shooter-best">0</span>
+          </span>
+        </div>
+      </div>
+
+      <div class="relative rounded-xl border border-[var(--border-subtle)] bg-[#05070b] overflow-hidden">
+        <canvas
+          id="bug-blaster-canvas"
+          width="600"
+          height="320"
+          class="w-full h-[270px] sm:h-[320px] block cursor-crosshair"
+        ></canvas>
+
+        <!-- Start / Game Over Overlay -->
+        <div
+          id="shooter-overlay"
+          class="absolute inset-0 bg-black/75 backdrop-blur-xs flex flex-col items-center justify-center gap-3 p-4 text-center"
+        >
+          <div id="shooter-status-title" class="font-display text-2xl font-bold text-[var(--accent-primary)]">
+            👾 PROD BUG BLASTER
+          </div>
+          <p id="shooter-status-sub" class="text-[var(--text-secondary)] text-xs max-w-sm">
+            Destroy falling <span class="text-[var(--status-err)]">BUG</span>, <span class="text-[var(--status-warn)]">404</span>, and <span class="text-[var(--accent-tertiary)]">NULL</span> blocks. Catch green <span class="text-[var(--status-ok)]">+HP</span> patches!
+          </p>
+          <button
+            type="button"
+            id="shooter-start-btn"
+            class="kinetic-btn bg-[var(--accent-primary)] text-[#05070b] font-bold px-6 py-2.5 cursor-pointer shadow-[0_0_20px_var(--accent-glow)]"
+          >
+            ▶ START MISSION
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==========================================
+         GAME 2: SPEED CODE TYPER (WPM Challenge)
+         ========================================== -->
+    <div id="arcade-panel-typer" class="hidden p-4 sm:p-6 space-y-4">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <div class="text-[var(--text-secondary)] text-[11px]">
+          <span data-lang="id">Ketik baris kode di bawah secepat &amp; setepat mungkin!</span>
+          <span data-lang="en">Type the developer code snippet as fast and accurately as possible!</span>
+        </div>
+        <div class="flex items-center gap-2.5">
+          <span class="px-2.5 py-1 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--accent-primary)] font-bold">
+            WPM: <span id="typer-wpm">0</span>
+          </span>
+          <span class="px-2.5 py-1 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--accent-secondary)] font-bold">
+            STREAK: <span id="typer-streak">0</span>
+          </span>
+          <button
+            type="button"
+            id="typer-next-btn"
+            class="px-2.5 py-1 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] hover:border-[var(--accent-primary)] text-[var(--text-primary)] cursor-pointer"
+          >
+            ↻ Skip
+          </button>
+        </div>
+      </div>
+
+      <!-- Target Snippet Display (inner block keeps whitespace visible; flex children collapse space-only spans) -->
+      <div class="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-base)] p-5 min-h-[88px] flex items-center">
+        <div
+          id="typer-target-box"
+          class="w-full text-sm sm:text-base leading-relaxed tracking-wide whitespace-pre-wrap break-all"
+        ></div>
+      </div>
+
+      <!-- Next Key Hint + Accuracy -->
+      <div class="flex flex-wrap items-center justify-between gap-2 text-[11px]">
+        <span class="text-[var(--text-muted)] flex items-center gap-2">
+          NEXT KEY:
+          <kbd
+            id="typer-next-key"
+            class="min-w-[2rem] text-center px-2 py-0.5 rounded-md bg-[var(--bg-elevated)] border border-[var(--border-focus)] text-[var(--accent-secondary)] font-bold text-xs"
+          >-</kbd>
+        </span>
+        <span class="text-[var(--text-muted)]">
+          ACCURACY: <strong id="typer-accuracy" class="text-[var(--accent-primary)]">100%</strong>
+          <span class="mx-1">·</span>
+          <span data-lang="id"><span class="text-[var(--accent-secondary)]">·</span> = spasi</span>
+          <span data-lang="en"><span class="text-[var(--accent-secondary)]">·</span> = space</span>
+        </span>
+      </div>
+
+      <!-- Typing Input -->
+      <input
+        id="typer-input"
+        type="text"
+        autocomplete="off"
+        spellcheck="false"
+        placeholder="Start typing the snippet here..."
+        class="w-full rounded-xl border border-[var(--border-focus)] bg-[var(--bg-elevated)] px-4 py-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none"
+      />
+    </div>
+
+    <!-- ==========================================
+         GAME 3: NEURAL MEMORY MATRIX (Sequence Hack)
+         ========================================== -->
+    <div id="arcade-panel-memory" class="hidden p-4 sm:p-6 space-y-5">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <div class="text-[var(--text-secondary)] text-[11px]">
+          <span data-lang="id">Hafalkan urutan node yang menyala lalu klik dengan urutan yang sama!</span>
+          <span data-lang="en">Memorize the flashing neural node sequence and repeat it in order!</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <span class="px-2.5 py-1 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--accent-primary)] font-bold">
+            LEVEL: <span id="memory-level">1</span>
+          </span>
+          <span class="px-2.5 py-1 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--accent-secondary)] font-bold">
+            BEST: <span id="memory-best">0</span>
+          </span>
+        </div>
+      </div>
+
+      <div class="flex flex-col items-center gap-4 py-2">
+        <div id="memory-status" class="text-xs font-bold text-[var(--accent-secondary)]">
+          Click START HACK to begin sequence
+        </div>
+
+        <!-- 3x3 Neural Matrix -->
+        <div class="grid grid-cols-3 gap-3 w-56 sm:w-64">
+          {Array.from({ length: 9 }).map((_, idx) => (
+            <button
+              type="button"
+              data-mem-idx={idx}
+              class="mem-cell aspect-square rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] hover:border-[var(--accent-primary)] transition-all duration-150 cursor-pointer flex items-center justify-center font-display text-sm font-bold text-[var(--text-muted)]"
+            >
+              0{idx + 1}
+            </button>
+          ))}
+        </div>
+
+        <button
+          type="button"
+          id="memory-start-btn"
+          class="kinetic-btn bg-[var(--accent-primary)] text-[#05070b] font-bold px-6 py-2.5 cursor-pointer"
+        >
+          ▶ START HACK
+        </button>
+      </div>
+    </div>
+
+    <!-- ==========================================
+         GAME 4: WHACK-A-BUG (30s Reflex Grid)
+         ========================================== -->
+    <div id="arcade-panel-whack" class="hidden p-4 sm:p-6 space-y-4">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <div class="text-[var(--text-secondary)] text-[11px] max-w-xs">
+          <span data-lang="id">Pukul 🐛 bug secepatnya! Jangan pukul ✨ fitur (−15). Waktu 30 detik.</span>
+          <span data-lang="en">Whack 🐛 bugs fast! Don't hit ✨ features (−15). 30 seconds.</span>
+        </div>
+        <div class="flex items-center gap-2.5">
+          <span class="px-2.5 py-1 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--accent-primary)] font-bold">
+            SCORE: <span id="whack-score">0</span>
+          </span>
+          <span class="px-2.5 py-1 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--status-warn)] font-bold">
+            ⏱ <span id="whack-time">30</span>s
+          </span>
+          <span class="px-2.5 py-1 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--accent-secondary)] font-bold">
+            HI: <span id="whack-best">0</span>
+          </span>
+        </div>
+      </div>
+
+      <div class="flex flex-col items-center gap-4 py-1">
+        <div id="whack-status" class="text-xs font-bold text-[var(--accent-secondary)]" aria-live="polite">
+          Click START to begin bug hunt
+        </div>
+
+        <div class="grid grid-cols-4 gap-2.5 w-full max-w-sm">
+          {Array.from({ length: 12 }).map((_, idx) => (
+            <button
+              type="button"
+              data-whack-idx={idx}
+              data-state="empty"
+              aria-label="Empty slot"
+              class="whack-hole aspect-square rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-base)] text-2xl sm:text-3xl flex items-center justify-center cursor-pointer transition-all duration-100 data-[state=bug]:border-[var(--status-err)] data-[state=bug]:bg-[var(--status-err)]/10 data-[state=bug]:scale-105 data-[state=feat]:border-[var(--accent-primary)] data-[state=feat]:bg-[var(--accent-primary)]/10 active:scale-95"
+            ></button>
+          ))}
+        </div>
+
+        <button
+          type="button"
+          id="whack-start-btn"
+          class="kinetic-btn bg-[var(--accent-primary)] text-[#05070b] font-bold px-6 py-2.5 cursor-pointer"
+        >
+          ▶ START HUNT
+        </button>
+      </div>
+    </div>
+
+    <!-- ==========================================
+         GAME 5: PING REFLEX (Reaction Time)
+         ========================================== -->
+    <div id="arcade-panel-reflex" class="hidden p-4 sm:p-6 space-y-4">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <div class="text-[var(--text-secondary)] text-[11px] max-w-xs">
+          <span data-lang="id">Tunggu panel jadi <strong>HIJAU</strong>, lalu klik / tekan Space secepat mungkin.</span>
+          <span data-lang="en">Wait for the panel to turn <strong>GREEN</strong>, then click / press Space ASAP.</span>
+        </div>
+        <div class="flex items-center gap-2.5">
+          <span class="px-2.5 py-1 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--accent-primary)] font-bold">
+            AVG: <span id="reflex-avg">-</span>
+          </span>
+          <span class="px-2.5 py-1 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--accent-secondary)] font-bold">
+            BEST: <span id="reflex-best">-</span>
+          </span>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        id="reflex-pad"
+        data-state="idle"
+        class="w-full h-[220px] sm:h-[260px] rounded-xl border-2 border-[var(--border-subtle)] bg-[var(--bg-base)] flex flex-col items-center justify-center gap-2 p-4 text-center cursor-pointer select-none transition-colors duration-75 data-[state=wait]:border-[var(--status-err)] data-[state=wait]:bg-[var(--status-err)]/15 data-[state=go]:border-[var(--accent-primary)] data-[state=go]:bg-[var(--accent-primary)]/30 data-[state=early]:border-[var(--status-warn)] data-[state=early]:bg-[var(--status-warn)]/15"
+      >
+        <span id="reflex-title" class="font-display text-xl sm:text-2xl font-bold text-[var(--text-primary)]">⚡ PING REFLEX TEST</span>
+        <span id="reflex-sub" class="text-xs text-[var(--text-secondary)]">Click or press Space to start</span>
+      </button>
+
+      <div class="flex flex-wrap items-center gap-2 text-[11px] text-[var(--text-muted)]">
+        <span>LAST 5:</span>
+        <div id="reflex-history" class="flex flex-wrap gap-1.5">
+          <span>-</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==========================================
+         GAME 6: CYBER SNAKE (Canvas Neon Serpent)
+         ========================================== -->
+    <div id="arcade-panel-snake" class="hidden p-4 sm:p-6 space-y-4">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <div class="text-[var(--text-secondary)] text-[11px]">
+          <span data-lang="id">Gunakan <strong>WASD / Panah / Swipe</strong> untuk makan node data &amp; ★ bonus!</span>
+          <span data-lang="en">Use <strong>WASD / Arrows / Swipe</strong> to eat data nodes &amp; ★ bonus orbs!</span>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            id="snake-speed-btn"
+            class="px-2.5 py-1 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--accent-primary)] font-bold cursor-pointer hover:border-[var(--accent-primary)] transition-colors"
+            title="Cycle snake speed (Slow / Normal / Fast)"
+          >
+            🐍 NORMAL
+          </button>
+          <button
+            type="button"
+            id="snake-mode-btn"
+            class="px-2.5 py-1 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-focus)] text-[var(--accent-secondary)] font-bold cursor-pointer hover:border-[var(--accent-primary)] transition-colors"
+            title="Toggle Portal Wrap vs Solid Wall mode"
+          >
+            🌀 PORTAL
+          </button>
+          <span class="px-2.5 py-1 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--accent-primary)] font-bold">
+            SCORE: <span id="snake-score">0</span>
+          </span>
+          <span class="px-2.5 py-1 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--text-primary)] font-bold">
+            LEN: <span id="snake-len">4</span>
+          </span>
+          <span class="px-2.5 py-1 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--accent-secondary)] font-bold">
+            HI: <span id="snake-best">0</span>
+          </span>
+        </div>
+      </div>
+
+      <div class="relative rounded-xl border border-[var(--border-subtle)] bg-[#05070b] overflow-hidden">
+        <canvas
+          id="cyber-snake-canvas"
+          width="600"
+          height="320"
+          class="w-full h-[260px] sm:h-[320px] block touch-none"
+        ></canvas>
+
+        <!-- Start / Game Over Overlay -->
+        <div
+          id="snake-overlay"
+          class="absolute inset-0 bg-black/75 backdrop-blur-xs flex flex-col items-center justify-center gap-3 p-4 text-center"
+        >
+          <div id="snake-status-title" class="font-display text-2xl font-bold text-[var(--accent-primary)]">
+            🐍 NEON CYBER SNAKE
+          </div>
+          <p id="snake-status-sub" class="text-[var(--text-secondary)] text-xs max-w-sm">
+            <span data-lang="id">Makan node <span class="text-[var(--accent-primary)]">● +10</span> &amp; paket emas <span class="text-[var(--status-warn)]">★ +30</span> sebelum waktunya habis. Jangan tabrak ekor sendiri!</span>
+            <span data-lang="en">Collect <span class="text-[var(--accent-primary)]">● +10</span> nodes &amp; timed <span class="text-[var(--status-warn)]">★ +30</span> star packets. Don't bite your own tail!</span>
+          </p>
+          <button
+            type="button"
+            id="snake-start-btn"
+            class="kinetic-btn bg-[var(--accent-primary)] text-[#05070b] font-bold px-6 py-2.5 cursor-pointer shadow-[0_0_20px_var(--accent-glow)]"
+          >
+            ▶ START SERPENT
+          </button>
+        </div>
+      </div>
+
+      <!-- Mobile Touch D-Pad -->
+      <div class="flex sm:hidden items-center justify-center gap-2 pt-1" role="group" aria-label="Snake directional controls">
+        <button type="button" data-snake-dir="left" aria-label="Turn left" class="snake-dpad-btn px-4 py-2 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] active:border-[var(--accent-primary)] text-sm font-bold text-[var(--text-primary)] cursor-pointer">◀</button>
+        <button type="button" data-snake-dir="up" aria-label="Turn up" class="snake-dpad-btn px-4 py-2 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] active:border-[var(--accent-primary)] text-sm font-bold text-[var(--text-primary)] cursor-pointer">▲</button>
+        <button type="button" data-snake-dir="down" aria-label="Turn down" class="snake-dpad-btn px-4 py-2 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] active:border-[var(--accent-primary)] text-sm font-bold text-[var(--text-primary)] cursor-pointer">▼</button>
+        <button type="button" data-snake-dir="right" aria-label="Turn right" class="snake-dpad-btn px-4 py-2 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] active:border-[var(--accent-primary)] text-sm font-bold text-[var(--text-primary)] cursor-pointer">▶</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Safe localStorage helpers
+  function getSavedNum(key: string): number {
+    try {
+      return Number(localStorage.getItem(key)) || 0;
+    } catch (_) {
+      return 0;
+    }
+  }
+  function setSavedNum(key: string, val: number) {
+    try {
+      localStorage.setItem(key, String(val));
+    } catch (_) {}
+  }
+
+  // Modal & Tab Controls
+  const arcadeModal = document.getElementById('cyber-arcade-modal');
+  const arcadeCloseBtn = document.getElementById('arcade-close-btn');
+  const floatingArcadeBtn = document.getElementById('floating-arcade-btn');
+  const tabBtns = document.querySelectorAll<HTMLButtonElement>('.arcade-tab-btn');
+
+  const panels: Record<string, HTMLElement | null> = {
+    shooter: document.getElementById('arcade-panel-shooter'),
+    snake: document.getElementById('arcade-panel-snake'),
+    typer: document.getElementById('arcade-panel-typer'),
+    memory: document.getElementById('arcade-panel-memory'),
+    whack: document.getElementById('arcade-panel-whack'),
+    reflex: document.getElementById('arcade-panel-reflex'),
+  };
+
+  let shooterActive = false;
+  let snakeRunning = false;
+
+  // Stop every running loop/timer (called on close + tab switch)
+  function stopAllGames() {
+    shooterActive = false;
+    snakeRunning = false;
+    stopWhack(false);
+    resetReflex();
+  }
+
+  function activateArcadeTab(target: string) {
+    if (!panels[target]) return;
+    stopAllGames();
+
+    tabBtns.forEach((b) => {
+      const active = b.getAttribute('data-arcade-tab') === target;
+      if (active) {
+        b.classList.add('bg-[var(--accent-primary)]', 'text-[#05070b]', 'font-bold');
+        b.classList.remove('text-[var(--text-secondary)]');
+      } else {
+        b.classList.remove('bg-[var(--accent-primary)]', 'text-[#05070b]', 'font-bold');
+        b.classList.add('text-[var(--text-secondary)]');
+      }
+    });
+
+    Object.entries(panels).forEach(([k, p]) => {
+      if (!p) return;
+      if (k === target) {
+        p.classList.remove('hidden');
+        if (k === 'typer') {
+          initTyperSnippet();
+          document.getElementById('typer-input')?.focus();
+        } else if (k === 'snake') {
+          drawSnakeBoard(performance.now());
+        }
+      } else {
+        p.classList.add('hidden');
+      }
+    });
+  }
+
+  function openArcade(e?: Event) {
+    const requestedTab = (e as CustomEvent<{ tab?: string }> | undefined)?.detail?.tab;
+    if (requestedTab) activateArcadeTab(requestedTab);
+    arcadeModal?.classList.remove('hidden');
+    requestAnimationFrame(() => arcadeModal?.classList.add('is-open'));
+  }
+
+  function closeArcade() {
+    stopAllGames();
+    arcadeModal?.classList.remove('is-open');
+    setTimeout(() => arcadeModal?.classList.add('hidden'), 200);
+  }
+
+  floatingArcadeBtn?.addEventListener('click', () => openArcade());
+  arcadeCloseBtn?.addEventListener('click', closeArcade);
+  window.addEventListener('portfolio:open-arcade', openArcade);
+
+  arcadeModal?.addEventListener('click', (e) => {
+    if (e.target === arcadeModal) closeArcade();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !arcadeModal?.classList.contains('hidden')) {
+      closeArcade();
+      return;
+    }
+    const tag = (e.target as HTMLElement | null)?.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || e.metaKey || e.ctrlKey || e.altKey) return;
+    if (e.key.toLowerCase() === 'g' && arcadeModal?.classList.contains('hidden')) {
+      openArcade();
+    }
+  });
+
+  tabBtns.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const target = btn.getAttribute('data-arcade-tab');
+      if (target) activateArcadeTab(target);
+    });
+  });
+
+  // ==========================================
+  // GAME 1: PROD BUG BLASTER
+  // ==========================================
+  const canvas = document.getElementById('bug-blaster-canvas') as HTMLCanvasElement | null;
+  const shooterOverlay = document.getElementById('shooter-overlay');
+  const shooterStartBtn = document.getElementById('shooter-start-btn');
+  const shooterScoreEl = document.getElementById('shooter-score');
+  const shooterBestEl = document.getElementById('shooter-best');
+  const shooterTitleEl = document.getElementById('shooter-status-title');
+  const shooterSubEl = document.getElementById('shooter-status-sub');
+
+  let bestShooter = getSavedNum('arcade_shooter_best');
+  if (shooterBestEl) shooterBestEl.textContent = String(bestShooter);
+
+  let playerX = 300;
+  let leftPressed = false;
+  let rightPressed = false;
+  let score = 0;
+  let hp = 3;
+  let frameTick = 0;
+
+  interface Bullet {
+    x: number;
+    y: number;
+  }
+  interface Enemy {
+    x: number;
+    y: number;
+    w: number;
+    h: number;
+    vy: number;
+    label: string;
+    color: string;
+    isHeal: boolean;
+  }
+  interface Boom {
+    x: number;
+    y: number;
+    vx: number;
+    vy: number;
+    alpha: number;
+    color: string;
+  }
+
+  let bullets: Bullet[] = [];
+  let enemies: Enemy[] = [];
+  let booms: Boom[] = [];
+
+  canvas?.addEventListener('mousemove', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    playerX = Math.max(28, Math.min(canvas.width - 28, (e.clientX - rect.left) * scaleX));
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (!shooterActive) return;
+    if (e.key === 'ArrowLeft' || e.key.toLowerCase() === 'a') leftPressed = true;
+    if (e.key === 'ArrowRight' || e.key.toLowerCase() === 'd') rightPressed = true;
+  });
+
+  document.addEventListener('keyup', (e) => {
+    if (e.key === 'ArrowLeft' || e.key.toLowerCase() === 'a') leftPressed = false;
+    if (e.key === 'ArrowRight' || e.key.toLowerCase() === 'd') rightPressed = false;
+  });
+
+  function spawnEnemy() {
+    if (!canvas) return;
+    const types = [
+      { label: 'BUG', color: '#ef4444', isHeal: false },
+      { label: '404', color: '#f59e0b', isHeal: false },
+      { label: 'NULL', color: '#818cf8', isHeal: false },
+      { label: 'RACE', color: '#f43f5e', isHeal: false },
+      { label: '+FIX', color: '#10b981', isHeal: true },
+    ];
+    const pick = Math.random() < 0.14 ? types[4] : types[Math.floor(Math.random() * 4)];
+    const w = 48;
+    const h = 22;
+    const speedBoost = Math.min(2.4, score * 0.012);
+    enemies.push({
+      x: 20 + Math.random() * (canvas.width - 40 - w),
+      y: -26,
+      w,
+      h,
+      vy: 1.35 + Math.random() * 1.1 + speedBoost,
+      label: pick.label,
+      color: pick.color,
+      isHeal: pick.isHeal,
+    });
+  }
+
+  function addBoom(x: number, y: number, color: string) {
+    for (let i = 0; i < 10; i++) {
+      const a = Math.random() * Math.PI * 2;
+      const s = 1 + Math.random() * 3;
+      booms.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, alpha: 1, color });
+    }
+  }
+
+  function runShooterLoop() {
+    if (!shooterActive || !canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    frameTick++;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Subtle cyber grid lines
+    ctx.strokeStyle = 'rgba(56, 189, 248, 0.06)';
+    ctx.lineWidth = 1;
+    for (let gx = 0; gx < canvas.width; gx += 40) {
+      ctx.beginPath();
+      ctx.moveTo(gx, 0);
+      ctx.lineTo(gx, canvas.height);
+      ctx.stroke();
+    }
+
+    if (leftPressed) playerX = Math.max(28, playerX - 5.5);
+    if (rightPressed) playerX = Math.min(canvas.width - 28, playerX + 5.5);
+
+    // Auto-fire laser bolts
+    if (frameTick % 11 === 0) {
+      bullets.push({ x: playerX, y: canvas.height - 34 });
+    }
+
+    // Spawn falling bugs
+    const spawnRate = Math.max(22, 48 - Math.floor(score / 25));
+    if (frameTick % spawnRate === 0) {
+      spawnEnemy();
+    }
+
+    // Draw HP hearts top-left
+    ctx.font = 'bold 12px "JetBrains Mono", monospace';
+    ctx.fillStyle = '#10b981';
+    ctx.fillText(`SERVER HP: ${'♥ '.repeat(hp)}`, 14, 22);
+
+    // Update & draw bullets
+    ctx.fillStyle = '#38bdf8';
+    for (let i = bullets.length - 1; i >= 0; i--) {
+      const b = bullets[i];
+      b.y -= 7.5;
+      if (b.y < -10) {
+        bullets.splice(i, 1);
+        continue;
+      }
+      ctx.fillRect(b.x - 2, b.y, 4, 12);
+    }
+
+    // Update & draw enemies
+    for (let i = enemies.length - 1; i >= 0; i--) {
+      const en = enemies[i];
+      en.y += en.vy;
+
+      // Draw block
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
+      ctx.strokeStyle = en.color;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.roundRect(en.x, en.y, en.w, en.h, 5);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = en.color;
+      ctx.font = 'bold 11px "JetBrains Mono", monospace';
+      ctx.fillText(en.label, en.x + 8, en.y + 15);
+
+      // Check collision with player ship (catch +FIX or take damage)
+      if (
+        en.y + en.h >= canvas.height - 34 &&
+        en.y <= canvas.height - 10 &&
+        en.x + en.w >= playerX - 20 &&
+        en.x <= playerX + 20
+      ) {
+        if (en.isHeal) {
+          hp = Math.min(5, hp + 1);
+          score += 15;
+          addBoom(en.x + en.w / 2, en.y + en.h / 2, '#10b981');
+        } else {
+          hp--;
+          addBoom(en.x + en.w / 2, en.y + en.h / 2, '#ef4444');
+        }
+        enemies.splice(i, 1);
+        if (shooterScoreEl) shooterScoreEl.textContent = String(score);
+        continue;
+      }
+
+      // Check if enemy breached bottom server line
+      if (en.y > canvas.height) {
+        if (!en.isHeal) {
+          hp--;
+          addBoom(en.x + en.w / 2, canvas.height - 8, '#ef4444');
+        }
+        enemies.splice(i, 1);
+        continue;
+      }
+
+      // Bullet collision
+      for (let j = bullets.length - 1; j >= 0; j--) {
+        const b = bullets[j];
+        if (b.x >= en.x && b.x <= en.x + en.w && b.y >= en.y && b.y <= en.y + en.h) {
+          bullets.splice(j, 1);
+          enemies.splice(i, 1);
+          if (en.isHeal) {
+            hp = Math.min(5, hp + 1);
+          }
+          score += 10;
+          if (shooterScoreEl) shooterScoreEl.textContent = String(score);
+          addBoom(en.x + en.w / 2, en.y + en.h / 2, en.color);
+          break;
+        }
+      }
+    }
+
+    // Draw particles
+    for (let i = booms.length - 1; i >= 0; i--) {
+      const p = booms[i];
+      p.x += p.vx;
+      p.y += p.vy;
+      p.alpha -= 0.04;
+      if (p.alpha <= 0) {
+        booms.splice(i, 1);
+        continue;
+      }
+      ctx.globalAlpha = p.alpha;
+      ctx.fillStyle = p.color;
+      ctx.fillRect(p.x, p.y, 3, 3);
+      ctx.globalAlpha = 1;
+    }
+
+    // Draw Player Ship
+    ctx.fillStyle = '#10b981';
+    ctx.beginPath();
+    ctx.moveTo(playerX, canvas.height - 34);
+    ctx.lineTo(playerX - 18, canvas.height - 12);
+    ctx.lineTo(playerX + 18, canvas.height - 12);
+    ctx.closePath();
+    ctx.fill();
+
+    // Check Game Over
+    if (hp <= 0) {
+      shooterActive = false;
+      if (score > bestShooter) {
+        bestShooter = score;
+        setSavedNum('arcade_shooter_best', bestShooter);
+        if (shooterBestEl) shooterBestEl.textContent = String(bestShooter);
+        window.dispatchEvent(new CustomEvent('portfolio:fireworks'));
+      }
+      if (shooterTitleEl) shooterTitleEl.textContent = `💥 PROD CRASHED // SCORE: ${score}`;
+      if (shooterSubEl) shooterSubEl.textContent = `High Score: ${bestShooter}. Ready to redeploy?`;
+      if (shooterStartBtn) shooterStartBtn.textContent = '↻ REDEPLOY SHIP';
+      shooterOverlay?.classList.remove('hidden');
+      return;
+    }
+
+    requestAnimationFrame(runShooterLoop);
+  }
+
+  shooterStartBtn?.addEventListener('click', () => {
+    score = 0;
+    hp = 3;
+    frameTick = 0;
+    bullets = [];
+    enemies = [];
+    booms = [];
+    if (shooterScoreEl) shooterScoreEl.textContent = '0';
+    shooterOverlay?.classList.add('hidden');
+    shooterActive = true;
+    requestAnimationFrame(runShooterLoop);
+  });
+
+  // ==========================================
+  // GAME 2: SPEED CODE TYPER
+  // ==========================================
+  const codeSnippets = [
+    'const score = cosineSimilarity(vecA, vecB);',
+    'export async function fetchGitHubStats(user: string)',
+    'SELECT id, title FROM documents WHERE score > 0.75;',
+    'git commit -m "feat: deploy astro static portfolio"',
+    'const tokens = text.toLowerCase().split(/\\s+/);',
+    'app.get("/api/health", (req, res) => res.json({ ok: true }));',
+    'SELECT * FROM repos ORDER BY stars DESC LIMIT 4;',
+    'const area = Math.PI * r ** 2;',
+  ];
+
+  const typerTargetBox = document.getElementById('typer-target-box');
+  const typerInput = document.getElementById('typer-input') as HTMLInputElement | null;
+  const typerWpmEl = document.getElementById('typer-wpm');
+  const typerStreakEl = document.getElementById('typer-streak');
+  const typerNextBtn = document.getElementById('typer-next-btn');
+
+  let currentSnippet = codeSnippets[0];
+  let typerStartTime: number | null = null;
+  let typerStreak = 0;
+
+  const typerNextKeyEl = document.getElementById('typer-next-key');
+  const typerAccuracyEl = document.getElementById('typer-accuracy');
+
+  function renderTyperColored(typed: string) {
+    if (!typerTargetBox) return;
+    typerTargetBox.innerHTML = '';
+    let correct = 0;
+
+    for (let i = 0; i < currentSnippet.length; i++) {
+      const ch = currentSnippet[i];
+      const isSpace = ch === ' ';
+      const span = document.createElement('span');
+      // Render spaces as a visible middle dot so cursor/errors on whitespace are visible
+      span.textContent = isSpace ? '·' : ch;
+
+      if (i < typed.length) {
+        if (typed[i] === ch) {
+          correct++;
+          span.className = isSpace
+            ? 'text-[var(--accent-primary)] opacity-40'
+            : 'text-[var(--accent-primary)] font-bold';
+        } else {
+          span.className = 'bg-[var(--status-err)]/30 text-[var(--status-err)] font-bold rounded-sm';
+        }
+      } else if (i === typed.length) {
+        span.className =
+          'bg-[var(--accent-secondary)]/25 border-b-2 border-[var(--accent-secondary)] text-[var(--text-primary)] font-bold rounded-sm';
+      } else if (isSpace) {
+        span.className = 'text-[var(--accent-secondary)] opacity-45';
+      } else if (/[^A-Za-z0-9]/.test(ch)) {
+        // Symbols (*, ;, (, ", /, etc.) get a high-contrast accent so they are never missed
+        span.className = 'text-[var(--accent-tertiary)] font-bold';
+      } else {
+        span.className = 'text-[var(--text-secondary)]';
+      }
+      typerTargetBox.appendChild(span);
+    }
+
+    if (typerNextKeyEl) {
+      const next = currentSnippet[typed.length];
+      typerNextKeyEl.textContent = next === undefined ? '✓' : next === ' ' ? 'SPACE' : next;
+    }
+    if (typerAccuracyEl) {
+      const acc = typed.length > 0 ? Math.round((correct / typed.length) * 100) : 100;
+      typerAccuracyEl.textContent = `${acc}%`;
+      typerAccuracyEl.className = acc >= 90 ? 'text-[var(--accent-primary)]' : 'text-[var(--status-warn)]';
+    }
+  }
+
+  function initTyperSnippet() {
+    currentSnippet = codeSnippets[Math.floor(Math.random() * codeSnippets.length)];
+    typerStartTime = null;
+    if (typerInput) {
+      typerInput.value = '';
+      typerInput.maxLength = currentSnippet.length;
+    }
+    renderTyperColored('');
+  }
+
+  typerInput?.addEventListener('input', () => {
+    const val = typerInput.value;
+    if (!typerStartTime && val.length > 0) {
+      typerStartTime = performance.now();
+    }
+    renderTyperColored(val);
+
+    if (typerStartTime && val.length > 0) {
+      const mins = (performance.now() - typerStartTime) / 60000;
+      if (mins > 0.005) {
+        const wpm = Math.round(val.length / 5 / mins);
+        if (typerWpmEl) typerWpmEl.textContent = String(Math.min(220, wpm));
+      }
+    }
+
+    if (val === currentSnippet) {
+      typerStreak++;
+      if (typerStreakEl) typerStreakEl.textContent = String(typerStreak);
+      window.dispatchEvent(
+        new CustomEvent('portfolio:toast', {
+          detail: { message: `⚡ Snippet Compiled! WPM: ${typerWpmEl?.textContent || 0}` },
+        })
+      );
+      if (typerStreak % 3 === 0) {
+        window.dispatchEvent(new CustomEvent('portfolio:fireworks'));
+      }
+      initTyperSnippet();
+    }
+  });
+
+  typerNextBtn?.addEventListener('click', () => {
+    initTyperSnippet();
+    typerInput?.focus();
+  });
+
+  initTyperSnippet();
+
+  // ==========================================
+  // GAME 3: NEURAL MEMORY MATRIX
+  // ==========================================
+  const memCells = document.querySelectorAll<HTMLButtonElement>('.mem-cell');
+  const memStartBtn = document.getElementById('memory-start-btn');
+  const memLevelEl = document.getElementById('memory-level');
+  const memBestEl = document.getElementById('memory-best');
+  const memStatusEl = document.getElementById('memory-status');
+
+  let memSequence: number[] = [];
+  let memPlayerStep = 0;
+  let memAcceptingInput = false;
+  let memBest = getSavedNum('arcade_memory_best');
+  if (memBestEl) memBestEl.textContent = String(memBest);
+
+  function flashMemCell(idx: number) {
+    const cell = memCells[idx];
+    if (!cell) return;
+    cell.classList.add('!bg-[var(--accent-primary)]', '!text-[#05070b]', 'scale-105', 'shadow-[0_0_20px_var(--accent-primary)]');
+    setTimeout(() => {
+      cell.classList.remove('!bg-[var(--accent-primary)]', '!text-[#05070b]', 'scale-105', 'shadow-[0_0_20px_var(--accent-primary)]');
+    }, 340);
+  }
+
+  function playMemSequence() {
+    memAcceptingInput = false;
+    memPlayerStep = 0;
+    if (memLevelEl) memLevelEl.textContent = String(memSequence.length);
+    if (memStatusEl) memStatusEl.textContent = '👀 Watch the neural pattern...';
+
+    memSequence.forEach((cellIdx, i) => {
+      setTimeout(() => {
+        flashMemCell(cellIdx);
+        if (i === memSequence.length - 1) {
+          setTimeout(() => {
+            memAcceptingInput = true;
+            if (memStatusEl) memStatusEl.textContent = '⚡ Your turn! Repeat the sequence.';
+          }, 420);
+        }
+      }, (i + 1) * 520);
+    });
+  }
+
+  function nextMemRound() {
+    memSequence.push(Math.floor(Math.random() * 9));
+    playMemSequence();
+  }
+
+  memStartBtn?.addEventListener('click', () => {
+    memSequence = [];
+    nextMemRound();
+  });
+
+  memCells.forEach((cell) => {
+    cell.addEventListener('click', () => {
+      if (!memAcceptingInput) return;
+      const idx = Number(cell.getAttribute('data-mem-idx'));
+      flashMemCell(idx);
+
+      if (idx === memSequence[memPlayerStep]) {
+        memPlayerStep++;
+        if (memPlayerStep === memSequence.length) {
+          memAcceptingInput = false;
+          const cleared = memSequence.length;
+          if (cleared > memBest) {
+            memBest = cleared;
+            setSavedNum('arcade_memory_best', memBest);
+            if (memBestEl) memBestEl.textContent = String(memBest);
+          }
+          if (memStatusEl) memStatusEl.textContent = `✓ Level ${cleared} Hacked! Loading next layer...`;
+          if (cleared % 4 === 0) {
+            window.dispatchEvent(new CustomEvent('portfolio:fireworks'));
+          }
+          setTimeout(nextMemRound, 750);
+        }
+      } else {
+        memAcceptingInput = false;
+        cell.classList.add('!bg-[var(--status-err)]', '!text-white');
+        setTimeout(() => cell.classList.remove('!bg-[var(--status-err)]', '!text-white'), 450);
+        if (memStatusEl) {
+          memStatusEl.textContent = `✕ Access Denied at Level ${memSequence.length}! Click START HACK to retry.`;
+        }
+      }
+    });
+  });
+
+  // ==========================================
+  // GAME 4: WHACK-A-BUG
+  // ==========================================
+  const whackHoles = document.querySelectorAll<HTMLButtonElement>('.whack-hole');
+  const whackStartBtn = document.getElementById('whack-start-btn');
+  const whackScoreEl = document.getElementById('whack-score');
+  const whackTimeEl = document.getElementById('whack-time');
+  const whackBestEl = document.getElementById('whack-best');
+  const whackStatusEl = document.getElementById('whack-status');
+
+  const WHACK_DURATION = 30;
+  let whackScore = 0;
+  let whackTimeLeft = WHACK_DURATION;
+  let whackRunning = false;
+  let whackRound = 0; // bumps on every start/stop so stale timeouts are ignored
+  let whackClockId: number | null = null;
+  let whackSpawnId: number | null = null;
+  let whackBest = getSavedNum('arcade_whack_best');
+  if (whackBestEl) whackBestEl.textContent = String(whackBest);
+
+  function setHole(hole: HTMLButtonElement, state: 'empty' | 'bug' | 'feat' | 'hit') {
+    hole.dataset.state = state;
+    hole.textContent = state === 'bug' ? '🐛' : state === 'feat' ? '✨' : state === 'hit' ? '💥' : '';
+    hole.setAttribute(
+      'aria-label',
+      state === 'bug' ? 'Bug: whack it' : state === 'feat' ? 'Feature: do not hit' : 'Empty slot'
+    );
+  }
+
+  function updateWhackScore() {
+    if (whackScoreEl) whackScoreEl.textContent = String(whackScore);
+  }
+
+  function spawnWhackTarget() {
+    if (!whackRunning) return;
+    const round = whackRound;
+    const empty = Array.from(whackHoles).filter((h) => h.dataset.state === 'empty');
+    if (empty.length > 0) {
+      const hole = empty[Math.floor(Math.random() * empty.length)];
+      const isFeat = Math.random() < 0.18;
+      setHole(hole, isFeat ? 'feat' : 'bug');
+      const token = String(performance.now());
+      hole.dataset.token = token;
+      // Targets get shorter-lived as the clock runs down
+      const lifetime = Math.max(520, 1000 - (WHACK_DURATION - whackTimeLeft) * 16);
+      window.setTimeout(() => {
+        if (round !== whackRound || hole.dataset.token !== token) return;
+        if (hole.dataset.state === 'bug' || hole.dataset.state === 'feat') setHole(hole, 'empty');
+      }, lifetime);
+    }
+    const nextDelay = Math.max(320, 720 - (WHACK_DURATION - whackTimeLeft) * 12);
+    whackSpawnId = window.setTimeout(spawnWhackTarget, nextDelay);
+  }
+
+  function stopWhack(finished: boolean) {
+    if (!whackRunning && !finished) return;
+    whackRunning = false;
+    whackRound++;
+    if (whackClockId !== null) window.clearInterval(whackClockId);
+    if (whackSpawnId !== null) window.clearTimeout(whackSpawnId);
+    whackClockId = null;
+    whackSpawnId = null;
+    whackHoles.forEach((h) => setHole(h, 'empty'));
+    if (whackStartBtn) whackStartBtn.textContent = finished ? '↻ HUNT AGAIN' : '▶ START HUNT';
+
+    if (!finished) {
+      if (whackStatusEl) whackStatusEl.textContent = 'Click START to begin bug hunt';
+      return;
+    }
+    const isRecord = whackScore > whackBest;
+    if (isRecord) {
+      whackBest = whackScore;
+      setSavedNum('arcade_whack_best', whackBest);
+      if (whackBestEl) whackBestEl.textContent = String(whackBest);
+      window.dispatchEvent(new CustomEvent('portfolio:fireworks'));
+    }
+    if (whackStatusEl) {
+      whackStatusEl.textContent = isRecord
+        ? `🏆 NEW RECORD! ${whackScore} pts`
+        : `⏱ Time's up! Score: ${whackScore} (HI ${whackBest})`;
+    }
+  }
+
+  whackStartBtn?.addEventListener('click', () => {
+    stopWhack(false);
+    whackScore = 0;
+    whackTimeLeft = WHACK_DURATION;
+    whackRunning = true;
+    whackRound++;
+    updateWhackScore();
+    if (whackTimeEl) whackTimeEl.textContent = String(whackTimeLeft);
+    if (whackStatusEl) whackStatusEl.textContent = '🔨 Squash those bugs!';
+    whackStartBtn.textContent = '⏳ HUNTING...';
+
+    whackClockId = window.setInterval(() => {
+      whackTimeLeft--;
+      if (whackTimeEl) whackTimeEl.textContent = String(Math.max(0, whackTimeLeft));
+      if (whackTimeLeft <= 0) stopWhack(true);
+    }, 1000);
+    spawnWhackTarget();
+  });
+
+  whackHoles.forEach((hole) => {
+    hole.addEventListener('click', () => {
+      if (!whackRunning) return;
+      const state = hole.dataset.state;
+      if (state === 'bug') {
+        whackScore += 10;
+      } else if (state === 'feat') {
+        whackScore = Math.max(0, whackScore - 15);
+        if (whackStatusEl) whackStatusEl.textContent = '😱 You broke a feature! −15';
+      } else {
+        return;
+      }
+      updateWhackScore();
+      setHole(hole, 'hit');
+      const round = whackRound;
+      window.setTimeout(() => {
+        if (round === whackRound && hole.dataset.state === 'hit') setHole(hole, 'empty');
+      }, 180);
+    });
+  });
+
+  // ==========================================
+  // GAME 5: PING REFLEX
+  // ==========================================
+  const reflexPanel = panels.reflex;
+  const reflexPad = document.getElementById('reflex-pad');
+  const reflexTitleEl = document.getElementById('reflex-title');
+  const reflexSubEl = document.getElementById('reflex-sub');
+  const reflexAvgEl = document.getElementById('reflex-avg');
+  const reflexBestEl = document.getElementById('reflex-best');
+  const reflexHistoryEl = document.getElementById('reflex-history');
+
+  type ReflexState = 'idle' | 'wait' | 'go' | 'early';
+  let reflexState: ReflexState = 'idle';
+  let reflexTimerId: number | null = null;
+  let reflexGoAt = 0;
+  let reflexHistory: number[] = [];
+  let reflexBest = getSavedNum('arcade_reflex_best'); // 0 = no record yet (lower ms is better)
+  if (reflexBestEl && reflexBest > 0) reflexBestEl.textContent = `${reflexBest}ms`;
+
+  function setReflexView(state: ReflexState, title: string, sub: string) {
+    reflexState = state;
+    if (reflexPad) reflexPad.dataset.state = state;
+    if (reflexTitleEl) reflexTitleEl.textContent = title;
+    if (reflexSubEl) reflexSubEl.textContent = sub;
+  }
+
+  function resetReflex() {
+    if (reflexTimerId !== null) window.clearTimeout(reflexTimerId);
+    reflexTimerId = null;
+    if (reflexState === 'wait' || reflexState === 'go') {
+      setReflexView('idle', '⚡ PING REFLEX TEST', 'Click or press Space to start');
+    }
+  }
+
+  function rateReflex(ms: number): string {
+    if (ms < 200) return '🚀 Fiber-optic reflexes!';
+    if (ms < 280) return '⚡ Low latency. Nice!';
+    if (ms < 400) return '🙂 Stable connection.';
+    return '🐢 High ping... try again!';
+  }
+
+  function renderReflexHistory() {
+    if (!reflexHistoryEl) return;
+    reflexHistoryEl.innerHTML = '';
+    if (reflexHistory.length === 0) {
+      reflexHistoryEl.textContent = '-';
+      return;
+    }
+    reflexHistory.forEach((ms) => {
+      const chip = document.createElement('span');
+      chip.className =
+        'px-2 py-0.5 rounded-md bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--text-secondary)]';
+      chip.textContent = `${ms}ms`;
+      reflexHistoryEl.appendChild(chip);
+    });
+    const avg = Math.round(reflexHistory.reduce((a, b) => a + b, 0) / reflexHistory.length);
+    if (reflexAvgEl) reflexAvgEl.textContent = `${avg}ms`;
+  }
+
+  function handleReflexPress() {
+    if (reflexState === 'idle' || reflexState === 'early') {
+      setReflexView('wait', '🔴 WAIT FOR GREEN...', 'Do not click yet');
+      const delay = 1400 + Math.random() * 2600;
+      reflexTimerId = window.setTimeout(() => {
+        reflexGoAt = performance.now();
+        setReflexView('go', '🟢 CLICK NOW!', 'GO GO GO');
+      }, delay);
+      return;
+    }
+    if (reflexState === 'wait') {
+      if (reflexTimerId !== null) window.clearTimeout(reflexTimerId);
+      reflexTimerId = null;
+      setReflexView('early', '⚠ TOO EARLY!', 'Packet dropped. Click to retry.');
+      return;
+    }
+    // state === 'go'
+    const ms = Math.round(performance.now() - reflexGoAt);
+    reflexHistory = [ms, ...reflexHistory].slice(0, 5);
+    renderReflexHistory();
+    let sub = `${rateReflex(ms)} Click to ping again.`;
+    if (reflexBest === 0 || ms < reflexBest) {
+      reflexBest = ms;
+      setSavedNum('arcade_reflex_best', reflexBest);
+      if (reflexBestEl) reflexBestEl.textContent = `${reflexBest}ms`;
+      sub = `🏆 New best! ${sub}`;
+      window.dispatchEvent(new CustomEvent('portfolio:fireworks'));
+    }
+    setReflexView('idle', `${ms} ms`, sub);
+  }
+
+  // pointerdown (not click) so measured time excludes mouse-up delay
+  reflexPad?.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    handleReflexPress();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== ' ' && e.key !== 'Enter') return;
+    if (e.repeat || arcadeModal?.classList.contains('hidden') || reflexPanel?.classList.contains('hidden')) return;
+    const tag = (e.target as HTMLElement | null)?.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+    // Leave Enter/Space on other buttons (tabs, close) alone
+    if (tag === 'BUTTON' && e.target !== reflexPad) return;
+    e.preventDefault();
+    handleReflexPress();
+  });
+
+  // ==========================================
+  // GAME 6: CYBER SNAKE
+  // ==========================================
+  const snakeCanvas = document.getElementById('cyber-snake-canvas') as HTMLCanvasElement | null;
+  const snakeOverlay = document.getElementById('snake-overlay');
+  const snakeStartBtn = document.getElementById('snake-start-btn');
+  const snakeSpeedBtn = document.getElementById('snake-speed-btn');
+  const snakeModeBtn = document.getElementById('snake-mode-btn');
+  const snakeScoreEl = document.getElementById('snake-score');
+  const snakeLenEl = document.getElementById('snake-len');
+  const snakeBestEl = document.getElementById('snake-best');
+  const snakeTitleEl = document.getElementById('snake-status-title');
+  const snakeSubEl = document.getElementById('snake-status-sub');
+  const snakeDpadBtns = document.querySelectorAll<HTMLButtonElement>('.snake-dpad-btn');
+
+  const SNAKE_CELL = 20;
+  const SNAKE_COLS = 30; // 30 * 20 = 600
+  const SNAKE_ROWS = 16; // 16 * 20 = 320
+
+  interface GridPt {
+    x: number;
+    y: number;
+  }
+  interface BonusOrb {
+    x: number;
+    y: number;
+    expiresAt: number;
+    duration: number;
+  }
+  interface SnakeSpark {
+    x: number;
+    y: number;
+    vx: number;
+    vy: number;
+    alpha: number;
+    color: string;
+  }
+
+  const SNAKE_SPEEDS = [
+    { label: '🐢 SLOW', baseMs: 235, minMs: 160 },
+    { label: '🐍 NORMAL', baseMs: 185, minMs: 120 },
+    { label: '⚡ FAST', baseMs: 130, minMs: 82 },
+  ] as const;
+  let snakeSpeedIdx = 1; // default: NORMAL (185ms/cell)
+
+  let snakePortalMode = true;
+  let snakeBest = getSavedNum('arcade_snake_best');
+  if (snakeBestEl) snakeBestEl.textContent = String(snakeBest);
+
+  let snakeBody: GridPt[] = [
+    { x: 10, y: 8 },
+    { x: 9, y: 8 },
+    { x: 8, y: 8 },
+    { x: 7, y: 8 },
+  ];
+  let snakeDir: GridPt = { x: 1, y: 0 };
+  let snakeDirQueue: GridPt[] = [];
+  let snakeFood: GridPt = { x: 20, y: 8 };
+  let snakeBonus: BonusOrb | null = null;
+  let snakeSparks: SnakeSpark[] = [];
+  let snakeScore = 0;
+  let snakeLastStepAt = 0;
+
+  function randomFreeCell(extraExclude?: GridPt | null): GridPt {
+    const occupied = new Set(snakeBody.map((s) => `${s.x},${s.y}`));
+    if (extraExclude) occupied.add(`${extraExclude.x},${extraExclude.y}`);
+    const candidates: GridPt[] = [];
+    for (let x = 0; x < SNAKE_COLS; x++) {
+      for (let y = 0; y < SNAKE_ROWS; y++) {
+        if (!occupied.has(`${x},${y}`)) candidates.push({ x, y });
+      }
+    }
+    if (candidates.length === 0) return { x: 0, y: 0 };
+    return candidates[Math.floor(Math.random() * candidates.length)];
+  }
+
+  function spawnSnakeBurst(gx: number, gy: number, color: string, count = 12) {
+    const cx = gx * SNAKE_CELL + SNAKE_CELL / 2;
+    const cy = gy * SNAKE_CELL + SNAKE_CELL / 2;
+    for (let i = 0; i < count; i++) {
+      const a = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.4;
+      const sp = 1.2 + Math.random() * 2.6;
+      snakeSparks.push({ x: cx, y: cy, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, alpha: 1, color });
+    }
+  }
+
+  function queueSnakeDir(nx: number, ny: number) {
+    const ref = snakeDirQueue.length > 0 ? snakeDirQueue[snakeDirQueue.length - 1] : snakeDir;
+    // Reject duplicate or 180-degree opposite turn
+    if ((ref.x === nx && ref.y === ny) || (ref.x === -nx && ref.y === -ny)) return;
+    if (snakeDirQueue.length < 2) {
+      snakeDirQueue.push({ x: nx, y: ny });
+    }
+  }
+
+  snakeSpeedBtn?.addEventListener('click', () => {
+    snakeSpeedIdx = (snakeSpeedIdx + 1) % SNAKE_SPEEDS.length;
+    snakeSpeedBtn.textContent = SNAKE_SPEEDS[snakeSpeedIdx].label;
+  });
+
+  snakeModeBtn?.addEventListener('click', () => {
+    snakePortalMode = !snakePortalMode;
+    snakeModeBtn.textContent = snakePortalMode ? '🌀 PORTAL' : '🧱 WALL';
+    snakeModeBtn.className = snakePortalMode
+      ? 'px-2.5 py-1 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-focus)] text-[var(--accent-secondary)] font-bold cursor-pointer hover:border-[var(--accent-primary)] transition-colors'
+      : 'px-2.5 py-1 rounded-lg bg-[var(--bg-elevated)] border border-[var(--status-err)] text-[var(--status-err)] font-bold cursor-pointer hover:border-[var(--accent-primary)] transition-colors';
+    drawSnakeBoard(performance.now());
+  });
+
+  function stepSnake(now: number): boolean {
+    if (snakeDirQueue.length > 0) {
+      snakeDir = snakeDirQueue.shift()!;
+    }
+
+    let nx = snakeBody[0].x + snakeDir.x;
+    let ny = snakeBody[0].y + snakeDir.y;
+
+    if (snakePortalMode) {
+      nx = (nx + SNAKE_COLS) % SNAKE_COLS;
+      ny = (ny + SNAKE_ROWS) % SNAKE_ROWS;
+    } else if (nx < 0 || nx >= SNAKE_COLS || ny < 0 || ny >= SNAKE_ROWS) {
+      spawnSnakeBurst(snakeBody[0].x, snakeBody[0].y, '#ef4444', 18);
+      return false;
+    }
+
+    const ateFood = nx === snakeFood.x && ny === snakeFood.y;
+    const ateBonus = snakeBonus !== null && nx === snakeBonus.x && ny === snakeBonus.y;
+    const growing = ateFood || ateBonus;
+
+    // Tail moves forward unless growing, so moving into old tail cell is legal when !growing
+    const checkLen = growing ? snakeBody.length : snakeBody.length - 1;
+    for (let i = 0; i < checkLen; i++) {
+      if (snakeBody[i].x === nx && snakeBody[i].y === ny) {
+        spawnSnakeBurst(nx, ny, '#ef4444', 18);
+        return false;
+      }
+    }
+
+    snakeBody.unshift({ x: nx, y: ny });
+    if (!growing) {
+      snakeBody.pop();
+    }
+
+    if (ateFood) {
+      snakeScore += 10;
+      spawnSnakeBurst(nx, ny, '#10b981', 12);
+      snakeFood = randomFreeCell(snakeBonus);
+      if (!snakeBonus && Math.random() < 0.3) {
+        const pt = randomFreeCell(snakeFood);
+        snakeBonus = { x: pt.x, y: pt.y, duration: 9500, expiresAt: now + 9500 };
+      }
+    }
+
+    if (ateBonus) {
+      snakeScore += 30;
+      spawnSnakeBurst(nx, ny, '#f59e0b', 18);
+      snakeBonus = null;
+    }
+
+    if (snakeBonus && now >= snakeBonus.expiresAt) {
+      snakeBonus = null;
+    }
+
+    if (snakeScoreEl) snakeScoreEl.textContent = String(snakeScore);
+    if (snakeLenEl) snakeLenEl.textContent = String(snakeBody.length);
+    return true;
+  }
+
+  function drawSnakeBoard(now: number) {
+    if (!snakeCanvas) return;
+    const ctx = snakeCanvas.getContext('2d');
+    if (!ctx) return;
+
+    ctx.clearRect(0, 0, snakeCanvas.width, snakeCanvas.height);
+
+    // Subtle matrix grid
+    ctx.strokeStyle = 'rgba(56, 189, 248, 0.06)';
+    ctx.lineWidth = 1;
+    for (let gx = SNAKE_CELL; gx < snakeCanvas.width; gx += SNAKE_CELL) {
+      ctx.beginPath();
+      ctx.moveTo(gx, 0);
+      ctx.lineTo(gx, snakeCanvas.height);
+      ctx.stroke();
+    }
+    for (let gy = SNAKE_CELL; gy < snakeCanvas.height; gy += SNAKE_CELL) {
+      ctx.beginPath();
+      ctx.moveTo(0, gy);
+      ctx.lineTo(snakeCanvas.width, gy);
+      ctx.stroke();
+    }
+
+    // Arena border indicates PORTAL (dashed cyan) vs WALL (solid red)
+    ctx.save();
+    ctx.lineWidth = 2;
+    if (snakePortalMode) {
+      ctx.setLineDash([6, 6]);
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.35)';
+    } else {
+      ctx.strokeStyle = 'rgba(239, 68, 68, 0.65)';
+    }
+    ctx.strokeRect(1, 1, snakeCanvas.width - 2, snakeCanvas.height - 2);
+    ctx.restore();
+
+    const pulse = 0.5 + 0.5 * Math.sin(now * 0.008);
+
+    // Primary emerald food node
+    const fx = snakeFood.x * SNAKE_CELL + SNAKE_CELL / 2;
+    const fy = snakeFood.y * SNAKE_CELL + SNAKE_CELL / 2;
+    ctx.beginPath();
+    ctx.arc(fx, fy, 7.5 + pulse * 2.5, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(16, 185, 129, 0.22)';
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(fx, fy, 5.2, 0, Math.PI * 2);
+    ctx.fillStyle = '#10b981';
+    ctx.fill();
+
+    // Timed golden star bonus packet
+    if (snakeBonus) {
+      const rem = Math.max(0, (snakeBonus.expiresAt - now) / snakeBonus.duration);
+      const bx = snakeBonus.x * SNAKE_CELL + SNAKE_CELL / 2;
+      const by = snakeBonus.y * SNAKE_CELL + SNAKE_CELL / 2;
+      ctx.beginPath();
+      ctx.arc(bx, by, 8.5, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * rem);
+      ctx.strokeStyle = '#f59e0b';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.fillStyle = '#fbbf24';
+      ctx.font = 'bold 12px "JetBrains Mono", monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('★', bx, by + 0.5);
+    }
+
+    // Draw snake body from tail to head with emerald -> cyan -> indigo gradient
+    for (let i = snakeBody.length - 1; i >= 0; i--) {
+      const seg = snakeBody[i];
+      const sx = seg.x * SNAKE_CELL;
+      const sy = seg.y * SNAKE_CELL;
+      const t = snakeBody.length > 1 ? i / (snakeBody.length - 1) : 0;
+
+      if (i === 0) {
+        // Glowing Serpent Head
+        ctx.fillStyle = '#10b981';
+        ctx.shadowColor = 'rgba(16, 185, 129, 0.75)';
+        ctx.shadowBlur = 10;
+        ctx.beginPath();
+        ctx.roundRect(sx + 1.5, sy + 1.5, SNAKE_CELL - 3, SNAKE_CELL - 3, 6);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+        // Directional eyes
+        ctx.fillStyle = '#05070b';
+        const cx = sx + SNAKE_CELL / 2;
+        const cy = sy + SNAKE_CELL / 2;
+        const perpX = -snakeDir.y;
+        const perpY = snakeDir.x;
+        const fwdX = snakeDir.x * 3.5;
+        const fwdY = snakeDir.y * 3.5;
+        ctx.beginPath();
+        ctx.arc(cx + fwdX + perpX * 3.6, cy + fwdY + perpY * 3.6, 1.8, 0, Math.PI * 2);
+        ctx.arc(cx + fwdX - perpX * 3.6, cy + fwdY - perpY * 3.6, 1.8, 0, Math.PI * 2);
+        ctx.fill();
+      } else {
+        const r = Math.round(16 + (56 - 16) * t);
+        const g = Math.round(185 + (189 - 185) * (1 - t * 0.4));
+        const b = Math.round(129 + (248 - 129) * t);
+        const alpha = Math.max(0.38, 0.95 - t * 0.5);
+        const pad = 2.2 + t * 2.2;
+        ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${alpha})`;
+        ctx.beginPath();
+        ctx.roundRect(sx + pad, sy + pad, SNAKE_CELL - pad * 2, SNAKE_CELL - pad * 2, 4);
+        ctx.fill();
+      }
+    }
+
+    // Sparks
+    for (let i = snakeSparks.length - 1; i >= 0; i--) {
+      const sp = snakeSparks[i];
+      sp.x += sp.vx;
+      sp.y += sp.vy;
+      sp.alpha -= 0.04;
+      if (sp.alpha <= 0) {
+        snakeSparks.splice(i, 1);
+        continue;
+      }
+      ctx.globalAlpha = sp.alpha;
+      ctx.fillStyle = sp.color;
+      ctx.fillRect(sp.x - 1.5, sp.y - 1.5, 3, 3);
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  function finishSnakeRun() {
+    snakeRunning = false;
+    drawSnakeBoard(performance.now());
+    const isRecord = snakeScore > snakeBest;
+    if (isRecord) {
+      snakeBest = snakeScore;
+      setSavedNum('arcade_snake_best', snakeBest);
+      if (snakeBestEl) snakeBestEl.textContent = String(snakeBest);
+      window.dispatchEvent(new CustomEvent('portfolio:fireworks'));
+    }
+    if (snakeTitleEl) {
+      snakeTitleEl.textContent = isRecord
+        ? `🏆 NEW RECORD // ${snakeScore} PTS`
+        : `💥 SERPENT CRASHED // ${snakeScore} PTS`;
+    }
+    if (snakeSubEl) {
+      snakeSubEl.textContent = `Length: ${snakeBody.length} · High Score: ${snakeBest}. Ready for another run?`;
+    }
+    if (snakeStartBtn) snakeStartBtn.textContent = '↻ PLAY AGAIN';
+    snakeOverlay?.classList.remove('hidden');
+  }
+
+  function runSnakeLoop(now: number) {
+    if (!snakeRunning) return;
+    const preset = SNAKE_SPEEDS[snakeSpeedIdx];
+    const stepInterval = Math.max(preset.minMs, preset.baseMs - Math.floor(snakeScore / 40) * 3);
+    if (now - snakeLastStepAt >= stepInterval) {
+      snakeLastStepAt = now;
+      const alive = stepSnake(now);
+      if (!alive) {
+        finishSnakeRun();
+        return;
+      }
+    }
+    drawSnakeBoard(now);
+    requestAnimationFrame(runSnakeLoop);
+  }
+
+  function startSnakeGame() {
+    snakeBody = [
+      { x: 10, y: 8 },
+      { x: 9, y: 8 },
+      { x: 8, y: 8 },
+      { x: 7, y: 8 },
+    ];
+    snakeDir = { x: 1, y: 0 };
+    snakeDirQueue = [];
+    snakeBonus = null;
+    snakeSparks = [];
+    snakeScore = 0;
+    snakeFood = randomFreeCell();
+    if (snakeScoreEl) snakeScoreEl.textContent = '0';
+    if (snakeLenEl) snakeLenEl.textContent = '4';
+    snakeOverlay?.classList.add('hidden');
+    snakeRunning = true;
+    snakeLastStepAt = performance.now();
+    requestAnimationFrame(runSnakeLoop);
+  }
+
+  snakeStartBtn?.addEventListener('click', startSnakeGame);
+
+  // Keyboard steering (Arrows + WASD) when Snake is active
+  document.addEventListener('keydown', (e) => {
+    if (!snakeRunning) return;
+    const k = e.key.toLowerCase();
+    if (e.key === 'ArrowUp' || k === 'w') {
+      e.preventDefault();
+      queueSnakeDir(0, -1);
+    } else if (e.key === 'ArrowDown' || k === 's') {
+      e.preventDefault();
+      queueSnakeDir(0, 1);
+    } else if (e.key === 'ArrowLeft' || k === 'a') {
+      e.preventDefault();
+      queueSnakeDir(-1, 0);
+    } else if (e.key === 'ArrowRight' || k === 'd') {
+      e.preventDefault();
+      queueSnakeDir(1, 0);
+    }
+  });
+
+  // Mobile D-Pad buttons
+  snakeDpadBtns.forEach((btn) => {
+    btn.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      if (!snakeRunning) return;
+      const dir = btn.getAttribute('data-snake-dir');
+      if (dir === 'up') queueSnakeDir(0, -1);
+      else if (dir === 'down') queueSnakeDir(0, 1);
+      else if (dir === 'left') queueSnakeDir(-1, 0);
+      else if (dir === 'right') queueSnakeDir(1, 0);
+    });
+  });
+
+  // Touch swipe steering on canvas
+  let touchStartX = 0;
+  let touchStartY = 0;
+  snakeCanvas?.addEventListener(
+    'touchstart',
+    (e) => {
+      const t = e.touches[0];
+      if (!t) return;
+      touchStartX = t.clientX;
+      touchStartY = t.clientY;
+    },
+    { passive: true }
+  );
+  snakeCanvas?.addEventListener(
+    'touchmove',
+    (e) => {
+      if (!snakeRunning) return;
+      const t = e.touches[0];
+      if (!t) return;
+      const dx = t.clientX - touchStartX;
+      const dy = t.clientY - touchStartY;
+      if (Math.hypot(dx, dy) < 22) return;
+      e.preventDefault();
+      if (Math.abs(dx) > Math.abs(dy)) {
+        queueSnakeDir(dx > 0 ? 1 : -1, 0);
+      } else {
+        queueSnakeDir(0, dy > 0 ? 1 : -1);
+      }
+      touchStartX = t.clientX;
+      touchStartY = t.clientY;
+    },
+    { passive: false }
+  );
+
+  drawSnakeBoard(performance.now());
+</script>

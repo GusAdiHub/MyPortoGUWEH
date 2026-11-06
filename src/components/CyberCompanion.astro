@@ -1,0 +1,415 @@
+---
+// Interactive Cyber Companion Bot + Web Audio Synth + Konami Code + Fireworks + Tab Title Easter Egg
+---
+
+<!-- Confetti / Fireworks Overlay Canvas -->
+<canvas
+  id="fx-confetti-canvas"
+  class="fixed inset-0 w-full h-full pointer-events-none z-50"
+  aria-hidden="true"
+></canvas>
+
+<!-- Floating Cursor-Tracking Cyber Drone Companion (Bottom-Left) -->
+<div
+  id="cyber-companion-wrap"
+  class="fixed bottom-5 left-5 z-40 flex items-end gap-2.5 select-none font-mono text-xs"
+>
+  <!-- Bot Body Button -->
+  <div class="relative group">
+    <!-- Speech Bubble -->
+    <div
+      id="bot-speech-bubble"
+      class="hidden absolute bottom-14 left-0 w-60 sm:w-64 glass-pill rounded-2xl rounded-bl-sm p-3 border border-[var(--border-focus)] shadow-2xl text-[11px] leading-relaxed text-[var(--text-primary)] animate-boot-line"
+    >
+      <div class="flex items-center justify-between text-[10px] text-[var(--accent-primary)] font-bold mb-1">
+        <span>G-BOT // v2.4</span>
+        <button
+          type="button"
+          id="bot-hide-btn"
+          class="text-[var(--text-muted)] hover:text-[var(--text-primary)] px-1 cursor-pointer"
+          title="Minimize companion"
+          aria-label="Minimize companion"
+        >
+          [–]
+        </button>
+      </div>
+      <p id="bot-speech-text" class="text-[var(--text-secondary)]">
+        Halo! Klik aku untuk random fakta &amp; easter egg!
+      </p>
+    </div>
+
+    <!-- Cute Cyber Bot Avatar -->
+    <button
+      type="button"
+      id="cyber-bot-btn"
+      class="w-12 h-12 rounded-2xl glass-pill border border-[var(--border-focus)] shadow-[0_8px_25px_rgba(0,0,0,0.45)] hover:shadow-[0_0_20px_var(--accent-glow)] flex flex-col items-center justify-center gap-1 cursor-pointer transition-transform duration-200 hover:scale-105 active:scale-95 relative"
+      aria-label="Interact with G-Bot Cyber Companion"
+      title="Click me! (G-Bot Companion)"
+    >
+      <!-- Antenna -->
+      <span class="absolute -top-2 w-1.5 h-1.5 rounded-full bg-[var(--accent-secondary)] animate-ping"></span>
+      <span class="absolute -top-2 w-1.5 h-1.5 rounded-full bg-[var(--accent-secondary)]"></span>
+
+      <!-- Visor Screen with Cursor-Tracking Eyes -->
+      <div class="w-8 h-5 rounded-lg bg-[#05070b] border border-[var(--border-subtle)] flex items-center justify-center gap-1.5 overflow-hidden">
+        <span
+          id="bot-eye-l"
+          class="w-1.5 h-2 rounded-full bg-[var(--accent-primary)] shadow-[0_0_6px_var(--accent-primary)] transition-transform duration-75"
+        ></span>
+        <span
+          id="bot-eye-r"
+          class="w-1.5 h-2 rounded-full bg-[var(--accent-primary)] shadow-[0_0_6px_var(--accent-primary)] transition-transform duration-75"
+        ></span>
+      </div>
+
+      <!-- Tiny Status Mouth LED -->
+      <span id="bot-mouth" class="w-3 h-0.5 rounded-full bg-[var(--accent-secondary)]"></span>
+    </button>
+  </div>
+</div>
+
+<script>
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // ==========================================
+  // 1. WEB AUDIO MECHANICAL SWITCH & UI SYNTH
+  // ==========================================
+  let sfxEnabled = false;
+  let audioCtx: AudioContext | null = null;
+
+  function ensureAudioCtx(): AudioContext | null {
+    if (!audioCtx) {
+      const Ctx = window.AudioContext || (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+      if (Ctx) audioCtx = new Ctx();
+    }
+    if (audioCtx && audioCtx.state === 'suspended') {
+      audioCtx.resume().catch(() => {});
+    }
+    return audioCtx;
+  }
+
+  function playSynth(type: 'click' | 'hover' | 'key' | 'powerup') {
+    if (!sfxEnabled) return;
+    const ctx = ensureAudioCtx();
+    if (!ctx) return;
+
+    const now = ctx.currentTime;
+
+    if (type === 'hover') {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(680, now);
+      osc.frequency.exponentialRampToValueAtTime(920, now + 0.025);
+      gain.gain.setValueAtTime(0.018, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.025);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.028);
+    } else if (type === 'click' || type === 'key') {
+      // Mechanical keyboard switch "thock"
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'triangle';
+      const baseFreq = type === 'key' ? 240 + Math.random() * 60 : 320;
+      osc.frequency.setValueAtTime(baseFreq, now);
+      osc.frequency.exponentialRampToValueAtTime(75, now + 0.045);
+      gain.gain.setValueAtTime(0.08, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.045);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.05);
+    } else if (type === 'powerup') {
+      const notes = [440, 554.37, 659.25, 880];
+      notes.forEach((freq, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, now + i * 0.07);
+        gain.gain.setValueAtTime(0.07, now + i * 0.07);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.07 + 0.18);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now + i * 0.07);
+        osc.stop(now + i * 0.07 + 0.19);
+      });
+    }
+  }
+
+  function setSfxState(next: boolean) {
+    sfxEnabled = next;
+    if (sfxEnabled) {
+      ensureAudioCtx();
+      playSynth('powerup');
+    }
+    window.dispatchEvent(new CustomEvent('portfolio:sfx-changed', { detail: { enabled: sfxEnabled } }));
+    window.dispatchEvent(
+      new CustomEvent('portfolio:toast', {
+        detail: { message: sfxEnabled ? '🔊 Mechanical & Sci-Fi SFX: ON' : '🔇 UI Sound Effects: OFF' },
+      })
+    );
+  }
+
+  window.addEventListener('portfolio:toggle-sfx', () => {
+    setSfxState(!sfxEnabled);
+  });
+
+  document.addEventListener('click', (e) => {
+    const target = e.target as HTMLElement | null;
+    if (target?.closest('button, a')) {
+      playSynth('click');
+    }
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (!e.metaKey && !e.ctrlKey && e.key.length === 1) {
+      playSynth('key');
+    }
+  });
+
+  document.querySelectorAll('a, button, .bento-card').forEach((el) => {
+    el.addEventListener('mouseenter', () => playSynth('hover'));
+  });
+
+  // ==========================================
+  // 2. FIREWORKS CONFETTI BURST ENGINE
+  // ==========================================
+  const confettiCanvas = document.getElementById('fx-confetti-canvas') as HTMLCanvasElement | null;
+  interface ConfettiPiece {
+    x: number;
+    y: number;
+    vx: number;
+    vy: number;
+    size: number;
+    color: string;
+    rot: number;
+    vrot: number;
+    alpha: number;
+  }
+  const confettiPieces: ConfettiPiece[] = [];
+  let confettiAnimating = false;
+
+  function launchFireworks() {
+    if (!confettiCanvas || reducedMotion) return;
+    confettiCanvas.width = window.innerWidth;
+    confettiCanvas.height = window.innerHeight;
+
+    const palette = ['#10b981', '#38bdf8', '#818cf8', '#f59e0b', '#f43f5e', '#a855f7'];
+    const origins = [
+      [window.innerWidth * 0.25, window.innerHeight * 0.45],
+      [window.innerWidth * 0.5, window.innerHeight * 0.35],
+      [window.innerWidth * 0.75, window.innerHeight * 0.45],
+    ];
+
+    origins.forEach(([ox, oy]) => {
+      for (let i = 0; i < 38; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = 2.5 + Math.random() * 6.5;
+        confettiPieces.push({
+          x: ox,
+          y: oy,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed - 2.2,
+          size: 4 + Math.random() * 4,
+          color: palette[Math.floor(Math.random() * palette.length)],
+          rot: Math.random() * Math.PI,
+          vrot: (Math.random() - 0.5) * 0.25,
+          alpha: 1,
+        });
+      }
+    });
+
+    playSynth('powerup');
+
+    if (!confettiAnimating) {
+      confettiAnimating = true;
+      const ctx = confettiCanvas.getContext('2d');
+      const loop = () => {
+        if (!ctx || !confettiCanvas) return;
+        ctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+        for (let i = confettiPieces.length - 1; i >= 0; i--) {
+          const c = confettiPieces[i];
+          c.x += c.vx;
+          c.y += c.vy;
+          c.vy += 0.14; // gravity
+          c.vx *= 0.985;
+          c.rot += c.vrot;
+          c.alpha -= 0.012;
+          if (c.alpha <= 0 || c.y > confettiCanvas.height + 20) {
+            confettiPieces.splice(i, 1);
+            continue;
+          }
+          ctx.save();
+          ctx.globalAlpha = c.alpha;
+          ctx.translate(c.x, c.y);
+          ctx.rotate(c.rot);
+          ctx.fillStyle = c.color;
+          ctx.fillRect(-c.size / 2, -c.size / 2, c.size, c.size * 0.65);
+          ctx.restore();
+        }
+        if (confettiPieces.length > 0) {
+          requestAnimationFrame(loop);
+        } else {
+          ctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
+          confettiAnimating = false;
+        }
+      };
+      requestAnimationFrame(loop);
+    }
+  }
+
+  window.addEventListener('portfolio:fireworks', launchFireworks);
+
+  window.addEventListener('portfolio:barrel-roll', () => {
+    if (reducedMotion) return;
+    document.body.classList.remove('is-barrel-rolling');
+    void document.body.offsetWidth;
+    document.body.classList.add('is-barrel-rolling');
+    window.dispatchEvent(
+      new CustomEvent('portfolio:toast', { detail: { message: '🌀 Do a Cyber Barrel Roll!' } })
+    );
+    setTimeout(() => document.body.classList.remove('is-barrel-rolling'), 1150);
+  });
+
+  window.addEventListener('portfolio:glitch', () => {
+    if (reducedMotion) return;
+    document.body.classList.remove('is-glitching');
+    void document.body.offsetWidth;
+    document.body.classList.add('is-glitching');
+    setTimeout(() => document.body.classList.remove('is-glitching'), 500);
+  });
+
+  // ==========================================
+  // 3. KONAMI CODE DETECTOR (↑↑↓↓←→←→BA)
+  // ==========================================
+  const konamiSeq = [
+    'ArrowUp',
+    'ArrowUp',
+    'ArrowDown',
+    'ArrowDown',
+    'ArrowLeft',
+    'ArrowRight',
+    'ArrowLeft',
+    'ArrowRight',
+    'b',
+    'a',
+  ];
+  let konamiIdx = 0;
+
+  document.addEventListener('keydown', (e) => {
+    const key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+    if (key === konamiSeq[konamiIdx]) {
+      konamiIdx++;
+      if (konamiIdx === konamiSeq.length) {
+        konamiIdx = 0;
+        launchFireworks();
+        window.dispatchEvent(new CustomEvent('portfolio:toggle-matrix'));
+        window.dispatchEvent(
+          new CustomEvent('portfolio:toast', {
+            detail: { message: '🚀 KONAMI GOD MODE UNLOCKED! Sudo Hire Gus Adi!' },
+          })
+        );
+      }
+    } else {
+      konamiIdx = key === konamiSeq[0] ? 1 : 0;
+    }
+  });
+
+  // ==========================================
+  // 4. CURSOR-TRACKING CYBER COMPANION BOT
+  // ==========================================
+  const botBtn = document.getElementById('cyber-bot-btn');
+  const eyeL = document.getElementById('bot-eye-l');
+  const eyeR = document.getElementById('bot-eye-r');
+  const botBubble = document.getElementById('bot-speech-bubble');
+  const botSpeechText = document.getElementById('bot-speech-text');
+  const botHideBtn = document.getElementById('bot-hide-btn');
+
+  const botQuotesId = [
+    '💡 Tip: Tekan ⌘K (atau Ctrl+K) buat buka Command Center super cepat!',
+    '🐍 Sudah lihat ular makan kontribusi hijau di section 05.GitHub belum?',
+    '🎮 Easter Egg: Coba ketik Konami Code (↑ ↑ ↓ ↓ ← → ← → B A) di keyboard!',
+    '🔊 Klik ikon SFX di navbar atas kalau mau dengar suara mechanical switch!',
+    '🧪 Di section Proyek, kamu bisa ngetik 2 kalimat sendiri buat tes kemiripan NLP!',
+    '☕ git commit -m "feat: nambahin fitur random biar makin keren"',
+    '🌀 Ketik "barrel" atau "party" di tab 4:shell Hero buat kejutan!',
+  ];
+
+  const botQuotesEn = [
+    '💡 Tip: Press ⌘K (or Ctrl+K) to launch the searchable Command Center!',
+    '🐍 Have you watched the snake eat green contributions in 05.GitHub?',
+    '🎮 Secret: Try typing the Konami Code (↑ ↑ ↓ ↓ ← → ← → B A) on your keyboard!',
+    '🔊 Toggle SFX in the top navbar for crisp mechanical keyboard synth sounds!',
+    '🧪 Test real-time Cosine Similarity with your own text in 03.Projects!',
+    '☕ git commit -m "feat: ship cool interactive details"',
+    '🌀 Type "barrel" or "party" in the Hero 4:shell tab for a surprise!',
+  ];
+
+  let quoteIdx = 0;
+  let bubbleTimeout: number | null = null;
+
+  if (!reducedMotion) {
+    document.addEventListener(
+      'mousemove',
+      (e) => {
+        if (!botBtn || !eyeL || !eyeR) return;
+        const rect = botBtn.getBoundingClientRect();
+        const cx = rect.left + rect.width / 2;
+        const cy = rect.top + rect.height / 2;
+        const angle = Math.atan2(e.clientY - cy, e.clientX - cx);
+        const dist = Math.min(3.2, Math.hypot(e.clientX - cx, e.clientY - cy) / 40);
+        const tx = (Math.cos(angle) * dist).toFixed(1);
+        const ty = (Math.sin(angle) * dist).toFixed(1);
+        eyeL.style.transform = `translate(${tx}px, ${ty}px)`;
+        eyeR.style.transform = `translate(${tx}px, ${ty}px)`;
+      },
+      { passive: true }
+    );
+  }
+
+  botBtn?.addEventListener('click', () => {
+    const isEn = document.documentElement.getAttribute('lang') === 'en';
+    const list = isEn ? botQuotesEn : botQuotesId;
+    const text = list[quoteIdx % list.length];
+    quoteIdx++;
+
+    if (botSpeechText) botSpeechText.textContent = text;
+    botBubble?.classList.remove('hidden');
+
+    botBtn.style.transform = 'translateY(-8px) rotate(-6deg)';
+    setTimeout(() => {
+      botBtn.style.transform = '';
+    }, 220);
+
+    if (quoteIdx % 5 === 0) {
+      launchFireworks();
+    }
+
+    if (bubbleTimeout) clearTimeout(bubbleTimeout);
+    bubbleTimeout = window.setTimeout(() => {
+      botBubble?.classList.add('hidden');
+    }, 6500);
+  });
+
+  botHideBtn?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    botBubble?.classList.add('hidden');
+  });
+
+  // ==========================================
+  // 5. TAB VISIBILITY TITLE EASTER EGG
+  // ==========================================
+  const originalTitle = document.title;
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      document.title = '⚡ System Idle — ~/gusadi';
+    } else {
+      document.title = '🚀 Welcome Back! — Gus Adi';
+      setTimeout(() => {
+        document.title = originalTitle;
+      }, 1800);
+    }
+  });
+</script>

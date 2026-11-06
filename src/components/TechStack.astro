@@ -1,0 +1,194 @@
+---
+import SectionHeader from './SectionHeader.astro';
+import { techCategories } from '../data/profile';
+import { translations } from '../data/i18n';
+import { Code2, Layout, Server, Database, Wrench, Terminal } from 'lucide-astro';
+
+const categoryIcons = {
+  languages: Code2,
+  frontend: Layout,
+  backend: Server,
+  database: Database,
+  tools: Wrench,
+};
+---
+
+<section id="stack" class="w-full py-16 sm:py-24 border-b border-[var(--border-subtle)]">
+  <div class="w-full max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-14 space-y-8">
+    <SectionHeader
+      index="02"
+      title={{ id: 'ARSENAL TEKNOLOGI', en: 'TECH STACK ARSENAL' }}
+      path={translations.id.stack.filePath}
+    />
+
+    <!-- Interactive Filter Toolbar -->
+    <div class="reveal-on-scroll flex flex-col sm:flex-row sm:items-center justify-between gap-4 bento-card p-4 font-mono text-xs select-none">
+      <div class="flex items-center gap-2 text-[var(--text-secondary)]">
+        <span class="w-2 h-2 rounded-full bg-[var(--accent-primary)]"></span>
+        <span data-lang="id">Filter berdasarkan tingkat penggunaan teknologi:</span>
+        <span data-lang="en">Filter by technology usage level:</span>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2" role="group" aria-label="Filter technologies by proficiency level">
+        <button
+          type="button"
+          id="stack-wave-btn"
+          class="rounded-xl px-3.5 py-2 bg-[var(--bg-base)] border border-[var(--border-focus)] text-[var(--accent-secondary)] hover:bg-[var(--accent-secondary)] hover:text-[#05070b] font-bold cursor-pointer transition-all"
+        >
+          ⚡ Wave Pulse
+        </button>
+        <button
+          type="button"
+          data-stack-filter="all"
+          class="stack-filter-btn rounded-xl px-4 py-2 bg-[var(--accent-primary)] text-[#05070b] font-bold cursor-pointer transition-all"
+        >
+          <span data-lang="id">{translations.id.stack.filterAll}</span>
+          <span data-lang="en">{translations.en.stack.filterAll}</span>
+        </button>
+        <button
+          type="button"
+          data-stack-filter="core"
+          class="stack-filter-btn rounded-xl px-4 py-2 bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer transition-all"
+        >
+          <span data-lang="id">{translations.id.stack.filterCore}</span>
+          <span data-lang="en">{translations.en.stack.filterCore}</span>
+        </button>
+        <button
+          type="button"
+          data-stack-filter="exploring"
+          class="stack-filter-btn rounded-xl px-4 py-2 bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer transition-all"
+        >
+          <span data-lang="id">{translations.id.stack.filterExploring}</span>
+          <span data-lang="en">{translations.en.stack.filterExploring}</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Widescreen Bento Grid for Tech Categories -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {techCategories.map((category, idx) => {
+        const IconComponent = categoryIcons[category.key] || Terminal;
+        return (
+          <div
+            data-tilt
+            class="reveal-on-scroll bento-card p-6 flex flex-col justify-between group"
+            style={`--stagger: ${idx};`}
+          >
+            <div>
+              <!-- Category Header -->
+              <div class="flex items-center justify-between pb-4 mb-5 border-b border-[var(--border-subtle)]">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] group-hover:border-[var(--accent-primary)] flex items-center justify-center text-[var(--accent-primary)] transition-transform group-hover:scale-110">
+                    <IconComponent size={18} />
+                  </div>
+                  <div>
+                    <h3 class="font-display text-base sm:text-lg font-bold text-[var(--text-primary)]">
+                      <span data-lang="id">{category.title.id}</span>
+                      <span data-lang="en">{category.title.en}</span>
+                    </h3>
+                    <span class="font-mono text-[10px] text-[var(--text-muted)] uppercase tracking-wider">
+                      module.0{idx + 1}
+                    </span>
+                  </div>
+                </div>
+                <span class="font-mono text-xs font-bold text-[var(--accent-secondary)] bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-lg px-2.5 py-1">
+                  {category.items.length}
+                </span>
+              </div>
+
+              <!-- Tech Chips -->
+              <div class="flex flex-wrap gap-2.5">
+                {category.items.map((item) => (
+                  <div
+                    data-tech-level={item.level}
+                    class="tech-chip rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)]/90 hover:border-[var(--accent-primary)] px-3.5 py-2 font-mono text-xs sm:text-[13px] flex items-center gap-2 select-none transition-all hover:-translate-y-1 hover:shadow-[0_6px_20px_var(--accent-glow)]"
+                  >
+                    <span
+                      class:list={[
+                        "w-2 h-2 rounded-full shrink-0",
+                        item.level === 'core' ? "bg-[var(--status-ok)] shadow-[0_0_8px_var(--status-ok)]" : "bg-[var(--status-warn)]"
+                      ]}
+                      aria-hidden="true"
+                    ></span>
+                    <span class="text-[var(--text-primary)] font-medium">{item.name}</span>
+                    <span
+                      class:list={[
+                        "text-[10px] px-1.5 py-0.5 rounded bg-[var(--bg-surface)]",
+                        item.level === 'core' ? "text-[var(--status-ok)]" : "text-[var(--status-warn)]"
+                      ]}
+                    >
+                      {item.level}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+
+    <!-- Legend -->
+    <div class="reveal-on-scroll font-mono text-xs text-[var(--text-muted)] flex flex-wrap items-center gap-6 pt-2">
+      <div class="flex items-center gap-2">
+        <span class="inline-block w-2.5 h-2.5 rounded-full bg-[var(--status-ok)]"></span>
+        <span class="text-[var(--status-ok)] font-bold">core</span>
+        <span data-lang="id">= teknologi utama yang rutin digunakan</span>
+        <span data-lang="en">= primary technology actively used</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="inline-block w-2.5 h-2.5 rounded-full bg-[var(--status-warn)]"></span>
+        <span class="text-[var(--status-warn)] font-bold">exploring</span>
+        <span data-lang="id">= sedang dipelajari / dieksplorasi</span>
+        <span data-lang="en">= actively learning / exploring</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  const filterBtns = document.querySelectorAll<HTMLButtonElement>('.stack-filter-btn');
+  const chips = document.querySelectorAll<HTMLElement>('.tech-chip');
+
+  filterBtns.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const filter = btn.getAttribute('data-stack-filter') || 'all';
+
+      filterBtns.forEach((b) => {
+        if (b === btn) {
+          b.classList.add('bg-[var(--accent-primary)]', 'text-[#05070b]', 'font-bold');
+          b.classList.remove('bg-[var(--bg-elevated)]', 'border', 'border-[var(--border-subtle)]', 'text-[var(--text-secondary)]');
+        } else {
+          b.classList.remove('bg-[var(--accent-primary)]', 'text-[#05070b]', 'font-bold');
+          b.classList.add('bg-[var(--bg-elevated)]', 'border', 'border-[var(--border-subtle)]', 'text-[var(--text-secondary)]');
+        }
+      });
+
+      chips.forEach((chip) => {
+        const level = chip.getAttribute('data-tech-level');
+        if (filter === 'all' || level === filter) {
+          chip.style.opacity = '1';
+          chip.style.transform = 'scale(1)';
+          chip.style.pointerEvents = 'auto';
+        } else {
+          chip.style.opacity = '0.2';
+          chip.style.transform = 'scale(0.94)';
+          chip.style.pointerEvents = 'none';
+        }
+      });
+    });
+  });
+
+  function triggerTechWave() {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    chips.forEach((chip, i) => {
+      chip.classList.remove('is-scanning');
+      setTimeout(() => {
+        chip.classList.add('is-scanning');
+        setTimeout(() => chip.classList.remove('is-scanning'), 560);
+      }, i * 55);
+    });
+  }
+
+  document.getElementById('stack-wave-btn')?.addEventListener('click', triggerTechWave);
+</script>

@@ -1,0 +1,610 @@
+---
+import { profile } from '../data/profile';
+import { translations } from '../data/i18n';
+---
+
+<section id="hero" class="w-full min-h-[calc(100vh-4.5rem)] flex flex-col justify-between relative overflow-hidden pt-6 sm:pt-12">
+  <!-- Main Widescreen Hero Grid -->
+  <div class="w-full max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-14 my-auto py-8 lg:py-12">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
+      <!-- Left Column: Giant Kinetic Typography & CTAs (7 cols) -->
+      <div class="lg:col-span-7 flex flex-col gap-6">
+        <!-- Status Pill -->
+        <div
+          class="reveal-on-scroll inline-flex items-center gap-2.5 font-mono text-xs text-[var(--status-ok)] bg-[var(--bg-surface)]/90 border border-[var(--border-focus)] rounded-full px-4 py-1.5 w-fit shadow-[0_0_25px_var(--accent-glow)] select-none"
+          style="--stagger: 0;"
+        >
+          <span class="relative flex h-2.5 w-2.5" aria-hidden="true">
+            <span class="animate-pulse-ring absolute inline-flex h-full w-full rounded-full bg-[var(--status-ok)]"></span>
+            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-[var(--status-ok)]"></span>
+          </span>
+          <span data-lang="id" class="font-medium tracking-wide">{profile.availabilityStatus.id}</span>
+          <span data-lang="en" class="font-medium tracking-wide">{profile.availabilityStatus.en}</span>
+        </div>
+
+        <!-- Display Headline -->
+        <div class="reveal-on-scroll space-y-3" style="--stagger: 1;">
+          <div class="font-mono text-xs sm:text-sm text-[var(--accent-secondary)] flex items-center gap-2 select-none">
+            <span>~/workspace/portfolio</span>
+            <span class="text-[var(--text-muted)]">/</span>
+            <span class="text-[var(--accent-primary)]">$ init --fullscreen</span>
+          </div>
+
+          <h1
+            id="hero-name-heading"
+            data-original={profile.name}
+            class="font-display text-5xl sm:text-6xl lg:text-7xl xl:text-[80px] font-bold tracking-tight leading-[1.02] text-gradient-accent cursor-default w-fit"
+          >
+            {profile.name}
+          </h1>
+
+          <!-- Animated Multi-Phrase Typewriter Role Line -->
+          <div class="font-display text-lg sm:text-2xl font-semibold text-[var(--text-primary)] flex items-center gap-2 pt-1 min-h-[2.25rem]">
+            <span class="text-[var(--accent-primary)] font-mono">&gt;</span>
+            <span id="hero-typewriter-text">
+              <span data-lang="id">{profile.role.id}</span>
+              <span data-lang="en">{profile.role.en}</span>
+            </span>
+            <span class="inline-block w-2.5 h-5 bg-[var(--accent-primary)] animate-cursor" aria-hidden="true"></span>
+          </div>
+        </div>
+
+        <!-- Bio Headline -->
+        <p
+          class="reveal-on-scroll text-base sm:text-lg leading-relaxed text-[var(--text-secondary)] max-w-2xl font-sans"
+          style="--stagger: 2;"
+        >
+          <span data-lang="id">{profile.headline.id}</span>
+          <span data-lang="en">{profile.headline.en}</span>
+        </p>
+
+        <!-- CTA Buttons (Magnetic + Kinetic) -->
+        <div
+          class="reveal-on-scroll flex flex-wrap items-center gap-4 pt-2 font-mono text-xs sm:text-sm"
+          style="--stagger: 3;"
+        >
+          <a
+            href="#projects"
+            class="magnetic-btn kinetic-btn bg-[var(--accent-primary)] text-[#05070b] font-bold px-6 py-3.5 shadow-[0_0_30px_var(--accent-glow)] hover:shadow-[0_0_40px_var(--accent-primary)] inline-flex items-center gap-2"
+          >
+            <span data-lang="id">🚀 Lihat Proyek Utama</span>
+            <span data-lang="en">🚀 Explore Projects</span>
+            <span>→</span>
+          </a>
+
+          <a
+            href="#contact"
+            class="magnetic-btn kinetic-btn border border-[var(--border-subtle)] bg-[var(--bg-surface)] hover:border-[var(--accent-secondary)] text-[var(--text-primary)] px-6 py-3.5 inline-flex items-center gap-2"
+          >
+            <span data-lang="id">✉ Hubungi Saya</span>
+            <span data-lang="en">✉ Get In Touch</span>
+          </a>
+
+          {profile.cvUrl.id || profile.cvUrl.en ? (
+            <a
+              href={profile.cvUrl.en || profile.cvUrl.id}
+              download
+              class="magnetic-btn kinetic-btn border border-[var(--border-subtle)] bg-[var(--bg-elevated)] hover:border-[var(--accent-primary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] px-5 py-3.5"
+            >
+              <span data-lang="id">{translations.id.hero.downloadCv}</span>
+              <span data-lang="en">{translations.en.hero.downloadCv}</span>
+            </a>
+          ) : (
+            <span
+              class="rounded-xl border border-[var(--border-subtle)] border-dashed bg-[var(--bg-surface)]/50 text-[var(--text-muted)] px-4 py-3.5 cursor-not-allowed select-none text-xs"
+              title="CV sedang dipersiapkan"
+            >
+              <span data-lang="id">{translations.id.hero.cvUnavailable}</span>
+              <span data-lang="en">{translations.en.hero.cvUnavailable}</span>
+            </span>
+          )}
+        </div>
+
+        <!-- Quick Architecture Metrics Row -->
+        <div
+          class="reveal-on-scroll grid grid-cols-3 gap-3 sm:gap-4 pt-4 max-w-xl"
+          style="--stagger: 4;"
+        >
+          <div class="bento-card p-3.5">
+            <div class="font-display text-xl sm:text-2xl font-bold text-[var(--accent-primary)]">05</div>
+            <div class="font-mono text-[11px] text-[var(--text-secondary)] mt-0.5">
+              <span data-lang="id">Kategori Tech</span>
+              <span data-lang="en">Tech Domains</span>
+            </div>
+          </div>
+          <div class="bento-card p-3.5">
+            <div class="font-display text-xl sm:text-2xl font-bold text-[var(--accent-secondary)]">02</div>
+            <div class="font-mono text-[11px] text-[var(--text-secondary)] mt-0.5">
+              <span data-lang="id">Proyek Pilihan</span>
+              <span data-lang="en">Featured Systems</span>
+            </div>
+          </div>
+          <div class="bento-card p-3.5">
+            <div class="font-display text-xl sm:text-2xl font-bold text-[var(--accent-tertiary)]">ID/EN</div>
+            <div class="font-mono text-[11px] text-[var(--text-secondary)] mt-0.5">
+              <span data-lang="id">Bilingual UI</span>
+              <span data-lang="en">Bilingual UI</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: 3D Tilt Interactive Command & Telemetry Deck (5 cols) -->
+      <div class="lg:col-span-5 reveal-on-scroll" style="--stagger: 2;">
+        <div
+          data-tilt
+          class="bento-card animate-float border border-[var(--border-focus)] bg-[var(--bg-surface)]/95 shadow-2xl p-1"
+        >
+          <div class="rounded-xl bg-[var(--bg-base)]/90 border border-[var(--border-subtle)] overflow-hidden font-mono text-xs select-none">
+            <!-- Top Window Bar + Interactive Tabs -->
+            <div class="px-4 py-3 bg-[var(--bg-elevated)] border-b border-[var(--border-subtle)] flex items-center justify-between gap-2">
+              <div class="flex items-center gap-1.5">
+                <span class="w-2.5 h-2.5 rounded-full bg-[var(--status-ok)]"></span>
+                <span class="w-2.5 h-2.5 rounded-full bg-[var(--accent-secondary)]"></span>
+                <span class="w-2.5 h-2.5 rounded-full bg-[var(--accent-tertiary)]"></span>
+              </div>
+
+              <div class="flex items-center gap-1 bg-[var(--bg-base)] p-1 rounded-lg border border-[var(--border-subtle)]" role="tablist" aria-label="System terminal tabs">
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected="true"
+                  data-hero-tab="sys"
+                  class="hero-tab-btn px-2.5 py-1 rounded-md bg-[var(--accent-primary)] text-[#05070b] font-bold cursor-pointer transition-all text-[11px]"
+                >
+                  {translations.id.hero.tabSys}
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected="false"
+                  data-hero-tab="focus"
+                  class="hero-tab-btn px-2.5 py-1 rounded-md text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer transition-all text-[11px]"
+                >
+                  {translations.id.hero.tabFocus}
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected="false"
+                  data-hero-tab="ping"
+                  class="hero-tab-btn px-2.5 py-1 rounded-md text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer transition-all text-[11px]"
+                >
+                  {translations.id.hero.tabPing}
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected="false"
+                  data-hero-tab="shell"
+                  class="hero-tab-btn px-2.5 py-1 rounded-md text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer transition-all text-[11px]"
+                >
+                  4:shell
+                </button>
+              </div>
+            </div>
+
+            <!-- TAB 1: System Telemetry -->
+            <div id="hero-panel-sys" class="p-5 sm:p-6 space-y-4 min-h-[280px] flex flex-col justify-between">
+              <div class="flex items-center justify-between border-b border-[var(--border-subtle)] pb-3">
+                <div>
+                  <div class="text-[var(--accent-primary)] font-bold text-sm">{translations.id.hero.sysInfo.title}</div>
+                  <div class="text-[11px] text-[var(--text-muted)]">Astro v5 // Static Edge Runtime</div>
+                </div>
+                <!-- Rotating Geometric Core SVG -->
+                <div class="w-11 h-11 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] flex items-center justify-center">
+                  <svg class="w-6 h-6 text-[var(--accent-primary)] animate-spin-slow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+                    <polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2"></polygon>
+                    <circle cx="12" cy="12" r="3"></circle>
+                  </svg>
+                </div>
+              </div>
+
+              <div class="space-y-2.5 text-xs">
+                <div class="animate-boot-line flex items-center justify-between py-1 border-b border-[var(--border-subtle)]/50" style="animation-delay: 50ms;">
+                  <span class="text-[var(--text-muted)]">runtime.os</span>
+                  <span class="text-[var(--text-primary)] font-medium">{translations.id.hero.sysInfo.os}</span>
+                </div>
+                <div class="animate-boot-line flex items-center justify-between py-1 border-b border-[var(--border-subtle)]/50" style="animation-delay: 110ms;">
+                  <span class="text-[var(--text-muted)]">eng.focus</span>
+                  <span class="text-[var(--accent-secondary)] font-medium">{translations.id.hero.sysInfo.focus}</span>
+                </div>
+                <div class="animate-boot-line flex items-center justify-between py-1 border-b border-[var(--border-subtle)]/50" style="animation-delay: 170ms;">
+                  <span class="text-[var(--text-muted)]">academic</span>
+                  <span class="text-[var(--text-primary)] font-medium">
+                    <span data-lang="id">{translations.id.hero.sysInfo.edu}</span>
+                    <span data-lang="en">{translations.en.hero.sysInfo.edu}</span>
+                  </span>
+                </div>
+                <div class="animate-boot-line flex items-center justify-between py-1 border-b border-[var(--border-subtle)]/50" style="animation-delay: 230ms;">
+                  <span class="text-[var(--text-muted)]">location</span>
+                  <span class="text-[var(--text-primary)] font-medium">{translations.id.hero.sysInfo.loc}</span>
+                </div>
+                <div class="animate-boot-line flex items-center justify-between py-1" style="animation-delay: 290ms;">
+                  <span class="text-[var(--text-muted)]">languages</span>
+                  <span class="text-[var(--accent-primary)] font-medium">{translations.id.hero.sysInfo.shell}</span>
+                </div>
+              </div>
+
+              <div class="pt-3 border-t border-[var(--border-subtle)] flex items-center justify-between text-[11px] text-[var(--text-muted)]">
+                <div class="flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-[var(--status-ok)] animate-pulse"></span>
+                  <span>uptime: <strong id="hero-uptime-counter" class="text-[var(--text-primary)]">00:00:01</strong></span>
+                </div>
+                <span class="text-[var(--accent-primary)]">READY</span>
+              </div>
+            </div>
+
+            <!-- TAB 2: Focus Domain Meters -->
+            <div id="hero-panel-focus" class="hidden p-5 sm:p-6 space-y-4 min-h-[280px] flex flex-col justify-between">
+              <div class="space-y-4">
+                <div class="text-[var(--accent-secondary)] font-bold border-b border-[var(--border-subtle)] pb-2">
+                  $ telemetry --focus-domains
+                </div>
+
+                <div class="space-y-1.5">
+                  <div class="flex justify-between text-xs">
+                    <span class="text-[var(--text-primary)] font-medium">{translations.id.hero.focusAreas.arch}</span>
+                    <span class="text-[var(--accent-primary)]">[core]</span>
+                  </div>
+                  <div class="w-full h-2 rounded-full bg-[var(--bg-elevated)] overflow-hidden">
+                    <div class="h-full w-[90%] rounded-full bg-gradient-to-r from-[var(--accent-primary)] to-[var(--accent-secondary)]"></div>
+                  </div>
+                </div>
+
+                <div class="space-y-1.5">
+                  <div class="flex justify-between text-xs">
+                    <span class="text-[var(--text-primary)] font-medium">{translations.id.hero.focusAreas.backend}</span>
+                    <span class="text-[var(--accent-primary)]">[core]</span>
+                  </div>
+                  <div class="w-full h-2 rounded-full bg-[var(--bg-elevated)] overflow-hidden">
+                    <div class="h-full w-[84%] rounded-full bg-gradient-to-r from-[var(--accent-secondary)] to-[var(--accent-tertiary)]"></div>
+                  </div>
+                </div>
+
+                <div class="space-y-1.5">
+                  <div class="flex justify-between text-xs">
+                    <span class="text-[var(--text-primary)] font-medium">{translations.id.hero.focusAreas.textMining}</span>
+                    <span class="text-[var(--status-warn)]">[exploring]</span>
+                  </div>
+                  <div class="w-full h-2 rounded-full bg-[var(--bg-elevated)] overflow-hidden">
+                    <div class="h-full w-[76%] rounded-full bg-gradient-to-r from-[var(--accent-tertiary)] to-[var(--accent-primary)]"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="pt-3 border-t border-[var(--border-subtle)] text-[11px] text-[var(--text-muted)] flex justify-between">
+                <span>threads: 3 active</span>
+                <span class="text-[var(--status-ok)]">OPTIMAL</span>
+              </div>
+            </div>
+
+            <!-- TAB 3: Network Ping Diagnostic -->
+            <div id="hero-panel-ping" class="hidden p-5 sm:p-6 space-y-4 min-h-[280px] flex flex-col justify-between">
+              <div class="space-y-2.5 text-xs" id="hero-ping-log">
+                <div class="text-[var(--accent-primary)] font-bold pb-2 border-b border-[var(--border-subtle)] flex items-center justify-between">
+                  <span>$ ping -c 3 gusadi.workspace</span>
+                  <button
+                    type="button"
+                    id="hero-ping-rerun"
+                    class="px-2 py-0.5 rounded bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[10px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer"
+                  >
+                    <span data-lang="id">{translations.id.hero.runDiagnostic}</span>
+                    <span data-lang="en">{translations.en.hero.runDiagnostic}</span>
+                  </button>
+                </div>
+                <div class="ping-line text-[var(--text-secondary)]">64 bytes from edge-node-01: icmp_seq=1 time=3.4 ms</div>
+                <div class="ping-line text-[var(--text-secondary)]">64 bytes from edge-node-01: icmp_seq=2 time=3.1 ms</div>
+                <div class="ping-line text-[var(--text-secondary)]">64 bytes from edge-node-01: icmp_seq=3 time=3.2 ms</div>
+                <div class="ping-line text-[var(--status-ok)] font-semibold pt-2">
+                  ✓ <span data-lang="id">{translations.id.hero.pingStatus}</span><span data-lang="en">{translations.en.hero.pingStatus}</span>
+                </div>
+              </div>
+
+              <div class="pt-3 border-t border-[var(--border-subtle)] text-[11px] text-[var(--text-muted)] flex justify-between">
+                <span>rtt avg = 3.2 ms</span>
+                <span class="text-[var(--status-ok)]">ONLINE</span>
+              </div>
+            </div>
+
+            <!-- TAB 4: Interactive Mini CLI Shell -->
+            <div id="hero-panel-shell" class="hidden p-5 sm:p-6 space-y-3 min-h-[280px] flex flex-col justify-between">
+              <div class="space-y-2">
+                <div class="flex items-center justify-between border-b border-[var(--border-subtle)] pb-2">
+                  <span class="text-[var(--accent-secondary)] font-bold">gusadi@workspace:~$</span>
+                  <div class="flex flex-wrap gap-1">
+                    <button type="button" data-shell-cmd="whoami" class="shell-preset-btn px-2 py-0.5 rounded bg-[var(--bg-elevated)] border border-[var(--border-subtle)] hover:border-[var(--accent-primary)] text-[10px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer">whoami</button>
+                    <button type="button" data-shell-cmd="party" class="shell-preset-btn px-2 py-0.5 rounded bg-[var(--bg-elevated)] border border-[var(--border-subtle)] hover:border-[var(--accent-primary)] text-[10px] text-[var(--accent-primary)] cursor-pointer">party</button>
+                    <button type="button" data-shell-cmd="barrel" class="shell-preset-btn px-2 py-0.5 rounded bg-[var(--bg-elevated)] border border-[var(--border-subtle)] hover:border-[var(--accent-primary)] text-[10px] text-[var(--accent-secondary)] cursor-pointer">barrel</button>
+                    <button type="button" data-shell-cmd="matrix" class="shell-preset-btn px-2 py-0.5 rounded bg-[var(--bg-elevated)] border border-[var(--border-subtle)] hover:border-[var(--accent-primary)] text-[10px] text-[var(--accent-tertiary)] cursor-pointer">matrix</button>
+                    <button type="button" data-shell-cmd="serpent" class="shell-preset-btn px-2 py-0.5 rounded bg-[var(--bg-elevated)] border border-[var(--border-subtle)] hover:border-[var(--accent-primary)] text-[10px] text-[var(--accent-primary)] cursor-pointer">serpent</button>
+                    <button type="button" data-shell-cmd="clear" class="shell-preset-btn px-2 py-0.5 rounded bg-[var(--bg-elevated)] border border-[var(--border-subtle)] hover:border-[var(--accent-primary)] text-[10px] text-[var(--text-muted)] cursor-pointer">clear</button>
+                  </div>
+                </div>
+
+                <div id="hero-shell-output" class="space-y-1.5 text-[11px] max-h-[155px] overflow-y-auto pr-1">
+                  <div class="text-[var(--text-muted)]">// Interactive zsh session. Click a command above or type below:</div>
+                  <div class="text-[var(--status-ok)]">&gt; Ready. Try: help, whoami, stack, matrix, snake</div>
+                </div>
+              </div>
+
+              <form id="hero-shell-form" class="pt-2 border-t border-[var(--border-subtle)] flex items-center gap-2">
+                <span class="text-[var(--accent-primary)] font-bold">$</span>
+                <input
+                  id="hero-shell-input"
+                  type="text"
+                  placeholder="type command (help, stack, matrix)..."
+                  autocomplete="off"
+                  class="w-full bg-transparent text-xs text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none"
+                />
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Full-Screen Infinite Scrolling Velocity Marquee Ribbon -->
+  <div class="w-full border-y border-[var(--border-subtle)] bg-[var(--bg-surface)]/80 backdrop-blur-md py-3.5 overflow-hidden select-none mt-6">
+    <div class="animate-marquee flex items-center gap-8 font-display text-xs sm:text-sm font-bold tracking-wider uppercase text-[var(--text-secondary)]">
+      <span class="flex items-center gap-3"><span class="text-[var(--accent-primary)]">✦</span> SOFTWARE ENGINEERING</span>
+      <span class="flex items-center gap-3"><span class="text-[var(--accent-secondary)]">✦</span> BACKEND ARCHITECTURE</span>
+      <span class="flex items-center gap-3"><span class="text-[var(--accent-tertiary)]">✦</span> TEXT PROCESSING &amp; NLP</span>
+      <span class="flex items-center gap-3"><span class="text-[var(--accent-primary)]">✦</span> ASTRO &amp; TYPESCRIPT</span>
+      <span class="flex items-center gap-3"><span class="text-[var(--accent-secondary)]">✦</span> APPLIED SYSTEMS</span>
+      <span class="flex items-center gap-3"><span class="text-[var(--accent-tertiary)]">✦</span> CLEAN ARCHITECTURE</span>
+      <!-- Duplicate for seamless infinite loop -->
+      <span class="flex items-center gap-3" aria-hidden="true"><span class="text-[var(--accent-primary)]">✦</span> SOFTWARE ENGINEERING</span>
+      <span class="flex items-center gap-3" aria-hidden="true"><span class="text-[var(--accent-secondary)]">✦</span> BACKEND ARCHITECTURE</span>
+      <span class="flex items-center gap-3" aria-hidden="true"><span class="text-[var(--accent-tertiary)]">✦</span> TEXT PROCESSING &amp; NLP</span>
+      <span class="flex items-center gap-3" aria-hidden="true"><span class="text-[var(--accent-primary)]">✦</span> ASTRO &amp; TYPESCRIPT</span>
+      <span class="flex items-center gap-3" aria-hidden="true"><span class="text-[var(--accent-secondary)]">✦</span> APPLIED SYSTEMS</span>
+      <span class="flex items-center gap-3" aria-hidden="true"><span class="text-[var(--accent-tertiary)]">✦</span> CLEAN ARCHITECTURE</span>
+    </div>
+  </div>
+</section>
+
+<script>
+  // 1. Live Session Uptime Counter
+  const uptimeEl = document.getElementById('hero-uptime-counter');
+  let seconds = 1;
+  setInterval(() => {
+    seconds++;
+    if (uptimeEl) {
+      const hrs = String(Math.floor(seconds / 3600)).padStart(2, '0');
+      const mins = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0');
+      const secs = String(seconds % 60).padStart(2, '0');
+      uptimeEl.textContent = `${hrs}:${mins}:${secs}`;
+    }
+  }, 1000);
+
+  // 2. Hero Terminal Tabs Switching
+  const tabBtns = document.querySelectorAll<HTMLButtonElement>('.hero-tab-btn');
+  const panels: Record<string, HTMLElement | null> = {
+    sys: document.getElementById('hero-panel-sys'),
+    focus: document.getElementById('hero-panel-focus'),
+    ping: document.getElementById('hero-panel-ping'),
+    shell: document.getElementById('hero-panel-shell'),
+  };
+
+  function runPingAnimation() {
+    const lines = document.querySelectorAll<HTMLElement>('#hero-ping-log .ping-line');
+    lines.forEach((line, i) => {
+      line.classList.remove('animate-boot-line');
+      void line.offsetWidth;
+      line.style.animationDelay = `${i * 110}ms`;
+      line.classList.add('animate-boot-line');
+    });
+  }
+
+  tabBtns.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const target = btn.getAttribute('data-hero-tab');
+      if (!target) return;
+
+      tabBtns.forEach((b) => {
+        const isCurrent = b === btn;
+        b.setAttribute('aria-selected', isCurrent ? 'true' : 'false');
+        if (isCurrent) {
+          b.classList.add('bg-[var(--accent-primary)]', 'text-[#05070b]', 'font-bold');
+          b.classList.remove('text-[var(--text-secondary)]');
+        } else {
+          b.classList.remove('bg-[var(--accent-primary)]', 'text-[#05070b]', 'font-bold');
+          b.classList.add('text-[var(--text-secondary)]');
+        }
+      });
+
+      Object.entries(panels).forEach(([key, panel]) => {
+        if (!panel) return;
+        if (key === target) {
+          panel.classList.remove('hidden');
+          if (key === 'ping') runPingAnimation();
+          if (key === 'shell') {
+            document.getElementById('hero-shell-input')?.focus();
+          }
+        } else {
+          panel.classList.add('hidden');
+        }
+      });
+    });
+  });
+
+  document.getElementById('hero-ping-rerun')?.addEventListener('click', runPingAnimation);
+
+  // 3. Interactive Mini CLI Shell
+  const shellOutput = document.getElementById('hero-shell-output');
+  const shellForm = document.getElementById('hero-shell-form') as HTMLFormElement | null;
+  const shellInput = document.getElementById('hero-shell-input') as HTMLInputElement | null;
+
+  function execShellCommand(rawCmd: string) {
+    const cmd = rawCmd.trim().toLowerCase();
+    if (!cmd || !shellOutput) return;
+
+    if (cmd === 'clear') {
+      shellOutput.innerHTML = '<div class="text-[var(--text-muted)]">// Console cleared.</div>';
+      return;
+    }
+
+    const promptLine = document.createElement('div');
+    promptLine.className = 'text-[var(--accent-primary)] font-semibold';
+    promptLine.textContent = `$ ${cmd}`;
+    shellOutput.appendChild(promptLine);
+
+    const resLine = document.createElement('div');
+    resLine.className = 'text-[var(--text-secondary)] animate-boot-line pl-2';
+
+    if (cmd === 'help') {
+      resLine.textContent = 'Commands: whoami, stack, projects, game, ular, serpent, snake, party, barrel, glitch, matrix, joke, clear';
+    } else if (cmd === 'game' || cmd === 'arcade') {
+      window.dispatchEvent(new CustomEvent('portfolio:open-arcade'));
+      resLine.className = 'text-[var(--accent-primary)] font-bold animate-boot-line pl-2';
+      resLine.textContent = '🕹️ Launching Cyber Mini-Game Arcade...';
+    } else if (cmd === 'ular' || cmd === 'cyber-snake') {
+      window.dispatchEvent(new CustomEvent('portfolio:open-arcade', { detail: { tab: 'snake' } }));
+      resLine.className = 'text-[var(--accent-primary)] font-bold animate-boot-line pl-2';
+      resLine.textContent = '🐍 Launching Playable Cyber Snake in Arcade...';
+    } else if (cmd === 'serpent') {
+      window.dispatchEvent(new CustomEvent('portfolio:toggle-serpent'));
+      resLine.className = 'text-[var(--accent-primary)] font-bold animate-boot-line pl-2';
+      resLine.textContent = '🐍 Background Neon Cyber-Serpents toggled!';
+    } else if (cmd === 'whoami') {
+      resLine.textContent = 'Gus Adi — Informatics Student & Software Developer (Web, Backend, NLP)';
+    } else if (cmd === 'stack') {
+      resLine.textContent = 'Core: TypeScript, JS, Python, Astro, Tailwind, Node.js, PostgreSQL, Git';
+    } else if (cmd === 'projects') {
+      resLine.textContent = '01: Document Similarity Detection System | 02: Web & Backend Apps';
+    } else if (cmd === 'party' || cmd.startsWith('sudo hire')) {
+      window.dispatchEvent(new CustomEvent('portfolio:fireworks'));
+      resLine.className = 'text-[var(--status-ok)] font-bold animate-boot-line pl-2';
+      resLine.textContent = '🎉 Fireworks launched! Ready to build awesome software together!';
+    } else if (cmd === 'barrel') {
+      window.dispatchEvent(new CustomEvent('portfolio:barrel-roll'));
+      resLine.className = 'text-[var(--accent-secondary)] font-bold animate-boot-line pl-2';
+      resLine.textContent = '🌀 Executing 360° Cyber Barrel Roll...';
+    } else if (cmd === 'glitch') {
+      window.dispatchEvent(new CustomEvent('portfolio:glitch'));
+      resLine.textContent = '⚡ RGB Chromatic Glitch triggered!';
+    } else if (cmd === 'joke') {
+      const jokes = [
+        'Why do programmers prefer dark mode? Because light attracts bugs.',
+        'There are 10 types of people: those who understand binary, and those who do not.',
+        'git push --force: turning team projects into solo projects since 2005.',
+      ];
+      resLine.textContent = jokes[Math.floor(Math.random() * jokes.length)];
+    } else if (cmd === 'matrix') {
+      window.dispatchEvent(new CustomEvent('portfolio:toggle-matrix'));
+      resLine.className = 'text-[var(--accent-tertiary)] font-bold animate-boot-line pl-2';
+      resLine.textContent = '⚡ Matrix Cyber Rain toggled on background canvas!';
+    } else if (cmd === 'snake') {
+      document.getElementById('github')?.scrollIntoView({ behavior: 'smooth' });
+      resLine.textContent = '🐍 Jumping to GitHub Contribution Snake Matrix...';
+    } else {
+      resLine.textContent = `zsh: command not found: ${cmd}. Type "help".`;
+    }
+
+    shellOutput.appendChild(resLine);
+    shellOutput.scrollTop = shellOutput.scrollHeight;
+  }
+
+  shellForm?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (!shellInput) return;
+    execShellCommand(shellInput.value);
+    shellInput.value = '';
+  });
+
+  document.querySelectorAll<HTMLButtonElement>('.shell-preset-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const cmd = btn.getAttribute('data-shell-cmd');
+      if (cmd) execShellCommand(cmd);
+    });
+  });
+
+  // 4. Multi-Phrase Typewriter & Backspace Loop on Role Line
+  const typewriterEl = document.getElementById('hero-typewriter-text');
+  const phrasesId = [
+    'Mahasiswa Informatika & Pengembang Perangkat Lunak',
+    'Rekayasa Sistem Web & Arsitektur Backend',
+    'Eksplorasi Pemrosesan Teks & Kemiripan Dokumen',
+  ];
+  const phrasesEn = [
+    'Informatics Student & Software Developer',
+    'Web Systems & Backend Architecture Builder',
+    'Text Processing & Document Similarity Explorer',
+  ];
+
+  if (typewriterEl && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    let phraseIdx = 0;
+    let charIdx = 0;
+    let isDeleting = false;
+
+    function tickTypewriter() {
+      if (!typewriterEl) return;
+      const isEn = document.documentElement.getAttribute('lang') === 'en';
+      const list = isEn ? phrasesEn : phrasesId;
+      const fullText = list[phraseIdx % list.length];
+
+      if (!isDeleting) {
+        charIdx++;
+        typewriterEl.textContent = fullText.slice(0, charIdx);
+        if (charIdx >= fullText.length) {
+          isDeleting = true;
+          setTimeout(tickTypewriter, 2200);
+          return;
+        }
+        setTimeout(tickTypewriter, 45);
+      } else {
+        charIdx--;
+        typewriterEl.textContent = fullText.slice(0, charIdx);
+        if (charIdx <= 0) {
+          isDeleting = false;
+          phraseIdx = (phraseIdx + 1) % list.length;
+          setTimeout(tickTypewriter, 320);
+          return;
+        }
+        setTimeout(tickTypewriter, 24);
+      }
+    }
+
+    setTimeout(() => {
+      const isEn = document.documentElement.getAttribute('lang') === 'en';
+      charIdx = (isEn ? phrasesEn[0] : phrasesId[0]).length;
+      isDeleting = true;
+      tickTypewriter();
+    }, 2800);
+  }
+
+  // 3. Text Scramble on Hero Name Hover
+  const nameHeading = document.getElementById('hero-name-heading');
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_/#';
+  let scrambleTimer: number | null = null;
+
+  function scrambleText(el: HTMLElement) {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const original = el.getAttribute('data-original') || 'Gus Adi';
+    let iteration = 0;
+    if (scrambleTimer) clearInterval(scrambleTimer);
+
+    scrambleTimer = window.setInterval(() => {
+      el.textContent = original
+        .split('')
+        .map((letter, index) => {
+          if (letter === ' ') return ' ';
+          if (index < iteration) return original[index];
+          return chars[Math.floor(Math.random() * chars.length)];
+        })
+        .join('');
+
+      if (iteration >= original.length) {
+        if (scrambleTimer) clearInterval(scrambleTimer);
+        el.textContent = original;
+      }
+      iteration += 1 / 2;
+    }, 30);
+  }
+
+  nameHeading?.addEventListener('mouseenter', () => {
+    if (nameHeading) scrambleText(nameHeading);
+  });
+</script>

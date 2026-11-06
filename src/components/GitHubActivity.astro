@@ -1,0 +1,736 @@
+---
+import SectionHeader from './SectionHeader.astro';
+import { profile } from '../data/profile';
+import { translations } from '../data/i18n';
+---
+
+<section id="github" class="w-full py-16 sm:py-24 border-b border-[var(--border-subtle)]">
+  <div class="w-full max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-14 space-y-8">
+    <SectionHeader
+      index="05"
+      title={{ id: 'AKTIVITAS GITHUB', en: 'GITHUB TELEMETRY' }}
+      path={translations.id.github.filePath}
+    />
+
+    <!-- Public Stats Metrics Bento Grid -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-5 font-mono text-xs">
+      <div data-tilt class="reveal-on-scroll bento-card p-6" style="--stagger: 0;">
+        <div class="text-[var(--text-muted)] text-xs mb-2 flex items-center justify-between">
+          <span>
+            <span data-lang="id">{translations.id.github.statsRepos}</span>
+            <span data-lang="en">{translations.en.github.statsRepos}</span>
+          </span>
+          <span class="text-[var(--accent-primary)] font-bold">01</span>
+        </div>
+        <div id="github-stat-repos" class="font-display text-3xl sm:text-4xl font-bold text-[var(--text-primary)]">
+          --
+        </div>
+      </div>
+
+      <div data-tilt class="reveal-on-scroll bento-card p-6" style="--stagger: 1;">
+        <div class="text-[var(--text-muted)] text-xs mb-2 flex items-center justify-between">
+          <span>
+            <span data-lang="id">{translations.id.github.statsFollowers}</span>
+            <span data-lang="en">{translations.en.github.statsFollowers}</span>
+          </span>
+          <span class="text-[var(--accent-secondary)] font-bold">02</span>
+        </div>
+        <div id="github-stat-followers" class="font-display text-3xl sm:text-4xl font-bold text-[var(--text-primary)]">
+          --
+        </div>
+      </div>
+
+      <div data-tilt class="reveal-on-scroll bento-card p-6" style="--stagger: 2;">
+        <div class="text-[var(--text-muted)] text-xs mb-2 flex items-center justify-between">
+          <span>
+            <span data-lang="id">{translations.id.github.statsGists}</span>
+            <span data-lang="en">{translations.en.github.statsGists}</span>
+          </span>
+          <span class="text-[var(--accent-tertiary)] font-bold">03</span>
+        </div>
+        <div id="github-stat-gists" class="font-display text-3xl sm:text-4xl font-bold text-[var(--text-primary)]">
+          --
+        </div>
+      </div>
+
+      <div data-tilt class="reveal-on-scroll bento-card p-6 flex flex-col justify-between" style="--stagger: 3;">
+        <div class="text-[var(--text-muted)] text-xs mb-2 flex items-center justify-between">
+          <span>GitHub Profile</span>
+          <span class="w-2 h-2 rounded-full bg-[var(--status-ok)] animate-pulse"></span>
+        </div>
+        <a
+          href={`https://github.com/${profile.githubUsername}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="font-display text-lg sm:text-xl font-bold text-[var(--accent-primary)] hover:underline truncate"
+        >
+          @{profile.githubUsername} ↗
+        </a>
+      </div>
+    </div>
+
+    <!-- Contribution Matrix Panel with Snake Animation -->
+    <div class="reveal-on-scroll bento-card p-6 sm:p-8 font-mono text-xs select-none" style="--stagger: 2;">
+      <div class="flex flex-wrap items-center justify-between gap-3 pb-4 mb-5 border-b border-[var(--border-subtle)]">
+        <div>
+          <div class="flex items-center gap-2.5">
+            <h3 class="font-display text-lg sm:text-xl font-bold text-[var(--text-primary)]">
+              <span data-lang="id">{translations.id.github.calendarTitle}</span>
+              <span data-lang="en">{translations.en.github.calendarTitle}</span>
+            </h3>
+            <span class="px-2 py-0.5 rounded-full bg-[var(--bg-elevated)] border border-[var(--border-focus)] text-[10px] text-[var(--accent-secondary)] font-bold">
+              🐍 SNAKE_MODE
+            </span>
+          </div>
+          <p class="text-[var(--text-secondary)] text-xs mt-0.5">
+            <span data-lang="id">{translations.id.github.calendarSub}</span>
+            <span data-lang="en">{translations.en.github.calendarSub}</span>
+          </p>
+        </div>
+
+        <!-- Right Controls: Hover Info, Snake Score, Toggle & Reset -->
+        <div class="flex flex-wrap items-center gap-2">
+          <span id="calendar-hover-info" class="text-xs text-[var(--accent-secondary)] hidden md:inline font-semibold mr-1"></span>
+
+          <!-- Snake Eaten Counter -->
+          <span
+            id="snake-score-badge"
+            class="hidden rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] px-3 py-1.5 text-[11px] text-[var(--accent-primary)] font-bold"
+          >
+            🐍 0 / 0
+          </span>
+
+          <!-- Snake Pause / Play Toggle -->
+          <button
+            type="button"
+            id="snake-toggle-btn"
+            class="hidden rounded-xl bg-[var(--accent-primary)] text-[#05070b] font-bold px-3 py-1.5 text-[11px] cursor-pointer transition-all hover:opacity-90"
+            aria-label="Toggle contribution snake animation"
+          >
+            <span id="snake-toggle-label">🐍 PAUSE</span>
+          </button>
+
+          <!-- Snake Reset Button -->
+          <button
+            type="button"
+            id="snake-reset-btn"
+            class="hidden rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] hover:border-[var(--accent-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] px-2.5 py-1.5 text-[11px] cursor-pointer transition-all"
+            title="Reset eaten contributions"
+          >
+            ↻ Reset
+          </button>
+
+          <span id="calendar-total-count" class="text-[var(--accent-primary)] font-bold text-xs bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-xl px-3.5 py-1.5"></span>
+        </div>
+      </div>
+
+      <!-- Loading State -->
+      <div id="calendar-loading" class="py-10 text-center text-[var(--text-muted)] text-xs">
+        <span data-lang="id">{translations.id.github.calendarLoading}</span>
+        <span data-lang="en">{translations.en.github.calendarLoading}</span>
+      </div>
+
+      <!-- Error / Fallback State -->
+      <div id="calendar-fallback" class="hidden py-8 text-center space-y-3">
+        <div class="text-[var(--status-warn)] text-xs">
+          <span data-lang="id">{translations.id.github.calendarError}</span>
+          <span data-lang="en">{translations.en.github.calendarError}</span>
+        </div>
+        <div>
+          <a
+            href={`https://github.com/${profile.githubUsername}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="kinetic-btn inline-flex items-center gap-2 bg-[var(--bg-elevated)] border border-[var(--border-focus)] text-[var(--accent-primary)] px-4 py-2 text-xs font-bold"
+          >
+            <span data-lang="id">{translations.id.github.openGithub}</span>
+            <span data-lang="en">{translations.en.github.openGithub}</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Heatmap Grid Container -->
+      <div
+        id="calendar-container"
+        class="hidden overflow-x-auto pb-2"
+        role="region"
+        aria-label="GitHub contribution heatmap for the past 12 months"
+      >
+        <div id="calendar-matrix" class="flex justify-between gap-[4px] min-w-[740px] py-2">
+          <!-- Weeks generated by script -->
+        </div>
+
+        <!-- Legend -->
+        <div class="flex flex-wrap items-center justify-between gap-2 pt-5 mt-2 border-t border-[var(--border-subtle)] text-[11px] text-[var(--text-muted)]">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-[3px] bg-[var(--accent-secondary)] shadow-[0_0_8px_var(--accent-secondary)]"></span>
+            <span data-lang="id">Ular otomatis memakan kotak kontribusi hijau</span>
+            <span data-lang="en">Snake automatically eats green contribution blocks</span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <span>
+              <span data-lang="id">{translations.id.github.less}</span>
+              <span data-lang="en">{translations.en.github.less}</span>
+            </span>
+            <span class="w-3 h-3 rounded-[3px] bg-[var(--bg-elevated)] border border-[var(--border-subtle)]"></span>
+            <span class="w-3 h-3 rounded-[3px] bg-[var(--gh-lvl-1)]"></span>
+            <span class="w-3 h-3 rounded-[3px] bg-[var(--gh-lvl-2)]"></span>
+            <span class="w-3 h-3 rounded-[3px] bg-[var(--gh-lvl-3)]"></span>
+            <span class="w-3 h-3 rounded-[3px] bg-[var(--gh-lvl-4)]"></span>
+            <span>
+              <span data-lang="id">{translations.id.github.more}</span>
+              <span data-lang="en">{translations.en.github.more}</span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Live Recently Updated Public Repositories Feed -->
+    <div class="reveal-on-scroll space-y-4 font-mono text-xs" style="--stagger: 3;">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <h3 class="font-display text-lg sm:text-xl font-bold text-[var(--text-primary)]">
+            <span data-lang="id">{translations.id.github.recentReposTitle}</span>
+            <span data-lang="en">{translations.en.github.recentReposTitle}</span>
+          </h3>
+          <p class="text-[var(--text-secondary)] text-xs">
+            <span data-lang="id">{translations.id.github.recentReposSub}</span>
+            <span data-lang="en">{translations.en.github.recentReposSub}</span>
+          </p>
+        </div>
+        <a
+          href={`https://github.com/${profile.githubUsername}?tab=repositories`}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="text-[var(--accent-primary)] hover:underline font-bold"
+        >
+          git log --repos ↗
+        </a>
+      </div>
+
+      <div id="github-repos-grid" class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div class="bento-card p-5 text-[var(--text-muted)] md:col-span-2 text-center">
+          <span data-lang="id">{translations.id.github.reposEmpty}</span>
+          <span data-lang="en">{translations.en.github.reposEmpty}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script define:vars={{ username: profile.githubUsername }}>
+  const CACHE_TTL_MS = 60 * 60 * 1000;
+  const STATS_CACHE_KEY = `gh_stats_v1_${username}`;
+  const CONTRIB_CACHE_KEY = `gh_contrib_v1_${username}`;
+  const REPOS_CACHE_KEY = `gh_repos_v1_${username}`;
+
+  function readCache(key) {
+    try {
+      const raw = localStorage.getItem(key);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      if (!parsed || typeof parsed.ts !== 'number') return null;
+      if (Date.now() - parsed.ts > CACHE_TTL_MS) return null;
+      return parsed.data;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function writeCache(key, data) {
+    try {
+      localStorage.setItem(key, JSON.stringify({ ts: Date.now(), data }));
+    } catch (_) {}
+  }
+
+  async function fetchWithTimeout(url, timeoutMs = 8000) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const res = await fetch(url, { signal: controller.signal });
+      return res;
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  function animateCount(el, targetValue) {
+    if (!el) return;
+    const target = Number(targetValue);
+    if (Number.isNaN(target) || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      el.textContent = String(targetValue ?? '0');
+      return;
+    }
+    const duration = 700;
+    const startTime = performance.now();
+    function tick(now) {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      el.textContent = String(Math.round(target * eased));
+      if (progress < 1) {
+        requestAnimationFrame(tick);
+      } else {
+        el.textContent = String(target);
+      }
+    }
+    requestAnimationFrame(tick);
+  }
+
+  function renderUserStats(data) {
+    const repoEl = document.getElementById('github-stat-repos');
+    const followersEl = document.getElementById('github-stat-followers');
+    const gistsEl = document.getElementById('github-stat-gists');
+
+    animateCount(repoEl, data.public_repos ?? 0);
+    animateCount(followersEl, data.followers ?? 0);
+    animateCount(gistsEl, data.public_gists ?? 0);
+  }
+
+  async function fetchUserStats() {
+    const cached = readCache(STATS_CACHE_KEY);
+    if (cached) {
+      renderUserStats(cached);
+      return;
+    }
+
+    try {
+      const res = await fetchWithTimeout(`https://api.github.com/users/${username}`);
+      if (!res.ok) return;
+      const data = await res.json();
+      const subset = {
+        public_repos: data.public_repos ?? 0,
+        followers: data.followers ?? 0,
+        public_gists: data.public_gists ?? 0,
+      };
+      writeCache(STATS_CACHE_KEY, subset);
+      renderUserStats(subset);
+    } catch (_) {}
+  }
+
+  // ==========================================
+  // GITHUB CONTRIBUTION SNAKE ENGINE
+  // ==========================================
+  let snakeInterval = null;
+  let snakeRunning = false;
+  let gridCells = []; // gridCells[col][row] = HTMLElement
+  let foodCoords = new Set(); // "col,row"
+  let initialFoodCoords = []; // array of [col, row]
+  let snakeSegments = []; // array of [col, row], index 0 is head
+  let maxSnakeLength = 7;
+  let eatenCount = 0;
+  let totalFoodCount = 0;
+
+  const SNAKE_CLASSES = ['snake-head', 'snake-body-1', 'snake-body-2', 'snake-body-3', 'snake-tail'];
+
+  function updateSnakeScoreUI() {
+    const scoreBadge = document.getElementById('snake-score-badge');
+    if (scoreBadge) {
+      scoreBadge.textContent = `🐍 ${eatenCount} / ${totalFoodCount}`;
+    }
+  }
+
+  function clearSnakeClasses() {
+    for (let c = 0; c < gridCells.length; c++) {
+      for (let r = 0; r < (gridCells[c]?.length || 0); r++) {
+        const el = gridCells[c][r];
+        if (el) el.classList.remove(...SNAKE_CLASSES);
+      }
+    }
+  }
+
+  function drawSnake() {
+    clearSnakeClasses();
+    snakeSegments.forEach(([c, r], idx) => {
+      const cell = gridCells[c]?.[r];
+      if (!cell) return;
+      if (idx === 0) {
+        cell.classList.add('snake-head');
+      } else if (idx === 1) {
+        cell.classList.add('snake-body-1');
+      } else if (idx === 2) {
+        cell.classList.add('snake-body-2');
+      } else if (idx <= 4) {
+        cell.classList.add('snake-body-3');
+      } else {
+        cell.classList.add('snake-tail');
+      }
+    });
+  }
+
+  function resetFoodAndSnake() {
+    foodCoords.clear();
+    initialFoodCoords.forEach(([c, r]) => {
+      foodCoords.add(`${c},${r}`);
+      const cell = gridCells[c]?.[r];
+      if (cell) cell.classList.remove('is-eaten');
+    });
+    eatenCount = 0;
+    totalFoodCount = initialFoodCoords.length;
+    maxSnakeLength = 7;
+    snakeSegments = [
+      [0, 0],
+      [0, 1],
+      [0, 2],
+    ];
+    updateSnakeScoreUI();
+    drawSnake();
+  }
+
+  function findNextTarget(headC, headR) {
+    if (foodCoords.size === 0) return null;
+    let bestTarget = null;
+    let bestScore = Infinity;
+
+    foodCoords.forEach((key) => {
+      const [fc, fr] = key.split(',').map(Number);
+      // Slight bias toward sweeping left-to-right like GitHub's snake, while picking nearby food
+      const dist = Math.abs(fc - headC) + Math.abs(fr - headR);
+      const score = dist + fc * 0.15;
+      if (score < bestScore) {
+        bestScore = score;
+        bestTarget = [fc, fr];
+      }
+    });
+
+    return bestTarget;
+  }
+
+  function stepSnake() {
+    if (!gridCells.length) return;
+
+    // If all food is eaten, reset board and continue
+    if (foodCoords.size === 0 && totalFoodCount > 0) {
+      resetFoodAndSnake();
+      return;
+    }
+
+    const [headC, headR] = snakeSegments[0];
+    const target = findNextTarget(headC, headR) || [
+      Math.floor(Math.random() * gridCells.length),
+      Math.floor(Math.random() * 7),
+    ];
+
+    const dirs = [
+      [1, 0],
+      [-1, 0],
+      [0, 1],
+      [0, -1],
+    ];
+
+    const bodySet = new Set(snakeSegments.slice(0, -1).map(([c, r]) => `${c},${r}`));
+
+    const validMoves = [];
+    for (const [dc, dr] of dirs) {
+      const nc = headC + dc;
+      const nr = headR + dr;
+      if (nc >= 0 && nc < gridCells.length && nr >= 0 && nr < (gridCells[nc]?.length || 0)) {
+        const inBody = bodySet.has(`${nc},${nr}`);
+        const dist = Math.abs(target[0] - nc) + Math.abs(target[1] - nr);
+        validMoves.push({ nc, nr, inBody, dist });
+      }
+    }
+
+    if (!validMoves.length) return;
+
+    // Sort: prefer moves not in body, then shortest distance to target
+    validMoves.sort((a, b) => {
+      if (a.inBody !== b.inBody) return a.inBody ? 1 : -1;
+      return a.dist - b.dist;
+    });
+
+    // If multiple moves have same best distance, add tiny randomness to avoid loops
+    const bestMove = validMoves[0];
+    const nextCoord = [bestMove.nc, bestMove.nr];
+    const nextKey = `${bestMove.nc},${bestMove.nr}`;
+
+    snakeSegments.unshift(nextCoord);
+
+    // Check if snake ate a contribution cell
+    if (foodCoords.has(nextKey)) {
+      foodCoords.delete(nextKey);
+      eatenCount++;
+      if (maxSnakeLength < 11 && eatenCount % 4 === 0) {
+        maxSnakeLength++;
+      }
+      const eatenCell = gridCells[bestMove.nc]?.[bestMove.nr];
+      if (eatenCell) {
+        eatenCell.classList.add('is-eaten');
+      }
+      updateSnakeScoreUI();
+    }
+
+    while (snakeSegments.length > maxSnakeLength) {
+      snakeSegments.pop();
+    }
+
+    drawSnake();
+  }
+
+  function startSnake() {
+    if (snakeInterval) clearInterval(snakeInterval);
+    snakeRunning = true;
+    snakeInterval = setInterval(stepSnake, 75);
+    const toggleBtn = document.getElementById('snake-toggle-btn');
+    const toggleLabel = document.getElementById('snake-toggle-label');
+    if (toggleLabel) toggleLabel.textContent = '🐍 PAUSE';
+    toggleBtn?.classList.add('bg-[var(--accent-primary)]', 'text-[#05070b]');
+    toggleBtn?.classList.remove('bg-[var(--bg-elevated)]', 'text-[var(--text-primary)]');
+  }
+
+  function pauseSnake() {
+    if (snakeInterval) clearInterval(snakeInterval);
+    snakeInterval = null;
+    snakeRunning = false;
+    const toggleBtn = document.getElementById('snake-toggle-btn');
+    const toggleLabel = document.getElementById('snake-toggle-label');
+    if (toggleLabel) toggleLabel.textContent = '🐍 PLAY';
+    toggleBtn?.classList.remove('bg-[var(--accent-primary)]', 'text-[#05070b]');
+    toggleBtn?.classList.add('bg-[var(--bg-elevated)]', 'text-[var(--text-primary)]', 'border', 'border-[var(--border-focus)]');
+  }
+
+  function initSnakeGame() {
+    const scoreBadge = document.getElementById('snake-score-badge');
+    const toggleBtn = document.getElementById('snake-toggle-btn');
+    const resetBtn = document.getElementById('snake-reset-btn');
+
+    scoreBadge?.classList.remove('hidden');
+    toggleBtn?.classList.remove('hidden');
+    resetBtn?.classList.remove('hidden');
+
+    resetFoodAndSnake();
+
+    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      startSnake();
+    } else {
+      pauseSnake();
+    }
+
+    toggleBtn?.addEventListener('click', () => {
+      if (snakeRunning) {
+        pauseSnake();
+      } else {
+        startSnake();
+      }
+    });
+
+    resetBtn?.addEventListener('click', () => {
+      resetFoodAndSnake();
+      if (!snakeRunning) startSnake();
+    });
+  }
+
+  function renderContributions(data) {
+    const loadingEl = document.getElementById('calendar-loading');
+    const containerEl = document.getElementById('calendar-container');
+    const matrixEl = document.getElementById('calendar-matrix');
+    const totalCountEl = document.getElementById('calendar-total-count');
+    const hoverInfoEl = document.getElementById('calendar-hover-info');
+
+    const contributions = data.contributions || [];
+    if (!contributions.length) throw new Error('Empty contributions');
+
+    if (totalCountEl && data.total?.lastYear !== undefined) {
+      totalCountEl.textContent = `${data.total.lastYear} contributions`;
+    }
+
+    const weeks = [];
+    let currentWeek = [];
+
+    contributions.forEach((day, index) => {
+      currentWeek.push(day);
+      if (currentWeek.length === 7 || index === contributions.length - 1) {
+        weeks.push(currentWeek);
+        currentWeek = [];
+      }
+    });
+
+    const levelClasses = [
+      'bg-[var(--bg-elevated)] border border-[var(--border-subtle)]',
+      'bg-[var(--gh-lvl-1)]',
+      'bg-[var(--gh-lvl-2)]',
+      'bg-[var(--gh-lvl-3)]',
+      'bg-[var(--gh-lvl-4)]',
+    ];
+
+    if (matrixEl) {
+      initialFoodCoords = [];
+
+      matrixEl.innerHTML = weeks
+        .map((week, wIdx) => {
+          const daysHtml = week
+            .map((d, dIdx) => {
+              const lvl = Math.min(Math.max(Number(d.level) || 0, 0), 4);
+              const colorClass = levelClasses[lvl];
+              const safeDate = String(d.date || '').replace(/[^0-9-]/g, '');
+              const safeCount = Number(d.count) || 0;
+              if (lvl > 0) {
+                initialFoodCoords.push([wIdx, dIdx]);
+              }
+              return `<div class="gh-cell w-3 h-3 ${colorClass}" data-col="${wIdx}" data-row="${dIdx}" data-level="${lvl}" data-date="${safeDate}" data-count="${safeCount}" title="${safeDate}: ${safeCount} contributions"></div>`;
+            })
+            .join('');
+          return `<div class="flex flex-col gap-[4px] animate-boot-line" style="animation-delay: ${wIdx * 8}ms;">${daysHtml}</div>`;
+        })
+        .join('');
+
+      // Populate 2D gridCells array
+      gridCells = weeks.map(() => []);
+      matrixEl.querySelectorAll('.gh-cell').forEach((cell) => {
+        const c = Number(cell.getAttribute('data-col'));
+        const r = Number(cell.getAttribute('data-row'));
+        if (!Number.isNaN(c) && !Number.isNaN(r)) {
+          gridCells[c][r] = cell;
+        }
+
+        cell.addEventListener('mouseenter', () => {
+          const dt = cell.getAttribute('data-date');
+          const cnt = cell.getAttribute('data-count');
+          if (hoverInfoEl && dt) {
+            hoverInfoEl.textContent = `${dt} — ${cnt} contributions`;
+          }
+        });
+      });
+
+      matrixEl.addEventListener('mouseleave', () => {
+        if (hoverInfoEl) hoverInfoEl.textContent = '';
+      });
+
+      initSnakeGame();
+    }
+
+    loadingEl?.classList.add('hidden');
+    containerEl?.classList.remove('hidden');
+  }
+
+  async function fetchContributions() {
+    const loadingEl = document.getElementById('calendar-loading');
+    const fallbackEl = document.getElementById('calendar-fallback');
+
+    const cached = readCache(CONTRIB_CACHE_KEY);
+    if (cached) {
+      try {
+        renderContributions(cached);
+        return;
+      } catch (_) {}
+    }
+
+    try {
+      const res = await fetchWithTimeout(
+        `https://github-contributions-api.jogruber.de/v4/${username}?y=last`
+      );
+      if (!res.ok) throw new Error('API failed');
+
+      const data = await res.json();
+      renderContributions(data);
+      writeCache(CONTRIB_CACHE_KEY, data);
+    } catch (_) {
+      loadingEl?.classList.add('hidden');
+      fallbackEl?.classList.remove('hidden');
+    }
+  }
+
+  function renderRecentRepos(repos) {
+    const gridEl = document.getElementById('github-repos-grid');
+    if (!gridEl || !Array.isArray(repos) || repos.length === 0) return;
+
+    gridEl.innerHTML = '';
+
+    repos.slice(0, 4).forEach((repo) => {
+      const card = document.createElement('a');
+      card.href = String(repo.html_url || `https://github.com/${username}`);
+      card.target = '_blank';
+      card.rel = 'noopener noreferrer';
+      card.className =
+        'bento-card p-5 flex flex-col justify-between gap-4 group hover:-translate-y-1 transition-all';
+
+      const topDiv = document.createElement('div');
+      topDiv.className = 'space-y-2';
+
+      const headerRow = document.createElement('div');
+      headerRow.className = 'flex items-center justify-between gap-2';
+
+      const nameSpan = document.createElement('span');
+      nameSpan.className =
+        'font-display text-base font-bold text-[var(--text-primary)] group-hover:text-[var(--accent-primary)] truncate transition-colors';
+      nameSpan.textContent = repo.name || 'repository';
+
+      const arrowSpan = document.createElement('span');
+      arrowSpan.className = 'text-[var(--accent-secondary)] text-xs shrink-0';
+      arrowSpan.textContent = '↗';
+
+      headerRow.appendChild(nameSpan);
+      headerRow.appendChild(arrowSpan);
+
+      const descP = document.createElement('p');
+      descP.className = 'font-sans text-xs text-[var(--text-secondary)] line-clamp-2 leading-relaxed';
+      descP.textContent = repo.description || 'Public repository on GitHub.';
+
+      topDiv.appendChild(headerRow);
+      topDiv.appendChild(descP);
+
+      const metaRow = document.createElement('div');
+      metaRow.className =
+        'flex items-center justify-between pt-3 border-t border-[var(--border-subtle)] text-[11px] text-[var(--text-muted)]';
+
+      const langWrap = document.createElement('span');
+      langWrap.className = 'flex items-center gap-1.5 text-[var(--accent-primary)] font-medium';
+      const dot = document.createElement('span');
+      dot.className = 'w-2 h-2 rounded-full bg-[var(--accent-primary)]';
+      const langText = document.createElement('span');
+      langText.textContent = repo.language || 'Code';
+      langWrap.appendChild(dot);
+      langWrap.appendChild(langText);
+
+      const statsWrap = document.createElement('span');
+      const stars = Number(repo.stargazers_count) || 0;
+      const forks = Number(repo.forks_count) || 0;
+      const updatedDate = repo.pushed_at ? String(repo.pushed_at).slice(0, 10) : '';
+      statsWrap.textContent = `★ ${stars} · ⑂ ${forks}${updatedDate ? ` · ${updatedDate}` : ''}`;
+
+      metaRow.appendChild(langWrap);
+      metaRow.appendChild(statsWrap);
+
+      card.appendChild(topDiv);
+      card.appendChild(metaRow);
+      gridEl.appendChild(card);
+    });
+  }
+
+  async function fetchRecentRepos() {
+    const cached = readCache(REPOS_CACHE_KEY);
+    if (cached) {
+      renderRecentRepos(cached);
+      return;
+    }
+
+    try {
+      const res = await fetchWithTimeout(
+        `https://api.github.com/users/${username}/repos?sort=updated&per_page=4`
+      );
+      if (!res.ok) return;
+      const data = await res.json();
+      if (!Array.isArray(data)) return;
+      const cleanRepos = data
+        .filter((r) => !r.fork)
+        .slice(0, 4)
+        .map((r) => ({
+          name: r.name,
+          html_url: r.html_url,
+          description: r.description,
+          language: r.language,
+          stargazers_count: r.stargazers_count,
+          forks_count: r.forks_count,
+          pushed_at: r.pushed_at,
+        }));
+      const listToSave = cleanRepos.length > 0 ? cleanRepos : data.slice(0, 4);
+      writeCache(REPOS_CACHE_KEY, listToSave);
+      renderRecentRepos(listToSave);
+    } catch (_) {}
+  }
+
+  fetchUserStats();
+  fetchContributions();
+  fetchRecentRepos();
+</script>

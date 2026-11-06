@@ -1,0 +1,397 @@
+---
+import { translations } from '../data/i18n';
+import { experiences } from '../data/profile';
+const hasExperience = experiences.length > 0;
+---
+
+<header class="sticky top-0 z-40 w-full px-4 sm:px-8 lg:px-14 pt-3 pb-2 select-none">
+  <div class="mx-auto max-w-[1440px] h-14 glass-pill rounded-2xl px-4 sm:px-6 flex items-center justify-between shadow-lg">
+    <!-- Left: Brand Identity -->
+    <a
+      href="#hero"
+      class="flex items-center gap-2.5 text-[var(--text-primary)] hover:text-[var(--accent-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] rounded-lg px-1 py-0.5 transition-colors group"
+    >
+      <span class="w-8 h-8 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] group-hover:border-[var(--accent-primary)] flex items-center justify-center font-display font-bold text-sm text-[var(--accent-primary)] transition-all group-hover:scale-105">
+        GA
+      </span>
+      <div class="flex flex-col">
+        <span class="font-display font-bold text-sm tracking-tight leading-none">Gus Adi</span>
+        <span class="font-mono text-[10px] text-[var(--text-muted)] leading-tight mt-0.5">~/developer</span>
+      </div>
+    </a>
+
+    <!-- Center: Desktop Floating Pill Nav -->
+    <nav
+      class="hidden lg:flex items-center gap-1 bg-[var(--bg-elevated)]/80 border border-[var(--border-subtle)] rounded-xl p-1 font-mono text-xs text-[var(--text-secondary)]"
+      aria-label="Main Navigation"
+    >
+      <a
+        href="#about"
+        data-nav-section="about"
+        class="nav-anchor rounded-lg px-3 py-1.5 hover:text-[var(--text-primary)] transition-all"
+      >
+        <span data-lang="id">01.Tentang</span>
+        <span data-lang="en">01.About</span>
+      </a>
+      <a
+        href="#stack"
+        data-nav-section="stack"
+        class="nav-anchor rounded-lg px-3 py-1.5 hover:text-[var(--text-primary)] transition-all"
+      >
+        <span data-lang="id">02.Stack</span>
+        <span data-lang="en">02.Stack</span>
+      </a>
+      <a
+        href="#projects"
+        data-nav-section="projects"
+        class="nav-anchor rounded-lg px-3 py-1.5 hover:text-[var(--text-primary)] transition-all"
+      >
+        <span data-lang="id">03.Proyek</span>
+        <span data-lang="en">03.Projects</span>
+      </a>
+      {hasExperience && (
+      <a
+        href="#experience"
+        data-nav-section="experience"
+        class="nav-anchor rounded-lg px-3 py-1.5 hover:text-[var(--text-primary)] transition-all"
+      >
+        <span data-lang="id">04.Riwayat</span>
+        <span data-lang="en">04.Timeline</span>
+      </a>
+      )}
+      <a
+        href="#github"
+        data-nav-section="github"
+        class="nav-anchor rounded-lg px-3 py-1.5 hover:text-[var(--text-primary)] transition-all"
+      >
+        <span data-lang="id">05.GitHub</span>
+        <span data-lang="en">05.GitHub</span>
+      </a>
+      <a
+        href="#contact"
+        data-nav-section="contact"
+        class="nav-anchor rounded-lg px-3 py-1.5 hover:text-[var(--text-primary)] transition-all"
+      >
+        <span data-lang="id">06.Kontak</span>
+        <span data-lang="en">06.Contact</span>
+      </a>
+    </nav>
+
+    <!-- Right: Command Palette + Language + Theme + Mobile Toggle -->
+    <div class="flex items-center gap-2 font-mono text-xs">
+      <!-- Command Palette Trigger -->
+      <button
+        type="button"
+        id="nav-cmd-btn"
+        class="hidden sm:inline-flex items-center gap-1.5 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] hover:border-[var(--accent-primary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] px-2.5 py-1.5 cursor-pointer transition-all"
+        aria-label="Open Command Palette"
+        title="Command Palette (⌘K / Ctrl+K)"
+      >
+        <span class="text-[var(--accent-primary)]">⌘K</span>
+      </button>
+
+      <!-- Cyber Arcade Trigger -->
+      <button
+        type="button"
+        id="nav-arcade-btn"
+        class="hidden md:inline-flex items-center gap-1 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] hover:border-[var(--accent-primary)] text-[var(--accent-primary)] px-2.5 py-1.5 cursor-pointer transition-all font-bold"
+        aria-label="Open Cyber Mini-Game Arcade"
+        title="Play Mini-Games! (Shortcut: G)"
+      >
+        <span>🎮</span>
+      </button>
+
+      <!-- Web Audio Mechanical Synth SFX Toggle -->
+      <button
+        type="button"
+        id="nav-sfx-btn"
+        class="hidden sm:inline-flex items-center gap-1 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] hover:border-[var(--accent-secondary)] text-[var(--text-muted)] hover:text-[var(--text-primary)] px-2.5 py-1.5 cursor-pointer transition-all"
+        aria-label="Toggle UI Sound Effects"
+        title="Toggle Mechanical Keyboard & UI Sound Effects (Shortcut: S)"
+      >
+        <span id="nav-sfx-label">🔇 SFX</span>
+      </button>
+
+      <!-- Language Switcher -->
+      <button
+        type="button"
+        id="lang-toggle-btn"
+        class="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] hover:border-[var(--accent-primary)] px-2.5 py-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] cursor-pointer transition-all"
+        aria-label="Toggle language between Indonesian and English"
+      >
+        <span id="lang-indicator-id" class="text-[var(--accent-primary)] font-bold">ID</span>
+        <span class="text-[var(--text-muted)] mx-0.5">/</span>
+        <span id="lang-indicator-en" class="text-[var(--text-muted)]">EN</span>
+      </button>
+
+      <!-- Theme Switcher -->
+      <button
+        type="button"
+        id="theme-toggle-btn"
+        class="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] hover:border-[var(--accent-primary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] px-3 py-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] cursor-pointer transition-all"
+        aria-label="Toggle dark and light theme"
+      >
+        <span id="theme-label-dark">☾ DARK</span>
+        <span id="theme-label-light" class="hidden">☀ LIGHT</span>
+      </button>
+
+      <!-- Mobile Menu Toggle Button -->
+      <button
+        type="button"
+        id="mobile-menu-btn"
+        class="lg:hidden rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] text-[var(--text-primary)] px-3 py-1.5 cursor-pointer"
+        aria-expanded="false"
+        aria-controls="mobile-menu"
+        aria-label="Toggle navigation menu"
+      >
+        <span id="mobile-menu-text-open">MENU +</span>
+        <span id="mobile-menu-text-close" class="hidden">CLOSE ✕</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile Drawer -->
+  <div
+    id="mobile-menu"
+    class="hidden lg:hidden mx-auto max-w-[1440px] mt-2 glass-pill rounded-2xl px-5 py-4 flex flex-col gap-2 text-xs font-mono shadow-2xl"
+  >
+    <a href="#about" class="mobile-nav-link py-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] border-b border-[var(--border-subtle)] flex justify-between">
+      <span>{translations.id.nav.about}</span>
+      <span class="text-[var(--accent-primary)]">→</span>
+    </a>
+    <a href="#stack" class="mobile-nav-link py-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] border-b border-[var(--border-subtle)] flex justify-between">
+      <span>{translations.id.nav.stack}</span>
+      <span class="text-[var(--accent-primary)]">→</span>
+    </a>
+    <a href="#projects" class="mobile-nav-link py-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] border-b border-[var(--border-subtle)] flex justify-between">
+      <span>{translations.id.nav.projects}</span>
+      <span class="text-[var(--accent-primary)]">→</span>
+    </a>
+    {hasExperience && (
+    <a href="#experience" class="mobile-nav-link py-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] border-b border-[var(--border-subtle)] flex justify-between">
+      <span>{translations.id.nav.experience}</span>
+      <span class="text-[var(--accent-primary)]">→</span>
+    </a>
+    )}
+    <a href="#github" class="mobile-nav-link py-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] border-b border-[var(--border-subtle)] flex justify-between">
+      <span>{translations.id.nav.github}</span>
+      <span class="text-[var(--accent-primary)]">→</span>
+    </a>
+    <a href="#contact" class="mobile-nav-link py-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] flex justify-between">
+      <span>{translations.id.nav.contact}</span>
+      <span class="text-[var(--accent-primary)]">→</span>
+    </a>
+  </div>
+</header>
+
+<script>
+  document.getElementById('nav-cmd-btn')?.addEventListener('click', () => {
+    window.dispatchEvent(new CustomEvent('portfolio:open-cmd'));
+  });
+
+  document.getElementById('nav-arcade-btn')?.addEventListener('click', () => {
+    window.dispatchEvent(new CustomEvent('portfolio:open-arcade'));
+  });
+
+  // SFX Toggle button
+  const sfxBtn = document.getElementById('nav-sfx-btn');
+  const sfxLabel = document.getElementById('nav-sfx-label');
+  sfxBtn?.addEventListener('click', () => {
+    window.dispatchEvent(new CustomEvent('portfolio:toggle-sfx'));
+  });
+
+  window.addEventListener('portfolio:sfx-changed', (e: Event) => {
+    const enabled = (e as CustomEvent<{ enabled: boolean }>).detail?.enabled;
+    if (sfxLabel) {
+      sfxLabel.textContent = enabled ? '🔊 SFX' : '🔇 SFX';
+    }
+    if (enabled) {
+      sfxBtn?.classList.add('text-[var(--accent-secondary)]', 'border-[var(--border-focus)]');
+      sfxBtn?.classList.remove('text-[var(--text-muted)]');
+    } else {
+      sfxBtn?.classList.remove('text-[var(--accent-secondary)]', 'border-[var(--border-focus)]');
+      sfxBtn?.classList.add('text-[var(--text-muted)]');
+    }
+  });
+
+  // Theme Toggle logic
+  const themeBtn = document.getElementById('theme-toggle-btn');
+  const labelDark = document.getElementById('theme-label-dark');
+  const labelLight = document.getElementById('theme-label-light');
+
+  function updateThemeUI(theme: string) {
+    if (theme === 'light') {
+      labelDark?.classList.add('hidden');
+      labelLight?.classList.remove('hidden');
+    } else {
+      labelDark?.classList.remove('hidden');
+      labelLight?.classList.add('hidden');
+    }
+  }
+
+  const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+  updateThemeUI(currentTheme);
+
+  themeBtn?.addEventListener('click', (e) => {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    const nextTheme = isDark ? 'light' : 'dark';
+
+    const applyTheme = () => {
+      document.documentElement.setAttribute('data-theme', nextTheme);
+      try {
+        localStorage.setItem('theme', nextTheme);
+      } catch (_) {}
+      updateThemeUI(nextTheme);
+    };
+
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const docAny = document as Document & {
+      startViewTransition?: (cb: () => void) => { ready: Promise<void> };
+    };
+
+    if (!reduced && typeof docAny.startViewTransition === 'function') {
+      const rect = themeBtn.getBoundingClientRect();
+      const x = (e as MouseEvent).clientX || rect.left + rect.width / 2;
+      const y = (e as MouseEvent).clientY || rect.top + rect.height / 2;
+      const endRadius = Math.hypot(
+        Math.max(x, window.innerWidth - x),
+        Math.max(y, window.innerHeight - y)
+      );
+
+      const transition = docAny.startViewTransition(() => {
+        applyTheme();
+      });
+
+      transition.ready
+        .then(() => {
+          document.documentElement.animate(
+            {
+              clipPath: [
+                `circle(0px at ${x}px ${y}px)`,
+                `circle(${endRadius}px at ${x}px ${y}px)`,
+              ],
+            },
+            {
+              duration: 520,
+              easing: 'cubic-bezier(0.16, 1, 0.3, 1)',
+              pseudoElement: '::view-transition-new(root)',
+            }
+          );
+        })
+        .catch(() => {});
+    } else {
+      applyTheme();
+    }
+
+    window.dispatchEvent(
+      new CustomEvent('portfolio:toast', {
+        detail: { message: nextTheme === 'light' ? '☀ Theme: Light Mode' : '☾ Theme: Dark Mode' },
+      })
+    );
+  });
+
+  // Language Toggle logic
+  const langBtn = document.getElementById('lang-toggle-btn');
+  const indicatorId = document.getElementById('lang-indicator-id');
+  const indicatorEn = document.getElementById('lang-indicator-en');
+
+  function updateLangUI(lang: string) {
+    if (lang === 'en') {
+      indicatorId?.classList.remove('text-[var(--accent-primary)]', 'font-bold');
+      indicatorId?.classList.add('text-[var(--text-muted)]');
+      indicatorEn?.classList.remove('text-[var(--text-muted)]');
+      indicatorEn?.classList.add('text-[var(--accent-primary)]', 'font-bold');
+    } else {
+      indicatorEn?.classList.remove('text-[var(--accent-primary)]', 'font-bold');
+      indicatorEn?.classList.add('text-[var(--text-muted)]');
+      indicatorId?.classList.remove('text-[var(--text-muted)]');
+      indicatorId?.classList.add('text-[var(--accent-primary)]', 'font-bold');
+    }
+  }
+
+  const currentLang = document.documentElement.getAttribute('lang') || 'id';
+  updateLangUI(currentLang);
+
+  langBtn?.addEventListener('click', () => {
+    const isId = (document.documentElement.getAttribute('lang') || 'id') === 'id';
+    const nextLang = isId ? 'en' : 'id';
+    document.documentElement.setAttribute('lang', nextLang);
+    try {
+      localStorage.setItem('lang', nextLang);
+    } catch (_) {}
+    updateLangUI(nextLang);
+    window.dispatchEvent(new CustomEvent('portfolio:langchange', { detail: { lang: nextLang } }));
+    window.dispatchEvent(
+      new CustomEvent('portfolio:toast', {
+        detail: { message: nextLang === 'en' ? '🌐 Language: English' : '🌐 Bahasa: Indonesia' },
+      })
+    );
+  });
+
+  // Mobile menu toggle
+  const mobileBtn = document.getElementById('mobile-menu-btn');
+  const mobileMenu = document.getElementById('mobile-menu');
+  const textOpen = document.getElementById('mobile-menu-text-open');
+  const textClose = document.getElementById('mobile-menu-text-close');
+  const navLinks = document.querySelectorAll('.mobile-nav-link');
+
+  mobileBtn?.addEventListener('click', () => {
+    const isOpen = !mobileMenu?.classList.contains('hidden');
+    if (isOpen) {
+      mobileMenu?.classList.add('hidden');
+      textOpen?.classList.remove('hidden');
+      textClose?.classList.add('hidden');
+      mobileBtn.setAttribute('aria-expanded', 'false');
+    } else {
+      mobileMenu?.classList.remove('hidden');
+      textOpen?.classList.add('hidden');
+      textClose?.classList.remove('hidden');
+      mobileBtn.setAttribute('aria-expanded', 'true');
+    }
+  });
+
+  navLinks.forEach((link) => {
+    link.addEventListener('click', () => {
+      mobileMenu?.classList.add('hidden');
+      textOpen?.classList.remove('hidden');
+      textClose?.classList.add('hidden');
+      mobileBtn?.setAttribute('aria-expanded', 'false');
+    });
+  });
+
+  // Active Section Spy on Scroll
+  const sections = document.querySelectorAll('section[id]');
+  const desktopAnchors = document.querySelectorAll<HTMLElement>('.nav-anchor');
+
+  if ('IntersectionObserver' in window && sections.length > 0) {
+    const spyObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const id = entry.target.getAttribute('id');
+            desktopAnchors.forEach((anchor) => {
+              const target = anchor.getAttribute('data-nav-section');
+              if (target === id) {
+                anchor.classList.add(
+                  'bg-[var(--bg-surface)]',
+                  'text-[var(--accent-primary)]',
+                  'font-semibold',
+                  'shadow-sm'
+                );
+              } else {
+                anchor.classList.remove(
+                  'bg-[var(--bg-surface)]',
+                  'text-[var(--accent-primary)]',
+                  'font-semibold',
+                  'shadow-sm'
+                );
+              }
+            });
+          }
+        });
+      },
+      { rootMargin: '-25% 0px -65% 0px', threshold: 0 }
+    );
+    sections.forEach((sec) => spyObserver.observe(sec));
+  }
+</script>
