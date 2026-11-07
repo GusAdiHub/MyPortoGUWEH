@@ -1,125 +1,131 @@
 ---
 import { translations } from '../data/i18n';
 import { experiences } from '../data/profile';
+import { Sun, Moon, Menu, X, Search, Gamepad2, Palette } from 'lucide-astro';
+
 const hasExperience = experiences.length > 0;
 ---
 
-<header class="sticky top-0 z-40 w-full px-4 sm:px-8 lg:px-14 pt-3 pb-2 select-none">
-  <div class="mx-auto max-w-[1440px] h-14 glass-pill rounded-2xl px-4 sm:px-6 flex items-center justify-between shadow-lg">
-    <!-- Left: Brand Identity -->
-    <a
-      href="#hero"
-      class="flex items-center gap-2.5 text-[var(--text-primary)] hover:text-[var(--accent-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] rounded-lg px-1 py-0.5 transition-colors group"
-    >
-      <span class="w-8 h-8 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] group-hover:border-[var(--accent-primary)] flex items-center justify-center font-display font-bold text-sm text-[var(--accent-primary)] transition-all group-hover:scale-105">
-        GA
+<!-- Top Floating Interactive Studio Capsule Bar (No Sidebar) -->
+<header class="sticky top-4 z-40 px-4 sm:px-6 pointer-events-none select-none">
+  <div class="max-w-6xl mx-auto flex items-center justify-between gap-2 rounded-full bg-[var(--bg-surface)]/95 backdrop-blur-md border-2 border-[var(--border-subtle)] shadow-[var(--card-shadow)] px-4 sm:px-5 py-2.5 pointer-events-auto transition-all duration-200">
+    <!-- Brand Name + Live Studio Badge -->
+    <div class="flex items-center gap-3 pl-1">
+      <a
+        href="#hero"
+        class="inline-flex items-center gap-2 font-display font-bold text-base sm:text-lg tracking-tight text-[var(--text-primary)] hover:text-[var(--accent-primary)] transition-colors"
+      >
+        <span class="w-2.5 h-2.5 rounded-full bg-[var(--accent-primary)] status-pulse-dot" aria-hidden="true"></span>
+        <span>Gus Adi<span class="text-[var(--accent-primary)]">.</span></span>
+      </a>
+      <span class="hidden lg:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[var(--tint-mint)] text-[var(--accent-primary)] font-sans text-[11px] font-bold">
+        Bali, Indonesia
       </span>
-      <div class="flex flex-col">
-        <span class="font-display font-bold text-sm tracking-tight leading-none">Gus Adi</span>
-        <span class="font-mono text-[10px] text-[var(--text-muted)] leading-tight mt-0.5">~/developer</span>
-      </div>
-    </a>
+    </div>
 
-    <!-- Center: Desktop Floating Pill Nav -->
-    <nav
-      class="hidden lg:flex items-center gap-1 bg-[var(--bg-elevated)]/80 border border-[var(--border-subtle)] rounded-xl p-1 font-mono text-xs text-[var(--text-secondary)]"
-      aria-label="Main Navigation"
-    >
-      <a
-        href="#about"
-        data-nav-section="about"
-        class="nav-anchor rounded-lg px-3 py-1.5 hover:text-[var(--text-primary)] transition-all"
-      >
-        <span data-lang="id">01.Tentang</span>
-        <span data-lang="en">01.About</span>
+    <!-- Clean Pill Links (Desktop — Reordered Spatial Studio Flow) -->
+    <nav class="hidden md:flex items-center gap-1 font-sans text-xs sm:text-sm font-medium text-[var(--text-secondary)]" aria-label="Main Navigation">
+      <a href="#projects" data-nav-section="projects" class="nav-anchor px-3.5 py-1.5 rounded-full hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] transition-all">
+        <span data-lang="id">{translations.id.nav.projects}</span>
+        <span data-lang="en">{translations.en.nav.projects}</span>
       </a>
-      <a
-        href="#stack"
-        data-nav-section="stack"
-        class="nav-anchor rounded-lg px-3 py-1.5 hover:text-[var(--text-primary)] transition-all"
-      >
-        <span data-lang="id">02.Stack</span>
-        <span data-lang="en">02.Stack</span>
+      <a href="#stack" data-nav-section="stack" class="nav-anchor px-3.5 py-1.5 rounded-full hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] transition-all">
+        <span data-lang="id">{translations.id.nav.stack}</span>
+        <span data-lang="en">{translations.en.nav.stack}</span>
       </a>
-      <a
-        href="#projects"
-        data-nav-section="projects"
-        class="nav-anchor rounded-lg px-3 py-1.5 hover:text-[var(--text-primary)] transition-all"
-      >
-        <span data-lang="id">03.Proyek</span>
-        <span data-lang="en">03.Projects</span>
+      <a href="#about" data-nav-section="about" class="nav-anchor px-3.5 py-1.5 rounded-full hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] transition-all">
+        <span data-lang="id">{translations.id.nav.about}</span>
+        <span data-lang="en">{translations.en.nav.about}</span>
       </a>
       {hasExperience && (
-      <a
-        href="#experience"
-        data-nav-section="experience"
-        class="nav-anchor rounded-lg px-3 py-1.5 hover:text-[var(--text-primary)] transition-all"
-      >
-        <span data-lang="id">04.Riwayat</span>
-        <span data-lang="en">04.Timeline</span>
-      </a>
+        <a href="#experience" data-nav-section="experience" class="nav-anchor px-3.5 py-1.5 rounded-full hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] transition-all">
+          <span data-lang="id">{translations.id.nav.experience}</span>
+          <span data-lang="en">{translations.en.nav.experience}</span>
+        </a>
       )}
-      <a
-        href="#github"
-        data-nav-section="github"
-        class="nav-anchor rounded-lg px-3 py-1.5 hover:text-[var(--text-primary)] transition-all"
-      >
-        <span data-lang="id">05.GitHub</span>
-        <span data-lang="en">05.GitHub</span>
+      <a href="#github" data-nav-section="github" class="nav-anchor px-3.5 py-1.5 rounded-full hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] transition-all">
+        <span data-lang="id">{translations.id.nav.github}</span>
+        <span data-lang="en">{translations.en.nav.github}</span>
       </a>
-      <a
-        href="#contact"
-        data-nav-section="contact"
-        class="nav-anchor rounded-lg px-3 py-1.5 hover:text-[var(--text-primary)] transition-all"
-      >
-        <span data-lang="id">06.Kontak</span>
-        <span data-lang="en">06.Contact</span>
+      <a href="#contact" data-nav-section="contact" class="nav-anchor px-3.5 py-1.5 rounded-full hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] transition-all">
+        <span data-lang="id">{translations.id.nav.contact}</span>
+        <span data-lang="en">{translations.en.nav.contact}</span>
       </a>
     </nav>
 
-    <!-- Right: Command Palette + Language + Theme + Mobile Toggle -->
-    <div class="flex items-center gap-2 font-mono text-xs">
-      <!-- Command Palette Trigger -->
+    <!-- Interactive Studio Controls (Accent Dots + Search + Arcade + Lang + Theme) -->
+    <div class="flex items-center gap-1.5 font-sans text-xs">
+      <!-- Live 4-Accent Color Switcher Pill -->
+      <div
+        class="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)]"
+        role="group"
+        aria-label="Pilih warna aksen"
+        title="Ubah Warna Aksen Studio"
+      >
+        <Palette class="w-3.5 h-3.5 text-[var(--text-muted)] mr-0.5" />
+        <button
+          type="button"
+          data-accent-choice="emerald"
+          data-accent-label="Mint Emerald"
+          class="nav-accent-dot w-3.5 h-3.5 rounded-full bg-[#0d9488] ring-2 ring-offset-1 ring-transparent hover:scale-125 transition-transform cursor-pointer"
+          aria-label="Mint Emerald"
+        ></button>
+        <button
+          type="button"
+          data-accent-choice="coral"
+          data-accent-label="Sunset Coral"
+          class="nav-accent-dot w-3.5 h-3.5 rounded-full bg-[#ea580c] ring-2 ring-offset-1 ring-transparent hover:scale-125 transition-transform cursor-pointer"
+          aria-label="Sunset Coral"
+        ></button>
+        <button
+          type="button"
+          data-accent-choice="ocean"
+          data-accent-label="Royal Ocean"
+          class="nav-accent-dot w-3.5 h-3.5 rounded-full bg-[#2563eb] ring-2 ring-offset-1 ring-transparent hover:scale-125 transition-transform cursor-pointer"
+          aria-label="Royal Ocean"
+        ></button>
+        <button
+          type="button"
+          data-accent-choice="violet"
+          data-accent-label="Electric Violet"
+          class="nav-accent-dot w-3.5 h-3.5 rounded-full bg-[#7c3aed] ring-2 ring-offset-1 ring-transparent hover:scale-125 transition-transform cursor-pointer"
+          aria-label="Electric Violet"
+        ></button>
+      </div>
+
+      <!-- Quick Search Button (⌘K) -->
       <button
         type="button"
         id="nav-cmd-btn"
-        class="hidden sm:inline-flex items-center gap-1.5 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] hover:border-[var(--accent-primary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] px-2.5 py-1.5 cursor-pointer transition-all"
-        aria-label="Open Command Palette"
-        title="Command Palette (⌘K / Ctrl+K)"
+        class="hidden lg:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-[var(--bg-elevated)] hover:border-[var(--accent-primary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer transition-colors"
+        aria-label="Open quick search"
+        title="Pencarian Cepat (⌘K)"
       >
-        <span class="text-[var(--accent-primary)]">⌘K</span>
+        <Search class="w-3.5 h-3.5 text-[var(--accent-primary)]" />
+        <span class="font-mono text-[11px]">⌘K</span>
       </button>
 
-      <!-- Cyber Arcade Trigger -->
+      <!-- Mini-Game Arcade Button -->
       <button
         type="button"
         id="nav-arcade-btn"
-        class="hidden md:inline-flex items-center gap-1 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] hover:border-[var(--accent-primary)] text-[var(--accent-primary)] px-2.5 py-1.5 cursor-pointer transition-all font-bold"
-        aria-label="Open Cyber Mini-Game Arcade"
-        title="Play Mini-Games! (Shortcut: G)"
+        class="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-[var(--accent-primary)] text-[var(--accent-ink)] hover:opacity-90 font-bold cursor-pointer transition-all shadow-sm"
+        aria-label="Open developer mini-game arcade"
+        title="Mini-Game Arcade (6 Permainan)"
       >
-        <span>🎮</span>
-      </button>
-
-      <!-- Web Audio Mechanical Synth SFX Toggle -->
-      <button
-        type="button"
-        id="nav-sfx-btn"
-        class="hidden sm:inline-flex items-center gap-1 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] hover:border-[var(--accent-secondary)] text-[var(--text-muted)] hover:text-[var(--text-primary)] px-2.5 py-1.5 cursor-pointer transition-all"
-        aria-label="Toggle UI Sound Effects"
-        title="Toggle Mechanical Keyboard & UI Sound Effects (Shortcut: S)"
-      >
-        <span id="nav-sfx-label">🔇 SFX</span>
+        <Gamepad2 class="w-3.5 h-3.5" />
+        <span class="hidden sm:inline">Arcade</span>
       </button>
 
       <!-- Language Switcher -->
       <button
         type="button"
         id="lang-toggle-btn"
-        class="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] hover:border-[var(--accent-primary)] px-2.5 py-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] cursor-pointer transition-all"
-        aria-label="Toggle language between Indonesian and English"
+        class="px-2.5 py-1.5 rounded-full hover:bg-[var(--bg-elevated)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer transition-colors"
+        aria-label="Switch language between Indonesian and English"
+        title="ID / EN"
       >
-        <span id="lang-indicator-id" class="text-[var(--accent-primary)] font-bold">ID</span>
+        <span id="lang-indicator-id" class="text-[var(--text-primary)] font-bold">ID</span>
         <span class="text-[var(--text-muted)] mx-0.5">/</span>
         <span id="lang-indicator-en" class="text-[var(--text-muted)]">EN</span>
       </button>
@@ -128,58 +134,61 @@ const hasExperience = experiences.length > 0;
       <button
         type="button"
         id="theme-toggle-btn"
-        class="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] hover:border-[var(--accent-primary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] px-3 py-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] cursor-pointer transition-all"
-        aria-label="Toggle dark and light theme"
+        class="p-2 rounded-full hover:bg-[var(--bg-elevated)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer transition-colors"
+        aria-label="Toggle light and dark theme"
+        title="Ganti Tema (Daylight Terang / Slate Gelap)"
       >
-        <span id="theme-label-dark">☾ DARK</span>
-        <span id="theme-label-light" class="hidden">☀ LIGHT</span>
+        <Sun id="theme-label-light" class="w-4 h-4 hidden text-amber-500" />
+        <Moon id="theme-label-dark" class="w-4 h-4 text-[var(--accent-primary)]" />
       </button>
 
-      <!-- Mobile Menu Toggle Button -->
+      <button type="button" id="nav-sfx-btn" class="hidden" aria-hidden="true"><span id="nav-sfx-label"></span></button>
+
+      <!-- Mobile Menu Trigger -->
       <button
         type="button"
         id="mobile-menu-btn"
-        class="lg:hidden rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] text-[var(--text-primary)] px-3 py-1.5 cursor-pointer"
+        class="md:hidden p-2 rounded-full hover:bg-[var(--bg-elevated)] text-[var(--text-primary)] cursor-pointer"
         aria-expanded="false"
         aria-controls="mobile-menu"
         aria-label="Toggle navigation menu"
       >
-        <span id="mobile-menu-text-open">MENU +</span>
-        <span id="mobile-menu-text-close" class="hidden">CLOSE ✕</span>
+        <span id="mobile-menu-text-open"><Menu class="w-4 h-4" /></span>
+        <span id="mobile-menu-text-close" class="hidden"><X class="w-4 h-4" /></span>
       </button>
     </div>
   </div>
 
-  <!-- Mobile Drawer -->
+  <!-- Clean Mobile Popover Menu -->
   <div
     id="mobile-menu"
-    class="hidden lg:hidden mx-auto max-w-[1440px] mt-2 glass-pill rounded-2xl px-5 py-4 flex flex-col gap-2 text-xs font-mono shadow-2xl"
+    class="hidden md:hidden max-w-6xl mx-auto mt-2 rounded-3xl bg-[var(--bg-surface)] border-2 border-[var(--border-subtle)] shadow-xl px-5 py-4 flex flex-col gap-2.5 font-sans text-sm pointer-events-auto"
   >
-    <a href="#about" class="mobile-nav-link py-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] border-b border-[var(--border-subtle)] flex justify-between">
-      <span>{translations.id.nav.about}</span>
-      <span class="text-[var(--accent-primary)]">→</span>
+    <a href="#projects" class="mobile-nav-link py-1.5 font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
+      <span data-lang="id">{translations.id.nav.projects}</span>
+      <span data-lang="en">{translations.en.nav.projects}</span>
     </a>
-    <a href="#stack" class="mobile-nav-link py-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] border-b border-[var(--border-subtle)] flex justify-between">
-      <span>{translations.id.nav.stack}</span>
-      <span class="text-[var(--accent-primary)]">→</span>
+    <a href="#stack" class="mobile-nav-link py-1.5 font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
+      <span data-lang="id">{translations.id.nav.stack}</span>
+      <span data-lang="en">{translations.en.nav.stack}</span>
     </a>
-    <a href="#projects" class="mobile-nav-link py-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] border-b border-[var(--border-subtle)] flex justify-between">
-      <span>{translations.id.nav.projects}</span>
-      <span class="text-[var(--accent-primary)]">→</span>
+    <a href="#about" class="mobile-nav-link py-1.5 font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
+      <span data-lang="id">{translations.id.nav.about}</span>
+      <span data-lang="en">{translations.en.nav.about}</span>
     </a>
     {hasExperience && (
-    <a href="#experience" class="mobile-nav-link py-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] border-b border-[var(--border-subtle)] flex justify-between">
-      <span>{translations.id.nav.experience}</span>
-      <span class="text-[var(--accent-primary)]">→</span>
-    </a>
+      <a href="#experience" class="mobile-nav-link py-1.5 font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
+        <span data-lang="id">{translations.id.nav.experience}</span>
+        <span data-lang="en">{translations.en.nav.experience}</span>
+      </a>
     )}
-    <a href="#github" class="mobile-nav-link py-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] border-b border-[var(--border-subtle)] flex justify-between">
-      <span>{translations.id.nav.github}</span>
-      <span class="text-[var(--accent-primary)]">→</span>
+    <a href="#github" class="mobile-nav-link py-1.5 font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
+      <span data-lang="id">{translations.id.nav.github}</span>
+      <span data-lang="en">{translations.en.nav.github}</span>
     </a>
-    <a href="#contact" class="mobile-nav-link py-2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] flex justify-between">
-      <span>{translations.id.nav.contact}</span>
-      <span class="text-[var(--accent-primary)]">→</span>
+    <a href="#contact" class="mobile-nav-link py-1.5 font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
+      <span data-lang="id">{translations.id.nav.contact}</span>
+      <span data-lang="en">{translations.en.nav.contact}</span>
     </a>
   </div>
 </header>
@@ -188,30 +197,38 @@ const hasExperience = experiences.length > 0;
   document.getElementById('nav-cmd-btn')?.addEventListener('click', () => {
     window.dispatchEvent(new CustomEvent('portfolio:open-cmd'));
   });
-
   document.getElementById('nav-arcade-btn')?.addEventListener('click', () => {
     window.dispatchEvent(new CustomEvent('portfolio:open-arcade'));
   });
 
-  // SFX Toggle button
-  const sfxBtn = document.getElementById('nav-sfx-btn');
-  const sfxLabel = document.getElementById('nav-sfx-label');
-  sfxBtn?.addEventListener('click', () => {
-    window.dispatchEvent(new CustomEvent('portfolio:toggle-sfx'));
+  // Live 4-Accent Color Dots
+  const accentDots = document.querySelectorAll<HTMLButtonElement>('.nav-accent-dot');
+  function syncAccentDots(active: string) {
+    accentDots.forEach((dot) => {
+      if (dot.getAttribute('data-accent-choice') === active) {
+        dot.classList.add('ring-[var(--text-primary)]', 'scale-110');
+        dot.classList.remove('ring-transparent');
+      } else {
+        dot.classList.remove('ring-[var(--text-primary)]', 'scale-110');
+        dot.classList.add('ring-transparent');
+      }
+    });
+  }
+
+  syncAccentDots(document.documentElement.getAttribute('data-accent') || 'emerald');
+
+  accentDots.forEach((dot) => {
+    dot.addEventListener('click', () => {
+      const choice = dot.getAttribute('data-accent-choice') || 'emerald';
+      const label = dot.getAttribute('data-accent-label') || choice;
+      syncAccentDots(choice);
+      window.dispatchEvent(new CustomEvent('portfolio:set-accent', { detail: { accent: choice, label } }));
+    });
   });
 
-  window.addEventListener('portfolio:sfx-changed', (e: Event) => {
-    const enabled = (e as CustomEvent<{ enabled: boolean }>).detail?.enabled;
-    if (sfxLabel) {
-      sfxLabel.textContent = enabled ? '🔊 SFX' : '🔇 SFX';
-    }
-    if (enabled) {
-      sfxBtn?.classList.add('text-[var(--accent-secondary)]', 'border-[var(--border-focus)]');
-      sfxBtn?.classList.remove('text-[var(--text-muted)]');
-    } else {
-      sfxBtn?.classList.remove('text-[var(--accent-secondary)]', 'border-[var(--border-focus)]');
-      sfxBtn?.classList.add('text-[var(--text-muted)]');
-    }
+  window.addEventListener('portfolio:set-accent', (e: Event) => {
+    const custom = e as CustomEvent<{ accent?: string }>;
+    if (custom.detail?.accent) syncAccentDots(custom.detail.accent);
   });
 
   // Theme Toggle logic
@@ -220,16 +237,16 @@ const hasExperience = experiences.length > 0;
   const labelLight = document.getElementById('theme-label-light');
 
   function updateThemeUI(theme: string) {
-    if (theme === 'light') {
+    if (theme === 'dark') {
       labelDark?.classList.add('hidden');
       labelLight?.classList.remove('hidden');
     } else {
-      labelDark?.classList.remove('hidden');
       labelLight?.classList.add('hidden');
+      labelDark?.classList.remove('hidden');
     }
   }
 
-  const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+  const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
   updateThemeUI(currentTheme);
 
   themeBtn?.addEventListener('click', (e) => {
@@ -239,7 +256,7 @@ const hasExperience = experiences.length > 0;
     const applyTheme = () => {
       document.documentElement.setAttribute('data-theme', nextTheme);
       try {
-        localStorage.setItem('theme', nextTheme);
+        localStorage.setItem('portfolio_theme_v7', nextTheme);
       } catch (_) {}
       updateThemeUI(nextTheme);
     };
@@ -258,10 +275,7 @@ const hasExperience = experiences.length > 0;
         Math.max(y, window.innerHeight - y)
       );
 
-      const transition = docAny.startViewTransition(() => {
-        applyTheme();
-      });
-
+      const transition = docAny.startViewTransition(() => applyTheme());
       transition.ready
         .then(() => {
           document.documentElement.animate(
@@ -272,7 +286,7 @@ const hasExperience = experiences.length > 0;
               ],
             },
             {
-              duration: 520,
+              duration: 480,
               easing: 'cubic-bezier(0.16, 1, 0.3, 1)',
               pseudoElement: '::view-transition-new(root)',
             }
@@ -282,12 +296,6 @@ const hasExperience = experiences.length > 0;
     } else {
       applyTheme();
     }
-
-    window.dispatchEvent(
-      new CustomEvent('portfolio:toast', {
-        detail: { message: nextTheme === 'light' ? '☀ Theme: Light Mode' : '☾ Theme: Dark Mode' },
-      })
-    );
   });
 
   // Language Toggle logic
@@ -297,20 +305,19 @@ const hasExperience = experiences.length > 0;
 
   function updateLangUI(lang: string) {
     if (lang === 'en') {
-      indicatorId?.classList.remove('text-[var(--accent-primary)]', 'font-bold');
+      indicatorId?.classList.remove('text-[var(--text-primary)]', 'font-bold');
       indicatorId?.classList.add('text-[var(--text-muted)]');
       indicatorEn?.classList.remove('text-[var(--text-muted)]');
-      indicatorEn?.classList.add('text-[var(--accent-primary)]', 'font-bold');
+      indicatorEn?.classList.add('text-[var(--text-primary)]', 'font-bold');
     } else {
-      indicatorEn?.classList.remove('text-[var(--accent-primary)]', 'font-bold');
+      indicatorEn?.classList.remove('text-[var(--text-primary)]', 'font-bold');
       indicatorEn?.classList.add('text-[var(--text-muted)]');
       indicatorId?.classList.remove('text-[var(--text-muted)]');
-      indicatorId?.classList.add('text-[var(--accent-primary)]', 'font-bold');
+      indicatorId?.classList.add('text-[var(--text-primary)]', 'font-bold');
     }
   }
 
-  const currentLang = document.documentElement.getAttribute('lang') || 'id';
-  updateLangUI(currentLang);
+  updateLangUI(document.documentElement.getAttribute('lang') || 'id');
 
   langBtn?.addEventListener('click', () => {
     const isId = (document.documentElement.getAttribute('lang') || 'id') === 'id';
@@ -321,19 +328,13 @@ const hasExperience = experiences.length > 0;
     } catch (_) {}
     updateLangUI(nextLang);
     window.dispatchEvent(new CustomEvent('portfolio:langchange', { detail: { lang: nextLang } }));
-    window.dispatchEvent(
-      new CustomEvent('portfolio:toast', {
-        detail: { message: nextLang === 'en' ? '🌐 Language: English' : '🌐 Bahasa: Indonesia' },
-      })
-    );
   });
 
-  // Mobile menu toggle
+  // Mobile Menu
   const mobileBtn = document.getElementById('mobile-menu-btn');
   const mobileMenu = document.getElementById('mobile-menu');
   const textOpen = document.getElementById('mobile-menu-text-open');
   const textClose = document.getElementById('mobile-menu-text-close');
-  const navLinks = document.querySelectorAll('.mobile-nav-link');
 
   mobileBtn?.addEventListener('click', () => {
     const isOpen = !mobileMenu?.classList.contains('hidden');
@@ -350,7 +351,7 @@ const hasExperience = experiences.length > 0;
     }
   });
 
-  navLinks.forEach((link) => {
+  document.querySelectorAll('.mobile-nav-link').forEach((link) => {
     link.addEventListener('click', () => {
       mobileMenu?.classList.add('hidden');
       textOpen?.classList.remove('hidden');
@@ -359,7 +360,7 @@ const hasExperience = experiences.length > 0;
     });
   });
 
-  // Active Section Spy on Scroll
+  // Active Section Scroll-Spy with Soft Pill Highlight
   const sections = document.querySelectorAll('section[id]');
   const desktopAnchors = document.querySelectorAll<HTMLElement>('.nav-anchor');
 
@@ -370,21 +371,12 @@ const hasExperience = experiences.length > 0;
           if (entry.isIntersecting) {
             const id = entry.target.getAttribute('id');
             desktopAnchors.forEach((anchor) => {
-              const target = anchor.getAttribute('data-nav-section');
-              if (target === id) {
-                anchor.classList.add(
-                  'bg-[var(--bg-surface)]',
-                  'text-[var(--accent-primary)]',
-                  'font-semibold',
-                  'shadow-sm'
-                );
+              if (anchor.getAttribute('data-nav-section') === id) {
+                anchor.classList.add('bg-[var(--bg-elevated)]', 'text-[var(--accent-primary)]', 'font-bold');
+                anchor.classList.remove('text-[var(--text-secondary)]');
               } else {
-                anchor.classList.remove(
-                  'bg-[var(--bg-surface)]',
-                  'text-[var(--accent-primary)]',
-                  'font-semibold',
-                  'shadow-sm'
-                );
+                anchor.classList.remove('bg-[var(--bg-elevated)]', 'text-[var(--accent-primary)]', 'font-bold');
+                anchor.classList.add('text-[var(--text-secondary)]');
               }
             });
           }

@@ -10,13 +10,13 @@ interface Props {
 }
 
 const {
-  title = 'Gus Adi — Informatics Student & Software Developer',
+  title = 'Gus Adi — Software Developer & Informatics Student',
   description = 'Personal developer portfolio of Gus Adi. Informatics student and software developer building web, backend, and applied systems.',
 } = Astro.props;
 ---
 
 <!doctype html>
-<html lang="id" data-theme="dark">
+<html lang="id" data-theme="light" data-accent="emerald">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -25,28 +25,33 @@ const {
 
     <title>{title}</title>
     <meta name="description" content={description} />
-    <meta name="theme-color" content="#05070b" />
+    <meta name="theme-color" content="#f5f3ee" />
 
     <!-- Open Graph / Meta -->
     <meta property="og:type" content="website" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
 
-    <!-- Fonts: Space Grotesk (Display), Plus Jakarta Sans (Body), JetBrains Mono (Code) -->
+    <!-- Fonts: Space Grotesk + Outfit + Plus Jakarta Sans + JetBrains Mono -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Outfit:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
       rel="stylesheet"
     />
 
-    <!-- Anti-flash theme & language script -->
+    <!-- Anti-flash theme, accent & language script (Default: Daylight Studio Light v7) -->
     <script is:inline>
       (function () {
         try {
-          const savedTheme = localStorage.getItem('theme');
-          const theme = savedTheme === 'light' || savedTheme === 'dark' ? savedTheme : 'dark';
+          const savedTheme = localStorage.getItem('portfolio_theme_v7');
+          const theme = savedTheme === 'dark' || savedTheme === 'light' ? savedTheme : 'light';
           document.documentElement.setAttribute('data-theme', theme);
+
+          const savedAccent = localStorage.getItem('portfolio_accent_v7');
+          if (savedAccent && ['emerald', 'coral', 'ocean', 'violet'].includes(savedAccent)) {
+            document.documentElement.setAttribute('data-accent', savedAccent);
+          }
 
           const savedLang = localStorage.getItem('lang');
           const lang = savedLang === 'en' ? 'en' : 'id';
@@ -55,745 +60,227 @@ const {
       })();
     </script>
   </head>
-  <body class="min-h-screen w-full text-[var(--text-primary)] bg-[var(--bg-base)] antialiased font-sans relative selection:bg-[var(--accent-primary)] selection:text-[#05070b]">
-    <!-- Top Scroll Progress Line -->
+  <body class="min-h-screen w-full text-[var(--text-primary)] bg-[var(--bg-base)] antialiased font-sans relative">
+    <!-- Thin Top Reading Progress Line -->
     <div class="fixed top-0 left-0 right-0 z-50 h-[3px] bg-transparent pointer-events-none">
       <div
         id="scroll-progress-bar"
-        class="h-full bg-gradient-to-r from-[var(--accent-primary)] via-[var(--accent-secondary)] to-[var(--accent-tertiary)] w-0 transition-[width] duration-75 ease-out shadow-[0_0_12px_var(--accent-primary)]"
+        class="h-full bg-gradient-to-r from-[var(--accent-primary)] to-[var(--accent-secondary)] w-0 transition-[width] duration-100 ease-out"
       ></div>
     </div>
 
-    <!-- Full-Screen Interactive Constellation / Cyber Network Canvas -->
+    <!-- Soft Daylight Pastel Watercolor Blobs (Eye-friendly ambient depth) -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none z-0" aria-hidden="true">
+      <div class="animate-blob-slow absolute -top-24 -left-24 w-[420px] h-[420px] rounded-full bg-teal-300/20 blur-3xl"></div>
+      <div class="animate-blob-slow absolute top-[28%] -right-28 w-[380px] h-[380px] rounded-full bg-sky-300/20 blur-3xl" style="animation-delay: -5s;"></div>
+      <div class="animate-blob-slow absolute bottom-12 left-[20%] w-[360px] h-[360px] rounded-full bg-amber-200/20 blur-3xl" style="animation-delay: -9s;"></div>
+    </div>
+
+    <!-- Optional Easter-Egg Canvas -->
     <canvas
       id="bg-canvas"
-      class="fixed inset-0 w-full h-full pointer-events-none z-0 opacity-65"
+      class="fixed inset-0 w-full h-full pointer-events-none z-0 opacity-60"
       aria-hidden="true"
     ></canvas>
 
-    <!-- Ambient Atmospheric Glow Orbs -->
-    <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden" aria-hidden="true">
-      <div class="absolute -top-40 -left-40 w-[520px] h-[520px] rounded-full bg-[var(--accent-glow)] blur-[130px] opacity-70"></div>
-      <div class="absolute top-[35%] -right-48 w-[480px] h-[480px] rounded-full bg-[var(--accent-glow-cyan)] blur-[140px] opacity-60"></div>
-    </div>
-
-    <!-- Custom Cursor Follower Ring (Desktop) -->
-    <div
-      id="cursor-ring"
-      class="hidden lg:block fixed top-0 left-0 w-8 h-8 rounded-full border border-[var(--accent-primary)] pointer-events-none z-50 opacity-0 transition-opacity duration-300 -translate-x-1/2 -translate-y-1/2 mix-blend-screen"
-      aria-hidden="true"
-    ></div>
-
-    <!-- Full-Screen Content Wrapper -->
+    <!-- Main Creative Studio Flow -->
     <div class="relative z-10 w-full min-h-screen flex flex-col">
       <slot />
     </div>
 
-    <!-- Global Quick Command Palette Modal (⌘K / Ctrl+K) -->
+    <!-- Floating Back-to-Top + Reading Progress Pill -->
+    <button
+      type="button"
+      id="floating-scroll-top"
+      class="fixed bottom-6 right-6 z-40 inline-flex items-center gap-2 rounded-full bg-[var(--bg-surface)] border-2 border-[var(--border-subtle)] shadow-[var(--card-shadow)] hover:border-[var(--accent-primary)] text-[var(--text-primary)] px-4 py-2 text-xs font-bold cursor-pointer opacity-0 translate-y-3 pointer-events-none transition-all duration-300"
+      aria-label="Kembali ke atas"
+      title="Kembali ke atas"
+    >
+      <span class="text-[var(--accent-primary)] font-bold">↑</span>
+      <span id="floating-scroll-pct" class="font-mono text-[11px] text-[var(--text-secondary)]">0%</span>
+    </button>
+
+    <!-- Quick Spotlight Search Modal (⌘K / Ctrl+K) -->
     <div
       id="cmd-palette-modal"
-      class="modal-backdrop fixed inset-0 z-50 hidden bg-black/70 p-4 flex items-start justify-center pt-[12vh] select-none"
+      class="modal-backdrop fixed inset-0 z-50 hidden bg-slate-900/40 p-4 flex items-start justify-center pt-[12vh] select-none"
       role="dialog"
       aria-modal="true"
-      aria-label="Command Palette"
+      aria-label="Quick Search"
     >
-      <div class="modal-panel w-full max-w-lg rounded-2xl border border-[var(--border-focus)] bg-[var(--bg-surface)] shadow-2xl overflow-hidden">
-        <div class="px-4 py-3 border-b border-[var(--border-subtle)] bg-[var(--bg-elevated)] flex items-center gap-3 font-mono text-xs">
-          <span class="text-[var(--accent-primary)] font-bold text-sm">⌘</span>
+      <div class="modal-panel w-full max-w-lg rounded-3xl border-2 border-[var(--border-subtle)] bg-[var(--bg-surface)] shadow-2xl overflow-hidden font-sans">
+        <div class="px-5 py-3.5 border-b border-[var(--border-subtle)] flex items-center gap-3">
+          <span class="text-xs font-bold text-[var(--accent-primary)]">⌘K</span>
           <input
             id="cmd-search-input"
             type="text"
-            placeholder="Search sections, snake, similarity, theme, email..."
+            placeholder="Cari bagian, proyek, warna aksen, atau mini-game..."
             autocomplete="off"
-            class="flex-1 bg-transparent text-xs sm:text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none"
+            class="flex-1 bg-transparent text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none"
           />
           <button
             type="button"
             id="cmd-close-btn"
-            class="px-2 py-0.5 rounded bg-[var(--bg-surface)] border border-[var(--border-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer"
+            class="px-2.5 py-1 rounded-full bg-[var(--bg-elevated)] text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer font-medium"
           >
-            ESC
+            Esc
           </button>
         </div>
 
-        <div id="cmd-list" class="p-3 space-y-1.5 font-mono text-xs max-h-[58vh] overflow-y-auto">
-          <div class="px-2 py-1 text-[10px] text-[var(--text-muted)] uppercase tracking-wider">
-            <span data-lang="id">Lompat ke Bagian (Shortcut: 1-6)</span>
-            <span data-lang="en">Jump to Section (Shortcut: 1-6)</span>
-          </div>
-          <a href="#hero" data-cmd-keywords="hero home terminal telemetry shell 00" class="cmd-entry cmd-item flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-[var(--bg-elevated)] text-[var(--text-primary)] transition-colors">
-            <span>00 // Hero &amp; Interactive Shell</span>
-            <span class="text-[var(--text-muted)]">↵</span>
+        <div id="cmd-list" class="p-2.5 space-y-0.5 text-sm max-h-[58vh] overflow-y-auto">
+          <a href="#hero" data-cmd-keywords="hero home beranda studio" class="cmd-entry cmd-item flex items-center justify-between px-3.5 py-2.5 rounded-xl hover:bg-[var(--bg-elevated)] text-[var(--text-primary)] transition-colors">
+            <span>Beranda &amp; Interactive Studio</span>
+            <span class="text-xs text-[var(--text-muted)]">↵</span>
           </a>
-          <a href="#about" data-cmd-keywords="about bio radar exploring tentang 01" class="cmd-entry cmd-item flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-[var(--bg-elevated)] text-[var(--text-primary)] transition-colors">
-            <span>01 // About &amp; R&amp;D Radar</span>
-            <span class="text-[var(--text-muted)]">1</span>
+          <a href="#projects" data-cmd-keywords="projects karya proyek plagiarism sakuku nlp lab" class="cmd-entry cmd-item flex items-center justify-between px-3.5 py-2.5 rounded-xl hover:bg-[var(--bg-elevated)] text-[var(--text-primary)] transition-colors">
+            <span>Karya Pilihan &amp; Live Simulator</span>
+            <span class="text-xs text-[var(--text-muted)]">P</span>
           </a>
-          <a href="#stack" data-cmd-keywords="stack tech skills typescript python astro wave 02" class="cmd-entry cmd-item flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-[var(--bg-elevated)] text-[var(--text-primary)] transition-colors">
-            <span>02 // Tech Stack Arsenal</span>
-            <span class="text-[var(--text-muted)]">2</span>
+          <a href="#stack" data-cmd-keywords="stack tech keahlian teknologi radar" class="cmd-entry cmd-item flex items-center justify-between px-3.5 py-2.5 rounded-xl hover:bg-[var(--bg-elevated)] text-[var(--text-primary)] transition-colors">
+            <span>Eksplorasi Teknologi &amp; Skill Inspector</span>
+            <span class="text-xs text-[var(--text-muted)]">S</span>
           </a>
-          <a href="#projects" data-cmd-keywords="projects nlp document similarity sandbox cosine 03" class="cmd-entry cmd-item flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-[var(--bg-elevated)] text-[var(--text-primary)] transition-colors">
-            <span>03 // Projects &amp; Live NLP Sandbox</span>
-            <span class="text-[var(--text-muted)]">3</span>
+          <a href="#about" data-cmd-keywords="about bio tentang profil bali" class="cmd-entry cmd-item flex items-center justify-between px-3.5 py-2.5 rounded-xl hover:bg-[var(--bg-elevated)] text-[var(--text-primary)] transition-colors">
+            <span>Tentang, Radar Bali &amp; Perjalanan</span>
+            <span class="text-xs text-[var(--text-muted)]">A</span>
           </a>
-          <a href="#experience" data-cmd-keywords="experience education timeline informatics 04" class="cmd-entry cmd-item flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-[var(--bg-elevated)] text-[var(--text-primary)] transition-colors">
-            <span>04 // Experience &amp; Education</span>
-            <span class="text-[var(--text-muted)]">4</span>
+          <a href="#github" data-cmd-keywords="github repositori kontribusi snake" class="cmd-entry cmd-item flex items-center justify-between px-3.5 py-2.5 rounded-xl hover:bg-[var(--bg-elevated)] text-[var(--text-primary)] transition-colors">
+            <span>Aktivitas GitHub &amp; Contribution Snake</span>
+            <span class="text-xs text-[var(--text-muted)]">G</span>
           </a>
-          <a href="#github" data-cmd-keywords="github snake contributions repos matrix ular 05" class="cmd-entry cmd-item flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-[var(--bg-elevated)] text-[var(--text-primary)] transition-colors">
-            <span>05 // GitHub Snake &amp; Live Repos</span>
-            <span class="text-[var(--text-muted)]">5</span>
-          </a>
-          <a href="#contact" data-cmd-keywords="contact email message hire collaboration cv 06" class="cmd-entry cmd-item flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-[var(--bg-elevated)] text-[var(--text-primary)] transition-colors">
-            <span>06 // Contact &amp; Message Builder</span>
-            <span class="text-[var(--text-muted)]">6</span>
+          <a href="#contact" data-cmd-keywords="contact email pesan kontak" class="cmd-entry cmd-item flex items-center justify-between px-3.5 py-2.5 rounded-xl hover:bg-[var(--bg-elevated)] text-[var(--text-primary)] transition-colors">
+            <span>Kontak &amp; Kirim Pesan</span>
+            <span class="text-xs text-[var(--text-muted)]">C</span>
           </a>
 
-          <div class="px-2 pt-2 pb-1 text-[10px] text-[var(--text-muted)] uppercase tracking-wider border-t border-[var(--border-subtle)]">
-            <span data-lang="id">Preferensi &amp; Efek Visual</span>
-            <span data-lang="en">Preferences &amp; Visual FX</span>
-          </div>
-          <button
-            type="button"
-            id="cmd-open-arcade"
-            data-cmd-keywords="arcade minigame game bug blaster code typer memory whack reflex mainan"
-            class="cmd-entry w-full flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-[var(--bg-elevated)] text-[var(--accent-primary)] font-bold cursor-pointer transition-colors"
-          >
-            <span data-lang="id">🎮 Buka Cyber Mini-Game Arcade (6 Games!)</span>
-            <span data-lang="en">🎮 Open Cyber Mini-Game Arcade (6 Games!)</span>
-            <span class="text-[var(--text-muted)]">G</span>
+          <div class="pt-2 mt-1 border-t border-[var(--border-subtle)]"></div>
+
+          <button type="button" id="cmd-action-theme" data-cmd-keywords="theme dark light tema terang gelap" class="cmd-entry cmd-item w-full text-left flex items-center justify-between px-3.5 py-2.5 rounded-xl hover:bg-[var(--bg-elevated)] text-[var(--text-primary)] transition-colors cursor-pointer">
+            <span>Ganti Tema (Daylight Terang / Slate Gelap)</span>
+            <span class="text-xs text-[var(--text-muted)]">T</span>
           </button>
-          <button
-            type="button"
-            id="cmd-open-snake-game"
-            data-cmd-keywords="snake ular game cyber serpent arcade main"
-            class="cmd-entry w-full flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-[var(--bg-elevated)] text-[var(--accent-primary)] cursor-pointer transition-colors"
-          >
-            <span data-lang="id">🐍 Main Game Cyber Snake (Portal / Wall)</span>
-            <span data-lang="en">🐍 Play Cyber Snake Game (Portal / Wall)</span>
-            <span class="text-[var(--text-muted)]">↵</span>
+          <button type="button" id="cmd-action-lang" data-cmd-keywords="language bahasa indonesia english" class="cmd-entry cmd-item w-full text-left flex items-center justify-between px-3.5 py-2.5 rounded-xl hover:bg-[var(--bg-elevated)] text-[var(--text-primary)] transition-colors cursor-pointer">
+            <span>Ganti Bahasa (Indonesia / English)</span>
+            <span class="text-xs text-[var(--text-muted)]">L</span>
           </button>
-          <button
-            type="button"
-            id="cmd-toggle-theme"
-            data-cmd-keywords="theme dark light mode warna gelap terang"
-            class="cmd-entry w-full flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-[var(--bg-elevated)] text-[var(--accent-primary)] cursor-pointer transition-colors"
-          >
-            <span data-lang="id">◐ Ganti Tema (Dark / Light)</span>
-            <span data-lang="en">◐ Toggle Theme (Dark / Light)</span>
-            <span class="text-[var(--text-muted)]">T</span>
+          <button type="button" id="cmd-action-email" data-email={profile.email} data-cmd-keywords="copy email salin alamat" class="cmd-entry cmd-item w-full text-left flex items-center justify-between px-3.5 py-2.5 rounded-xl hover:bg-[var(--bg-elevated)] text-[var(--text-primary)] transition-colors cursor-pointer">
+            <span>Salin Email ({profile.email})</span>
+            <span class="text-xs text-[var(--text-muted)]">E</span>
           </button>
-          <button
-            type="button"
-            id="cmd-toggle-lang"
-            data-cmd-keywords="language bahasa indonesia english id en"
-            class="cmd-entry w-full flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-[var(--bg-elevated)] text-[var(--accent-secondary)] cursor-pointer transition-colors"
-          >
-            <span data-lang="id">🌐 Ganti Bahasa (ID / EN)</span>
-            <span data-lang="en">🌐 Switch Language (ID / EN)</span>
-            <span class="text-[var(--text-muted)]">L</span>
-          </button>
-          <button
-            type="button"
-            id="cmd-toggle-matrix"
-            data-cmd-keywords="matrix cyber rain fx animasi hujan kode"
-            class="cmd-entry w-full flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-[var(--bg-elevated)] text-[var(--accent-tertiary)] cursor-pointer transition-colors"
-          >
-            <span data-lang="id">⚡ Efek Matrix Cyber Rain (ON / OFF)</span>
-            <span data-lang="en">⚡ Matrix Cyber Rain FX (ON / OFF)</span>
-            <span class="text-[var(--text-muted)]">M</span>
-          </button>
-          <button
-            type="button"
-            id="cmd-toggle-serpent"
-            data-cmd-keywords="serpent snake ular neon background fx animasi latar"
-            class="cmd-entry w-full flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-[var(--bg-elevated)] text-[var(--accent-primary)] cursor-pointer transition-colors"
-          >
-            <span data-lang="id">🐍 Animasi Ular Neon Background (ON / OFF)</span>
-            <span data-lang="en">🐍 Background Neon Serpents FX (ON / OFF)</span>
-            <span class="text-[var(--text-muted)]">N</span>
-          </button>
-          <button
-            type="button"
-            id="cmd-toggle-sfx"
-            data-cmd-keywords="sound sfx audio mechanical keyboard suara klik"
-            class="cmd-entry w-full flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-[var(--bg-elevated)] text-[var(--accent-secondary)] cursor-pointer transition-colors"
-          >
-            <span data-lang="id">🔊 Suara Mechanical Switch &amp; UI Synth (ON / OFF)</span>
-            <span data-lang="en">🔊 Mechanical Switch &amp; UI Synth SFX (ON / OFF)</span>
-            <span class="text-[var(--text-muted)]">S</span>
-          </button>
-          <button
-            type="button"
-            id="cmd-fireworks"
-            data-cmd-keywords="party fireworks confetti kembang api perayaan easter egg"
-            class="cmd-entry w-full flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-[var(--bg-elevated)] text-[var(--accent-primary)] cursor-pointer transition-colors"
-          >
-            <span data-lang="id">🎉 Luncurkan Cyber Fireworks Party!</span>
-            <span data-lang="en">🎉 Launch Cyber Fireworks Party!</span>
-            <span class="text-[var(--text-muted)]">↵</span>
-          </button>
-          <button
-            type="button"
-            id="cmd-barrel-roll"
-            data-cmd-keywords="barrel roll spin putar 360 easter egg"
-            class="cmd-entry w-full flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-[var(--bg-elevated)] text-[var(--text-primary)] cursor-pointer transition-colors"
-          >
-            <span data-lang="id">🌀 Do a Cyber Barrel Roll (360°)</span>
-            <span data-lang="en">🌀 Do a Cyber Barrel Roll (360°)</span>
-            <span class="text-[var(--text-muted)]">↵</span>
-          </button>
-          <button
-            type="button"
-            id="cmd-copy-email"
-            data-email={profile.email}
-            data-cmd-keywords="copy email mail salin kontak"
-            class="cmd-entry w-full flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-[var(--bg-elevated)] text-[var(--text-primary)] cursor-pointer transition-colors"
-          >
-            <span>✉ Copy Email ({profile.email})</span>
-            <span id="cmd-copy-status" class="text-[var(--text-muted)]">C</span>
+          <button type="button" id="cmd-action-arcade" data-cmd-keywords="game arcade ular snake typer" class="cmd-entry cmd-item w-full text-left flex items-center justify-between px-3.5 py-2.5 rounded-xl hover:bg-[var(--bg-elevated)] text-[var(--accent-primary)] font-semibold transition-colors cursor-pointer">
+            <span>🎮 Buka Mini-Game Arcade (6 Permainan)</span>
+            <span class="text-xs text-[var(--text-muted)]">G</span>
           </button>
         </div>
       </div>
     </div>
 
-    <!-- Global Cyber Toast Notification -->
+    <!-- Subtle Minimal Toast Notification -->
     <div
       id="cyber-toast"
+      class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 pointer-events-none opacity-0 translate-y-2 transition-all duration-200 rounded-full bg-[var(--text-primary)] text-[var(--bg-surface)] px-4 py-2 font-sans text-xs font-semibold shadow-lg"
       role="status"
       aria-live="polite"
-      class="cyber-toast fixed bottom-5 right-5 z-50 glass-pill rounded-xl px-4 py-2.5 border border-[var(--border-focus)] shadow-[0_10px_30px_rgba(0,0,0,0.45)] font-mono text-xs text-[var(--text-primary)] flex items-center gap-2.5"
-    >
-      <span class="w-2 h-2 rounded-full bg-[var(--accent-primary)] shadow-[0_0_8px_var(--accent-primary)]"></span>
-      <span id="cyber-toast-msg">Ready</span>
-    </div>
+    ></div>
 
-    <!-- Floating Cyber Companion Bot + Synth SFX + Konami Code + Fireworks -->
+    <!-- Audio Synth + Easter Eggs + Arcade Modal -->
     <CyberCompanion />
-
-    <!-- Playable 6-in-1 Developer Mini-Game Arcade -->
     <CyberArcade />
 
-    <!-- Global Engines: Scroll Reveal, 3D Card Tilt, Magnetic Buttons, Cursor Ring & Constellation Canvas -->
     <script>
-      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-      // 1. Scroll Reveal Observer
-      const revealElements = document.querySelectorAll('.reveal-on-scroll');
-      if (prefersReducedMotion) {
-        revealElements.forEach((el) => el.classList.add('is-visible'));
-      } else if ('IntersectionObserver' in window) {
-        const revealObserver = new IntersectionObserver(
-          (entries) => {
-            entries.forEach((entry) => {
-              if (entry.isIntersecting) {
-                entry.target.classList.add('is-visible');
-                revealObserver.unobserve(entry.target);
-              }
-            });
-          },
-          { threshold: 0.08, rootMargin: '0px 0px -40px 0px' }
-        );
-        revealElements.forEach((el) => revealObserver.observe(el));
-      } else {
-        revealElements.forEach((el) => el.classList.add('is-visible'));
+      // 1. Scroll Progress & Floating Back-to-Top Pill
+      const progressBar = document.getElementById('scroll-progress-bar');
+      const floatingTopBtn = document.getElementById('floating-scroll-top');
+      const floatingPctEl = document.getElementById('floating-scroll-pct');
+
+      function updateScrollProgress() {
+        const scrollTop = window.scrollY;
+        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+        const pct = docHeight > 0 ? Math.min(100, Math.round((scrollTop / docHeight) * 100)) : 0;
+        if (progressBar) progressBar.style.width = `${pct}%`;
+        if (floatingPctEl) floatingPctEl.textContent = `${pct}%`;
+
+        if (floatingTopBtn) {
+          if (scrollTop > 320) {
+            floatingTopBtn.classList.remove('opacity-0', 'translate-y-3', 'pointer-events-none');
+            floatingTopBtn.classList.add('opacity-100', 'translate-y-0');
+          } else {
+            floatingTopBtn.classList.add('opacity-0', 'translate-y-3', 'pointer-events-none');
+            floatingTopBtn.classList.remove('opacity-100', 'translate-y-0');
+          }
+        }
       }
+      window.addEventListener('scroll', updateScrollProgress, { passive: true });
+      updateScrollProgress();
 
-      // 2. Spotlight + Subtle 3D Tilt for .bento-card & Custom Cursor Ring
-      const cursorRing = document.getElementById('cursor-ring');
-      let mouseX = window.innerWidth / 2;
-      let mouseY = window.innerHeight / 2;
-      let ringX = mouseX;
-      let ringY = mouseY;
+      floatingTopBtn?.addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: reducedMotion ? 'auto' : 'smooth' });
+      });
 
-      if (!prefersReducedMotion) {
+      // 2. Cursor Spotlight & 3D Perspective Tilt Effect
+      if (!reducedMotion) {
         document.addEventListener(
           'mousemove',
           (e) => {
-            mouseX = e.clientX;
-            mouseY = e.clientY;
-            if (cursorRing) {
-              cursorRing.style.opacity = '0.65';
+            const spotTarget = (e.target as HTMLElement | null)?.closest<HTMLElement>('.spotlight-surface');
+            if (spotTarget) {
+              const rect = spotTarget.getBoundingClientRect();
+              spotTarget.style.setProperty('--spot-x', `${e.clientX - rect.left}px`);
+              spotTarget.style.setProperty('--spot-y', `${e.clientY - rect.top}px`);
             }
 
-            const cards = document.querySelectorAll<HTMLElement>('.bento-card');
-            cards.forEach((card) => {
-              const rect = card.getBoundingClientRect();
-              if (
-                e.clientX >= rect.left - 80 &&
-                e.clientX <= rect.right + 80 &&
-                e.clientY >= rect.top - 80 &&
-                e.clientY <= rect.bottom + 80
-              ) {
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
-                card.style.setProperty('--mouse-x', `${x}px`);
-                card.style.setProperty('--mouse-y', `${y}px`);
-              }
-            });
+            const tiltTarget = (e.target as HTMLElement | null)?.closest<HTMLElement>('[data-tilt]');
+            if (tiltTarget) {
+              const rect = tiltTarget.getBoundingClientRect();
+              const x = (e.clientX - rect.left) / rect.width - 0.5;
+              const y = (e.clientY - rect.top) / rect.height - 0.5;
+              tiltTarget.style.transform = `perspective(900px) rotateX(${(-y * 5).toFixed(2)}deg) rotateY(${(x * 5).toFixed(2)}deg) translateY(-3px)`;
+            }
           },
           { passive: true }
         );
 
-        // 3D Tilt on cards with data-tilt
         document.querySelectorAll<HTMLElement>('[data-tilt]').forEach((card) => {
-          card.addEventListener('mousemove', (e) => {
-            const rect = card.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            const centerX = rect.width / 2;
-            const centerY = rect.height / 2;
-            const rotateX = ((y - centerY) / centerY) * -3.5;
-            const rotateY = ((x - centerX) / centerX) * 3.5;
-            card.style.transform = `perspective(1000px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) translateY(-3px)`;
-          });
           card.addEventListener('mouseleave', () => {
             card.style.transform = '';
           });
         });
-
-        // Magnetic Buttons
-        document.querySelectorAll<HTMLElement>('.magnetic-btn').forEach((btn) => {
-          btn.addEventListener('mousemove', (e) => {
-            const rect = btn.getBoundingClientRect();
-            const dx = e.clientX - (rect.left + rect.width / 2);
-            const dy = e.clientY - (rect.top + rect.height / 2);
-            btn.style.transform = `translate(${(dx * 0.18).toFixed(1)}px, ${(dy * 0.18).toFixed(1)}px)`;
-          });
-          btn.addEventListener('mouseleave', () => {
-            btn.style.transform = '';
-          });
-        });
-
-        // Smooth cursor ring animation loop
-        function animateCursorRing() {
-          ringX += (mouseX - ringX) * 0.18;
-          ringY += (mouseY - ringY) * 0.18;
-          if (cursorRing) {
-            cursorRing.style.transform = `translate3d(${ringX - 16}px, ${ringY - 16}px, 0)`;
-          }
-          requestAnimationFrame(animateCursorRing);
-        }
-        requestAnimationFrame(animateCursorRing);
       }
 
-      // 3. Interactive Constellation Canvas + Click Sparks + Data Packets + Matrix Rain + Neon Serpents
-      const canvas = document.getElementById('bg-canvas') as HTMLCanvasElement | null;
-      let matrixMode = false;
-      let serpentMode = true;
-
-      window.addEventListener('portfolio:toggle-matrix', () => {
-        matrixMode = !matrixMode;
-      });
-      window.addEventListener('portfolio:toggle-serpent', () => {
-        serpentMode = !serpentMode;
-      });
-
-      if (canvas && !prefersReducedMotion) {
-        const ctx = canvas.getContext('2d');
-        let width = (canvas.width = window.innerWidth);
-        let height = (canvas.height = window.innerHeight);
-
-        const rainColumns = () => Math.floor(width / 22);
-        let rainDrops: number[] = Array.from({ length: rainColumns() }, () => Math.random() * -50);
-
-        window.addEventListener(
-          'resize',
-          () => {
-            width = canvas.width = window.innerWidth;
-            height = canvas.height = window.innerHeight;
-            rainDrops = Array.from({ length: rainColumns() }, () => Math.random() * -50);
-          },
-          { passive: true }
-        );
-
-        const particleCount = Math.min(48, Math.floor((width * height) / 28000));
-        const particles = Array.from({ length: particleCount }, () => ({
-          x: Math.random() * width,
-          y: Math.random() * height,
-          vx: (Math.random() - 0.5) * 0.4,
-          vy: (Math.random() - 0.5) * 0.4,
-          r: Math.random() * 1.6 + 0.8,
-        }));
-
-        // Click Spark Bursts & Shockwave Rings
-        interface Spark {
-          x: number;
-          y: number;
-          vx: number;
-          vy: number;
-          alpha: number;
-          color: string;
-        }
-        interface Shockwave {
-          x: number;
-          y: number;
-          radius: number;
-          alpha: number;
-        }
-        const sparks: Spark[] = [];
-        const shockwaves: Shockwave[] = [];
-
-        // Autonomous Neon Cyber-Serpents slithering across background & chasing orbs/clicks
-        interface SerpentOrb {
-          x: number;
-          y: number;
-          rgb: [number, number, number];
-        }
-        interface BgSerpent {
-          angle: number;
-          speed: number;
-          segSpacing: number;
-          headRgb: [number, number, number];
-          tailRgb: [number, number, number];
-          orbIdx: number;
-          segments: { x: number; y: number }[];
-        }
-
-        const randomOrbPos = () => ({
-          x: 60 + Math.random() * Math.max(80, width - 120),
-          y: 80 + Math.random() * Math.max(80, height - 140),
-        });
-
-        const serpentOrbs: SerpentOrb[] = [
-          { ...randomOrbPos(), rgb: [16, 185, 129] },
-          { ...randomOrbPos(), rgb: [56, 189, 248] },
-        ];
-
-        function createBgSerpent(
-          startX: number,
-          startY: number,
-          segCount: number,
-          speed: number,
-          headRgb: [number, number, number],
-          tailRgb: [number, number, number],
-          orbIdx: number
-        ): BgSerpent {
-          const angle = Math.random() * Math.PI * 2;
-          const segSpacing = 7.5;
-          const segments = Array.from({ length: segCount }, (_, i) => ({
-            x: startX - Math.cos(angle) * i * segSpacing,
-            y: startY - Math.sin(angle) * i * segSpacing,
-          }));
-          return { angle, speed, segSpacing, headRgb, tailRgb, orbIdx, segments };
-        }
-
-        const bgSerpents: BgSerpent[] = [
-          createBgSerpent(width * 0.25, height * 0.35, 24, 0.82, [16, 185, 129], [56, 189, 248], 0),
-          createBgSerpent(width * 0.75, height * 0.65, 20, 0.68, [56, 189, 248], [129, 140, 248], 1),
-        ];
-
-        window.addEventListener('click', (e) => {
-          if (serpentMode && serpentOrbs.length > 0) {
-            // Lure nearest serpent toward click coordinate
-            const d0 = Math.hypot(bgSerpents[0].segments[0].x - e.clientX, bgSerpents[0].segments[0].y - e.clientY);
-            const d1 = Math.hypot(bgSerpents[1].segments[0].x - e.clientX, bgSerpents[1].segments[0].y - e.clientY);
-            const targetOrb = serpentOrbs[d0 <= d1 ? 0 : 1];
-            targetOrb.x = Math.max(30, Math.min(width - 30, e.clientX));
-            targetOrb.y = Math.max(50, Math.min(height - 30, e.clientY));
-          }
-
-          shockwaves.push({
-            x: e.clientX,
-            y: e.clientY,
-            radius: 4,
-            alpha: 0.75,
-          });
-          const colors = ['#10b981', '#38bdf8', '#818cf8'];
-          for (let i = 0; i < 14; i++) {
-            const angle = (Math.PI * 2 * i) / 14 + (Math.random() - 0.5) * 0.3;
-            const speed = 1.5 + Math.random() * 3.2;
-            sparks.push({
-              x: e.clientX,
-              y: e.clientY,
-              vx: Math.cos(angle) * speed,
-              vy: Math.sin(angle) * speed,
-              alpha: 1,
-              color: colors[i % colors.length],
+      // 3. Scroll Reveal Observer
+      const revealEls = document.querySelectorAll('.reveal-on-scroll');
+      if (!reducedMotion && 'IntersectionObserver' in window) {
+        const observer = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                entry.target.classList.add('is-visible');
+                observer.unobserve(entry.target);
+              }
             });
-          }
-        });
-
-        let pulsePhase = 0;
-        let lastNetTime = performance.now();
-        const matrixChars = '0123456789ABCDEF<>/{}[]$#*+=-~';
-
-        function drawNetwork(now: number = performance.now()) {
-          if (!ctx) return;
-          const dtScale = Math.min(2, Math.max(0.25, (now - lastNetTime) / 16.667));
-          lastNetTime = now;
-          ctx.clearRect(0, 0, width, height);
-          pulsePhase += 0.018 * dtScale;
-
-          const isLight = document.documentElement.getAttribute('data-theme') === 'light';
-          const dotColor = isLight ? 'rgba(5, 150, 105, 0.38)' : 'rgba(16, 185, 129, 0.45)';
-          const packetColor = isLight ? '#059669' : '#38bdf8';
-          const lineColorPrefix = isLight ? 'rgba(2, 132, 199,' : 'rgba(56, 189, 248,';
-
-          // Optional Matrix Rain Layer
-          if (matrixMode) {
-            ctx.font = '11px "JetBrains Mono", monospace';
-            ctx.fillStyle = isLight ? 'rgba(5, 150, 105, 0.22)' : 'rgba(16, 185, 129, 0.24)';
-            for (let i = 0; i < rainDrops.length; i++) {
-              const ch = matrixChars[Math.floor(Math.random() * matrixChars.length)];
-              const x = i * 22;
-              const y = rainDrops[i] * 18;
-              if (y > 0 && y < height) {
-                ctx.fillText(ch, x, y);
-              }
-              rainDrops[i] += 0.35;
-              if (rainDrops[i] * 18 > height && Math.random() > 0.975) {
-                rainDrops[i] = 0;
-              }
-            }
-          }
-
-          for (let i = 0; i < particles.length; i++) {
-            const p = particles[i];
-            p.x += p.vx;
-            p.y += p.vy;
-
-            if (p.x < 0 || p.x > width) p.vx *= -1;
-            if (p.y < 0 || p.y > height) p.vy *= -1;
-
-            ctx.beginPath();
-            ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-            ctx.fillStyle = dotColor;
-            ctx.fill();
-
-            // Connect nearby particles + traveling data packet on select edges
-            for (let j = i + 1; j < particles.length; j++) {
-              const p2 = particles[j];
-              const dx = p.x - p2.x;
-              const dy = p.y - p2.y;
-              const dist = Math.hypot(dx, dy);
-              if (dist < 140) {
-                const alpha = (1 - dist / 140) * 0.15;
-                ctx.beginPath();
-                ctx.moveTo(p.x, p.y);
-                ctx.lineTo(p2.x, p2.y);
-                ctx.strokeStyle = `${lineColorPrefix}${alpha})`;
-                ctx.lineWidth = 0.8;
-                ctx.stroke();
-
-                // Traveling data packet on every 7th pair
-                if ((i + j) % 7 === 0) {
-                  const t = (pulsePhase + i * 0.2) % 1;
-                  const px = p.x + (p2.x - p.x) * t;
-                  const py = p.y + (p2.y - p.y) * t;
-                  ctx.beginPath();
-                  ctx.arc(px, py, 1.8, 0, Math.PI * 2);
-                  ctx.fillStyle = packetColor;
-                  ctx.fill();
-                }
-              }
-            }
-
-            // Connect to cursor
-            const cdx = p.x - mouseX;
-            const cdy = p.y - mouseY;
-            const cdist = Math.hypot(cdx, cdy);
-            if (cdist < 175) {
-              const alpha = (1 - cdist / 175) * 0.28;
-              ctx.beginPath();
-              ctx.moveTo(p.x, p.y);
-              ctx.lineTo(mouseX, mouseY);
-              ctx.strokeStyle = `${lineColorPrefix}${alpha})`;
-              ctx.lineWidth = 1;
-              ctx.stroke();
-            }
-          }
-
-          // Render Click Shockwaves
-          for (let i = shockwaves.length - 1; i >= 0; i--) {
-            const sw = shockwaves[i];
-            sw.radius += 3.2;
-            sw.alpha -= 0.022;
-            if (sw.alpha <= 0) {
-              shockwaves.splice(i, 1);
-              continue;
-            }
-            ctx.beginPath();
-            ctx.arc(sw.x, sw.y, sw.radius, 0, Math.PI * 2);
-            ctx.strokeStyle = `rgba(16, 185, 129, ${sw.alpha})`;
-            ctx.lineWidth = 1.5;
-            ctx.stroke();
-          }
-
-          // Render Click Sparks
-          for (let i = sparks.length - 1; i >= 0; i--) {
-            const sp = sparks[i];
-            sp.x += sp.vx;
-            sp.y += sp.vy;
-            sp.vx *= 0.96;
-            sp.vy *= 0.96;
-            sp.alpha -= 0.028;
-            if (sp.alpha <= 0) {
-              sparks.splice(i, 1);
-              continue;
-            }
-            ctx.globalAlpha = sp.alpha;
-            ctx.beginPath();
-            ctx.arc(sp.x, sp.y, 2, 0, Math.PI * 2);
-            ctx.fillStyle = sp.color;
-            ctx.fill();
-            ctx.globalAlpha = 1;
-          }
-
-          // Render Autonomous Neon Cyber-Serpents
-          if (serpentMode) {
-            const baseAlpha = isLight ? 0.34 : 0.46;
-
-            // Draw target energy orbs
-            for (let oi = 0; oi < serpentOrbs.length; oi++) {
-              const orb = serpentOrbs[oi];
-              orb.x = Math.min(orb.x, Math.max(40, width - 40));
-              orb.y = Math.min(orb.y, Math.max(60, height - 40));
-              const [or, og, ob] = orb.rgb;
-              const orbPulse = 4.5 + Math.sin(pulsePhase * 3 + oi * 1.8) * 2;
-              ctx.beginPath();
-              ctx.arc(orb.x, orb.y, orbPulse + 3.5, 0, Math.PI * 2);
-              ctx.strokeStyle = `rgba(${or}, ${og}, ${ob}, ${baseAlpha * 0.55})`;
-              ctx.lineWidth = 1;
-              ctx.stroke();
-
-              ctx.beginPath();
-              ctx.arc(orb.x, orb.y, 2.8, 0, Math.PI * 2);
-              ctx.fillStyle = `rgba(${or}, ${og}, ${ob}, ${baseAlpha * 1.25})`;
-              ctx.fill();
-            }
-
-            // Update & draw each serpent
-            for (let si = 0; si < bgSerpents.length; si++) {
-              const s = bgSerpents[si];
-              const head = s.segments[0];
-              const target = serpentOrbs[s.orbIdx];
-
-              const desired = Math.atan2(target.y - head.y, target.x - head.x);
-              const diff = Math.atan2(Math.sin(desired - s.angle), Math.cos(desired - s.angle));
-              // Smooth delta-scaled steering + gentle sinusoidal slither wave
-              const turnStep = Math.max(-0.032, Math.min(0.032, diff * 0.048));
-              const wave = Math.sin(pulsePhase * 2.1 + si * 2.2) * 0.024;
-              s.angle += (turnStep + wave) * dtScale;
-
-              head.x += Math.cos(s.angle) * s.speed * dtScale;
-              head.y += Math.sin(s.angle) * s.speed * dtScale;
-
-              // Follow-the-leader inverse kinematics for smooth S-curve body
-              for (let k = 1; k < s.segments.length; k++) {
-                const prev = s.segments[k - 1];
-                const cur = s.segments[k];
-                const dx = prev.x - cur.x;
-                const dy = prev.y - cur.y;
-                const d = Math.hypot(dx, dy) || 1;
-                cur.x = prev.x - (dx / d) * s.segSpacing;
-                cur.y = prev.y - (dy / d) * s.segSpacing;
-              }
-
-              // Eat orb & respawn
-              if (Math.hypot(target.x - head.x, target.y - head.y) < 16) {
-                shockwaves.push({ x: target.x, y: target.y, radius: 3, alpha: 0.45 });
-                const nextPos = randomOrbPos();
-                target.x = nextPos.x;
-                target.y = nextPos.y;
-              }
-
-              // Draw spine curve
-              const [hr, hg, hb] = s.headRgb;
-              const [tr, tg, tb] = s.tailRgb;
-              ctx.beginPath();
-              ctx.moveTo(head.x, head.y);
-              for (let k = 1; k < s.segments.length; k++) {
-                ctx.lineTo(s.segments[k].x, s.segments[k].y);
-              }
-              ctx.strokeStyle = `rgba(${hr}, ${hg}, ${hb}, ${baseAlpha * 0.45})`;
-              ctx.lineWidth = 1.6;
-              ctx.stroke();
-
-              // Draw tapering glowing segments from tail to head
-              for (let k = s.segments.length - 1; k >= 0; k--) {
-                const seg = s.segments[k];
-                const t = k / (s.segments.length - 1);
-                const rCol = Math.round(hr + (tr - hr) * t);
-                const gCol = Math.round(hg + (tg - hg) * t);
-                const bCol = Math.round(hb + (tb - hb) * t);
-                const segRadius = k === 0 ? 4.4 : Math.max(1.1, 3.6 * (1 - t * 0.72));
-                const segAlpha = baseAlpha * (1 - t * 0.78);
-
-                ctx.beginPath();
-                ctx.arc(seg.x, seg.y, segRadius, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(${rCol}, ${gCol}, ${bCol}, ${segAlpha})`;
-                ctx.fill();
-              }
-
-              // Forked cyber-tongue flick + eyes on head
-              if (Math.sin(pulsePhase * 1.9 + si * 2.4) > 0.76) {
-                const tx = head.x + Math.cos(s.angle) * 8.5;
-                const ty = head.y + Math.sin(s.angle) * 8.5;
-                ctx.strokeStyle = `rgba(244, 63, 94, ${baseAlpha * 1.2})`;
-                ctx.lineWidth = 1;
-                ctx.beginPath();
-                ctx.moveTo(head.x + Math.cos(s.angle) * 4, head.y + Math.sin(s.angle) * 4);
-                ctx.lineTo(tx, ty);
-                ctx.lineTo(tx + Math.cos(s.angle + 0.5) * 3, ty + Math.sin(s.angle + 0.5) * 3);
-                ctx.moveTo(tx, ty);
-                ctx.lineTo(tx + Math.cos(s.angle - 0.5) * 3, ty + Math.sin(s.angle - 0.5) * 3);
-                ctx.stroke();
-              }
-
-              const perpX = -Math.sin(s.angle);
-              const perpY = Math.cos(s.angle);
-              ctx.fillStyle = isLight ? '#ffffff' : '#05070b';
-              ctx.beginPath();
-              ctx.arc(head.x + Math.cos(s.angle) * 1.5 + perpX * 2, head.y + Math.sin(s.angle) * 1.5 + perpY * 2, 1, 0, Math.PI * 2);
-              ctx.arc(head.x + Math.cos(s.angle) * 1.5 - perpX * 2, head.y + Math.sin(s.angle) * 1.5 - perpY * 2, 1, 0, Math.PI * 2);
-              ctx.fill();
-            }
-          }
-
-          requestAnimationFrame(drawNetwork);
-        }
-        requestAnimationFrame(drawNetwork);
+          },
+          { threshold: 0.08, rootMargin: '0px 0px -30px 0px' }
+        );
+        revealEls.forEach((el) => observer.observe(el));
+      } else {
+        revealEls.forEach((el) => el.classList.add('is-visible'));
       }
 
-      // 4. Scroll Progress Bar & Footer Status Sync
-      const progressBar = document.getElementById('scroll-progress-bar');
-      const statusLnEl = document.getElementById('footer-scroll-pct');
-
-      function updateScrollMetrics() {
-        const scrollTop = window.scrollY || document.documentElement.scrollTop;
-        const docHeight =
-          document.documentElement.scrollHeight - document.documentElement.clientHeight;
-        const pct = docHeight > 0 ? Math.min(100, Math.round((scrollTop / docHeight) * 100)) : 100;
-        if (progressBar) {
-          progressBar.style.width = `${pct}%`;
-        }
-        if (statusLnEl) {
-          statusLnEl.textContent = `${pct}% scrolled`;
-        }
-      }
-
-      window.addEventListener('scroll', updateScrollMetrics, { passive: true });
-      updateScrollMetrics();
-
-      // 5. Command Palette (⌘K / Ctrl+K) with Live Search + Global Shortcuts + Cyber Toast
-      const cmdModal = document.getElementById('cmd-palette-modal');
-      const cmdCloseBtn = document.getElementById('cmd-close-btn');
-      const cmdSearchInput = document.getElementById('cmd-search-input') as HTMLInputElement | null;
-      const cmdEntries = document.querySelectorAll<HTMLElement>('.cmd-entry');
+      // 4. Toast Helper & Accent Color Switcher Event
       const toastEl = document.getElementById('cyber-toast');
-      const toastMsgEl = document.getElementById('cyber-toast-msg');
       let toastTimer: number | null = null;
-
       function showToast(msg: string) {
-        if (!toastEl || !toastMsgEl) return;
-        toastMsgEl.textContent = msg;
-        toastEl.classList.add('is-visible');
-        if (toastTimer) clearTimeout(toastTimer);
+        if (!toastEl) return;
+        toastEl.textContent = msg;
+        toastEl.classList.remove('opacity-0', 'translate-y-2');
+        toastEl.classList.add('opacity-100', 'translate-y-0');
+        if (toastTimer) window.clearTimeout(toastTimer);
         toastTimer = window.setTimeout(() => {
-          toastEl.classList.remove('is-visible');
-        }, 2400);
+          toastEl.classList.add('opacity-0', 'translate-y-2');
+          toastEl.classList.remove('opacity-100', 'translate-y-0');
+        }, 2200);
       }
 
       window.addEventListener('portfolio:toast', (e: Event) => {
@@ -801,138 +288,229 @@ const {
         if (custom.detail?.message) showToast(custom.detail.message);
       });
 
-      function filterCmdEntries(query: string) {
-        const q = query.trim().toLowerCase();
-        cmdEntries.forEach((entry) => {
-          const keywords = (entry.getAttribute('data-cmd-keywords') || '') + ' ' + (entry.textContent || '');
-          const match = !q || keywords.toLowerCase().includes(q);
-          entry.style.display = match ? '' : 'none';
-        });
-      }
-
-      cmdSearchInput?.addEventListener('input', () => {
-        filterCmdEntries(cmdSearchInput.value);
-      });
-
-      cmdSearchInput?.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-          const firstVisible = Array.from(cmdEntries).find((el) => el.style.display !== 'none');
-          if (firstVisible) {
-            e.preventDefault();
-            firstVisible.click();
-          }
+      window.addEventListener('portfolio:set-accent', (e: Event) => {
+        const custom = e as CustomEvent<{ accent?: string; label?: string }>;
+        const accent = custom.detail?.accent || 'emerald';
+        document.documentElement.setAttribute('data-accent', accent);
+        try {
+          localStorage.setItem('portfolio_accent_v7', accent);
+        } catch (_) {}
+        if (custom.detail?.label) {
+          showToast(`🎨 Warna Aksen: ${custom.detail.label}`);
         }
       });
 
+      // 5. Optional Easter Egg Canvas
+      const canvas = document.getElementById('bg-canvas') as HTMLCanvasElement | null;
+      let matrixMode = false;
+      let serpentBgEnabled = false;
+
+      if (canvas && !reducedMotion) {
+        const ctx = canvas.getContext('2d');
+        let width = (canvas.width = window.innerWidth);
+        let height = (canvas.height = window.innerHeight);
+        let matrixCols: number[] = [];
+
+        interface BgSerpent {
+          pts: { x: number; y: number }[];
+          angle: number;
+          turnVel: number;
+          speed: number;
+          food: { x: number; y: number };
+        }
+        const bgSerpents: BgSerpent[] = [];
+
+        function initMatrixCols() {
+          const colCount = Math.floor(width / 22);
+          matrixCols = Array.from({ length: colCount }, () => Math.random() * -80);
+        }
+
+        function initSerpents() {
+          bgSerpents.length = 0;
+          const sx = width * 0.3;
+          const sy = height * 0.4;
+          bgSerpents.push({
+            pts: Array.from({ length: 18 }, (_, j) => ({ x: sx - j * 8, y: sy })),
+            angle: 0.2,
+            turnVel: 0,
+            speed: 0.8,
+            food: { x: width * 0.7, y: height * 0.5 },
+          });
+        }
+
+        initMatrixCols();
+        initSerpents();
+
+        window.addEventListener('resize', () => {
+          if (!canvas) return;
+          width = canvas.width = window.innerWidth;
+          height = canvas.height = window.innerHeight;
+          initMatrixCols();
+        });
+
+        const chars = '01{}[]<>/*+-=~;:ABCDEF';
+        let lastFrameAt = performance.now();
+
+        function animate(now: number) {
+          if (!ctx) return;
+          const dtScale = Math.min(2.2, Math.max(0.25, (now - lastFrameAt) / 16.667));
+          lastFrameAt = now;
+
+          ctx.clearRect(0, 0, width, height);
+
+          if (matrixMode) {
+            ctx.font = '12px "JetBrains Mono", monospace';
+            const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+            ctx.fillStyle = isLight ? 'rgba(13, 148, 136, 0.28)' : 'rgba(45, 212, 191, 0.28)';
+            for (let i = 0; i < matrixCols.length; i++) {
+              const ch = chars[Math.floor(Math.random() * chars.length)];
+              const x = i * 22;
+              const y = matrixCols[i] * 18;
+              ctx.fillText(ch, x, y);
+              if (y > height && Math.random() > 0.975) matrixCols[i] = 0;
+              matrixCols[i] += 0.32 * dtScale;
+            }
+          }
+
+          if (serpentBgEnabled) {
+            const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+            const strokeCol = isLight ? 'rgba(13, 148, 136, 0.35)' : 'rgba(45, 212, 191, 0.35)';
+            for (const s of bgSerpents) {
+              const head = s.pts[0];
+              const dx = s.food.x - head.x;
+              const dy = s.food.y - head.y;
+              const dist = Math.hypot(dx, dy);
+              if (dist < 22) {
+                s.food.x = 60 + Math.random() * Math.max(80, width - 120);
+                s.food.y = 60 + Math.random() * Math.max(80, height - 120);
+              }
+              const targetAngle = Math.atan2(dy, dx);
+              let diff = targetAngle - s.angle;
+              while (diff > Math.PI) diff -= Math.PI * 2;
+              while (diff < -Math.PI) diff += Math.PI * 2;
+              s.turnVel = s.turnVel * Math.pow(0.88, dtScale) + diff * 0.008 * dtScale;
+              s.turnVel = Math.max(-0.04, Math.min(0.04, s.turnVel));
+              s.angle += s.turnVel * dtScale;
+
+              const nx = (head.x + Math.cos(s.angle) * s.speed * dtScale + width) % width;
+              const ny = (head.y + Math.sin(s.angle) * s.speed * dtScale + height) % height;
+              s.pts[0] = { x: nx, y: ny };
+              for (let i = 1; i < s.pts.length; i++) {
+                const prev = s.pts[i - 1];
+                const cur = s.pts[i];
+                const sdx = prev.x - cur.x;
+                const sdy = prev.y - cur.y;
+                const d = Math.hypot(sdx, sdy);
+                if (d > 50) s.pts[i] = { x: prev.x, y: prev.y };
+                else if (d > 8) {
+                  const a = Math.atan2(sdy, sdx);
+                  s.pts[i] = { x: prev.x - Math.cos(a) * 8, y: prev.y - Math.sin(a) * 8 };
+                }
+              }
+              ctx.strokeStyle = strokeCol;
+              ctx.lineWidth = 2.5;
+              ctx.lineCap = 'round';
+              ctx.beginPath();
+              ctx.moveTo(s.pts[0].x, s.pts[0].y);
+              for (let i = 1; i < s.pts.length; i++) {
+                if (Math.hypot(s.pts[i].x - s.pts[i - 1].x, s.pts[i].y - s.pts[i - 1].y) < 30) {
+                  ctx.lineTo(s.pts[i].x, s.pts[i].y);
+                } else {
+                  ctx.moveTo(s.pts[i].x, s.pts[i].y);
+                }
+              }
+              ctx.stroke();
+            }
+          }
+
+          requestAnimationFrame(animate);
+        }
+        requestAnimationFrame(animate);
+      }
+
+      window.addEventListener('portfolio:toggle-matrix', () => {
+        matrixMode = !matrixMode;
+        showToast(matrixMode ? 'Matrix Mode: Aktif' : 'Matrix Mode: Nonaktif');
+      });
+
+      window.addEventListener('portfolio:toggle-serpent', () => {
+        serpentBgEnabled = !serpentBgEnabled;
+        showToast(serpentBgEnabled ? '🐍 Ular Latar: Aktif' : '🐍 Ular Latar: Nonaktif');
+      });
+
+      // 6. Command Palette Logic
+      const cmdModal = document.getElementById('cmd-palette-modal');
+      const cmdClose = document.getElementById('cmd-close-btn');
+      const cmdSearch = document.getElementById('cmd-search-input') as HTMLInputElement | null;
+      const cmdEntries = document.querySelectorAll<HTMLElement>('.cmd-entry');
+
+      function filterCmdEntries(q: string) {
+        const query = q.trim().toLowerCase();
+        cmdEntries.forEach((el) => {
+          const text = (el.textContent || '').toLowerCase();
+          const kw = (el.getAttribute('data-cmd-keywords') || '').toLowerCase();
+          if (!query || text.includes(query) || kw.includes(query)) {
+            el.classList.remove('hidden');
+          } else {
+            el.classList.add('hidden');
+          }
+        });
+      }
+
+      cmdSearch?.addEventListener('input', () => filterCmdEntries(cmdSearch.value));
+
       function openCmdPalette() {
         cmdModal?.classList.remove('hidden');
-        if (cmdSearchInput) {
-          cmdSearchInput.value = '';
+        if (cmdSearch) {
+          cmdSearch.value = '';
           filterCmdEntries('');
         }
         requestAnimationFrame(() => {
           cmdModal?.classList.add('is-open');
-          cmdSearchInput?.focus();
+          cmdSearch?.focus();
         });
       }
 
       function closeCmdPalette() {
         cmdModal?.classList.remove('is-open');
-        setTimeout(() => cmdModal?.classList.add('hidden'), 200);
+        setTimeout(() => cmdModal?.classList.add('hidden'), 180);
       }
 
       window.addEventListener('portfolio:open-cmd', openCmdPalette);
-      cmdCloseBtn?.addEventListener('click', closeCmdPalette);
+      cmdClose?.addEventListener('click', closeCmdPalette);
       cmdModal?.addEventListener('click', (e) => {
         if (e.target === cmdModal) closeCmdPalette();
       });
 
       document.querySelectorAll('.cmd-item').forEach((item) => {
-        item.addEventListener('click', closeCmdPalette);
+        item.addEventListener('click', () => closeCmdPalette());
       });
 
-      document.getElementById('cmd-open-arcade')?.addEventListener('click', () => {
-        closeCmdPalette();
+      document.getElementById('cmd-action-theme')?.addEventListener('click', () => {
+        document.getElementById('theme-toggle-btn')?.click();
+      });
+      document.getElementById('cmd-action-lang')?.addEventListener('click', () => {
+        document.getElementById('lang-toggle-btn')?.click();
+      });
+      document.getElementById('cmd-action-arcade')?.addEventListener('click', () => {
         window.dispatchEvent(new CustomEvent('portfolio:open-arcade'));
       });
-
-      document.getElementById('cmd-open-snake-game')?.addEventListener('click', () => {
-        closeCmdPalette();
-        window.dispatchEvent(new CustomEvent('portfolio:open-arcade', { detail: { tab: 'snake' } }));
-      });
-
-      document.getElementById('cmd-toggle-theme')?.addEventListener('click', () => {
-        document.getElementById('theme-toggle-btn')?.click();
-        closeCmdPalette();
-      });
-
-      document.getElementById('cmd-toggle-lang')?.addEventListener('click', () => {
-        document.getElementById('lang-toggle-btn')?.click();
-        closeCmdPalette();
-      });
-
-      document.getElementById('cmd-toggle-matrix')?.addEventListener('click', () => {
-        window.dispatchEvent(new CustomEvent('portfolio:toggle-matrix'));
-        showToast(matrixMode ? '⚡ Matrix Cyber Rain: ON' : '⚡ Matrix Cyber Rain: OFF');
-        closeCmdPalette();
-      });
-
-      document.getElementById('cmd-toggle-serpent')?.addEventListener('click', () => {
-        window.dispatchEvent(new CustomEvent('portfolio:toggle-serpent'));
-        showToast(serpentMode ? '🐍 Neon Cyber-Serpents: ON' : '🐍 Neon Cyber-Serpents: OFF');
-        closeCmdPalette();
-      });
-
-      document.getElementById('cmd-toggle-sfx')?.addEventListener('click', () => {
-        window.dispatchEvent(new CustomEvent('portfolio:toggle-sfx'));
-        closeCmdPalette();
-      });
-
-      document.getElementById('cmd-fireworks')?.addEventListener('click', () => {
-        closeCmdPalette();
-        window.dispatchEvent(new CustomEvent('portfolio:fireworks'));
-        showToast('🎉 Cyber Fireworks Party!');
-      });
-
-      document.getElementById('cmd-barrel-roll')?.addEventListener('click', () => {
-        closeCmdPalette();
-        window.dispatchEvent(new CustomEvent('portfolio:barrel-roll'));
-      });
-
-      document.getElementById('cmd-copy-email')?.addEventListener('click', async (e) => {
-        const btn = e.currentTarget as HTMLElement;
-        const email = btn.getAttribute('data-email');
-        const status = document.getElementById('cmd-copy-status');
+      document.getElementById('cmd-action-email')?.addEventListener('click', async (e) => {
+        const target = e.currentTarget as HTMLElement;
+        const email = target.getAttribute('data-email');
         if (email) {
           try {
             await navigator.clipboard.writeText(email);
-            if (status) status.textContent = '✓ Copied!';
-            showToast(`✓ Copied ${email}`);
-            setTimeout(() => {
-              if (status) status.textContent = 'C';
-              closeCmdPalette();
-            }, 600);
+            showToast(`✓ Email tersalin: ${email}`);
           } catch (_) {}
         }
       });
 
-      const sectionShortcuts: Record<string, string> = {
-        '1': 'about',
-        '2': 'stack',
-        '3': 'projects',
-        '4': 'experience',
-        '5': 'github',
-        '6': 'contact',
-      };
-
       document.addEventListener('keydown', (e) => {
         if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
           e.preventDefault();
-          if (cmdModal?.classList.contains('hidden')) {
-            openCmdPalette();
-          } else {
-            closeCmdPalette();
-          }
+          if (cmdModal?.classList.contains('hidden')) openCmdPalette();
+          else closeCmdPalette();
           return;
         }
 
@@ -941,26 +519,15 @@ const {
           return;
         }
 
-        // Single-key shortcuts when not typing in input/textarea or playing inside arcade modal
         const tag = (e.target as HTMLElement | null)?.tagName;
-        const arcadeOpen = !document.getElementById('cyber-arcade-modal')?.classList.contains('hidden');
-        if (tag === 'INPUT' || tag === 'TEXTAREA' || arcadeOpen || e.metaKey || e.ctrlKey || e.altKey) return;
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || e.metaKey || e.ctrlKey || e.altKey) return;
 
-        if (sectionShortcuts[e.key]) {
-          document.getElementById(sectionShortcuts[e.key])?.scrollIntoView({ behavior: 'smooth' });
-        } else if (e.key.toLowerCase() === 't') {
-          document.getElementById('theme-toggle-btn')?.click();
-        } else if (e.key.toLowerCase() === 'l') {
-          document.getElementById('lang-toggle-btn')?.click();
-        } else if (e.key.toLowerCase() === 'm') {
-          window.dispatchEvent(new CustomEvent('portfolio:toggle-matrix'));
-          showToast(matrixMode ? '⚡ Matrix Cyber Rain: ON' : '⚡ Matrix Cyber Rain: OFF');
-        } else if (e.key.toLowerCase() === 'n') {
-          window.dispatchEvent(new CustomEvent('portfolio:toggle-serpent'));
-          showToast(serpentMode ? '🐍 Neon Cyber-Serpents: ON' : '🐍 Neon Cyber-Serpents: OFF');
-        } else if (e.key.toLowerCase() === 's') {
-          window.dispatchEvent(new CustomEvent('portfolio:toggle-sfx'));
-        }
+        const k = e.key.toLowerCase();
+        if (k === 't') document.getElementById('theme-toggle-btn')?.click();
+        else if (k === 'l') document.getElementById('lang-toggle-btn')?.click();
+        else if (k === 'm') window.dispatchEvent(new CustomEvent('portfolio:toggle-matrix'));
+        else if (k === 'n') window.dispatchEvent(new CustomEvent('portfolio:toggle-serpent'));
+        else if (k === 's') window.dispatchEvent(new CustomEvent('portfolio:toggle-sfx'));
       });
     </script>
   </body>

@@ -1,147 +1,248 @@
 ---
-import SectionHeader from './SectionHeader.astro';
 import { profile } from '../data/profile';
 import { translations } from '../data/i18n';
+
+const primaryUsername = (import.meta.env.PUBLIC_GITHUB_USERNAME || profile.githubUsername).trim();
+const serverGithubToken = import.meta.env.GITHUB_TOKEN;
+
+interface InitialStats {
+  login: string;
+  displayName: string;
+  public_repos: number;
+  followers: number;
+  public_gists: number;
+  loaded: boolean;
+}
+
+interface InitialRepo {
+  name: string;
+  html_url: string;
+  description: string | null;
+  language: string | null;
+  stargazers_count: number;
+  forks_count: number;
+  pushed_at: string | null;
+}
+
+let initialStats: InitialStats = {
+  login: primaryUsername,
+  displayName: 'GusAdi',
+  public_repos: 0,
+  followers: 0,
+  public_gists: 0,
+  loaded: false,
+};
+
+let initialRepos: InitialRepo[] = [];
+
+async function tryFetchGithubUser(user: string, headers: Record<string, string>, signal: AbortSignal) {
+  const res = await fetch(`https://api.github.com/users/${user}`, { headers, signal });
+  if (!res.ok) return null;
+  return res.json();
+}
+
+// Build/Dev-time server prefetch (uses optional GITHUB_TOKEN from .env if set, or public API)
+try {
+  const headers: Record<string, string> = {
+    Accept: 'application/vnd.github+json',
+    'User-Agent': 'gusadi-portfolio-astro',
+  };
+  if (serverGithubToken) {
+    headers.Authorization = `Bearer ${serverGithubToken}`;
+  }
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 4500);
+
+  const userData = await tryFetchGithubUser(primaryUsername, headers, controller.signal);
+
+  if (userData) {
+    initialStats = {
+      login: String(userData.login || primaryUsername),
+      displayName: String(userData.name || 'GusAdi'),
+      public_repos: typeof userData.public_repos === 'number' ? userData.public_repos : 0,
+      followers: typeof userData.followers === 'number' ? userData.followers : 0,
+      public_gists: typeof userData.public_gists === 'number' ? userData.public_gists : 0,
+      loaded: true,
+    };
+  }
+
+  const reposRes = await fetch(
+    `https://api.github.com/users/${initialStats.login}/repos?sort=updated&per_page=6`,
+    { headers, signal: controller.signal }
+  );
+
+  clearTimeout(timer);
+
+  if (reposRes.ok) {
+    const reposData = await reposRes.json();
+    if (Array.isArray(reposData)) {
+      const nonFork = reposData.filter((r) => !r.fork).slice(0, 4);
+      const source = nonFork.length > 0 ? nonFork : reposData.slice(0, 4);
+      initialRepos = source.map((r) => ({
+        name: String(r.name || 'repository'),
+        html_url: String(r.html_url || `https://github.com/${initialStats.login}`),
+        description: r.description ? String(r.description) : null,
+        language: r.language ? String(r.language) : null,
+        stargazers_count: Number(r.stargazers_count) || 0,
+        forks_count: Number(r.forks_count) || 0,
+        pushed_at: r.pushed_at ? String(r.pushed_at) : null,
+      }));
+      if (!initialStats.loaded) {
+        initialStats.public_repos = reposData.length;
+      }
+    }
+  }
+} catch (_) {
+  // Silent fallback: client-side live fetch will run in the browser
+}
 ---
 
-<section id="github" class="w-full py-16 sm:py-24 border-b border-[var(--border-subtle)]">
-  <div class="w-full max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-14 space-y-8">
-    <SectionHeader
-      index="05"
-      title={{ id: 'AKTIVITAS GITHUB', en: 'GITHUB TELEMETRY' }}
-      path={translations.id.github.filePath}
-    />
-
-    <!-- Public Stats Metrics Bento Grid -->
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-5 font-mono text-xs">
-      <div data-tilt class="reveal-on-scroll bento-card p-6" style="--stagger: 0;">
-        <div class="text-[var(--text-muted)] text-xs mb-2 flex items-center justify-between">
-          <span>
+<section id="github" class="w-full py-8 sm:py-12">
+  <div class="w-full max-w-6xl mx-auto px-4 sm:px-8 space-y-6">
+    <!-- Unified GitHub Live Telemetry Board (No Template SectionHeader) -->
+    <div class="reveal-on-scroll space-y-4 font-sans">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <span class="px-3 py-1 rounded-full bg-[var(--tint-violet)] text-violet-950 font-mono text-xs font-extrabold">
+            LIVE GITHUB TELEMETRY
+          </span>
+          <h2 class="font-display text-2xl sm:text-3xl font-extrabold text-[var(--text-primary)]">
+            <span data-lang="id">{translations.id.github.header}</span>
+            <span data-lang="en">{translations.en.github.header}</span>
+          </h2>
+        </div>
+        <span class="font-mono text-xs font-bold text-[var(--text-muted)]">
+          GusAdi (@{initialStats.login})
+        </span>
+      </div>
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div class="tactile-card hover-lift p-5 bg-[var(--tint-mint)]">
+          <div class="text-xs text-teal-900 font-bold mb-1">
             <span data-lang="id">{translations.id.github.statsRepos}</span>
             <span data-lang="en">{translations.en.github.statsRepos}</span>
-          </span>
-          <span class="text-[var(--accent-primary)] font-bold">01</span>
+          </div>
+          <div id="github-stat-repos" class="font-display text-3xl sm:text-4xl font-extrabold text-teal-950">
+            {initialStats.public_repos}
+          </div>
         </div>
-        <div id="github-stat-repos" class="font-display text-3xl sm:text-4xl font-bold text-[var(--text-primary)]">
-          --
-        </div>
-      </div>
 
-      <div data-tilt class="reveal-on-scroll bento-card p-6" style="--stagger: 1;">
-        <div class="text-[var(--text-muted)] text-xs mb-2 flex items-center justify-between">
-          <span>
+        <div class="tactile-card hover-lift p-5 bg-[var(--tint-sky)]">
+          <div class="text-xs text-blue-900 font-bold mb-1">
             <span data-lang="id">{translations.id.github.statsFollowers}</span>
             <span data-lang="en">{translations.en.github.statsFollowers}</span>
-          </span>
-          <span class="text-[var(--accent-secondary)] font-bold">02</span>
+          </div>
+          <div id="github-stat-followers" class="font-display text-3xl sm:text-4xl font-extrabold text-blue-950">
+            {initialStats.followers}
+          </div>
         </div>
-        <div id="github-stat-followers" class="font-display text-3xl sm:text-4xl font-bold text-[var(--text-primary)]">
-          --
-        </div>
-      </div>
 
-      <div data-tilt class="reveal-on-scroll bento-card p-6" style="--stagger: 2;">
-        <div class="text-[var(--text-muted)] text-xs mb-2 flex items-center justify-between">
-          <span>
+        <div class="tactile-card hover-lift p-5 bg-[var(--tint-amber)]">
+          <div class="text-xs text-amber-900 font-bold mb-1">
             <span data-lang="id">{translations.id.github.statsGists}</span>
             <span data-lang="en">{translations.en.github.statsGists}</span>
-          </span>
-          <span class="text-[var(--accent-tertiary)] font-bold">03</span>
+          </div>
+          <div id="github-stat-gists" class="font-display text-3xl sm:text-4xl font-extrabold text-amber-950">
+            {initialStats.public_gists}
+          </div>
         </div>
-        <div id="github-stat-gists" class="font-display text-3xl sm:text-4xl font-bold text-[var(--text-primary)]">
-          --
+
+        <div class="tactile-card hover-lift p-5 flex flex-col justify-between bg-[var(--tint-violet)]">
+          <div class="flex items-center justify-between gap-2">
+            <span class="text-xs text-violet-900 font-bold">GitHub Profile</span>
+            <button
+              type="button"
+              id="github-live-refresh-btn"
+              class="text-xs text-violet-800 hover:underline font-bold cursor-pointer"
+              title="Force live sync from GitHub API"
+            >
+              ↻ Sync Live
+            </button>
+          </div>
+          <a
+            id="github-profile-link"
+            href={`https://github.com/${initialStats.login}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="font-display text-base sm:text-lg font-extrabold text-violet-950 hover:underline truncate mt-1"
+          >
+            <span id="github-display-name">{initialStats.displayName}</span>
+            <span id="github-handle-sub" class="text-xs font-sans font-semibold text-violet-800 ml-1">
+              (@{initialStats.login})
+            </span> ↗
+          </a>
         </div>
       </div>
 
-      <div data-tilt class="reveal-on-scroll bento-card p-6 flex flex-col justify-between" style="--stagger: 3;">
-        <div class="text-[var(--text-muted)] text-xs mb-2 flex items-center justify-between">
-          <span>GitHub Profile</span>
-          <span class="w-2 h-2 rounded-full bg-[var(--status-ok)] animate-pulse"></span>
-        </div>
-        <a
-          href={`https://github.com/${profile.githubUsername}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          class="font-display text-lg sm:text-xl font-bold text-[var(--accent-primary)] hover:underline truncate"
-        >
-          @{profile.githubUsername} ↗
-        </a>
-      </div>
+      <!-- Live Sync Status Line -->
+      <div id="github-sync-status" class="text-xs text-[var(--text-muted)] hidden"></div>
     </div>
 
-    <!-- Contribution Matrix Panel with Snake Animation -->
-    <div class="reveal-on-scroll bento-card p-6 sm:p-8 font-mono text-xs select-none" style="--stagger: 2;">
-      <div class="flex flex-wrap items-center justify-between gap-3 pb-4 mb-5 border-b border-[var(--border-subtle)]">
+    <!-- 2. Contribution Heatmap + Interactive Snake in Soft Panel -->
+    <div class="reveal-on-scroll soft-panel spotlight-surface p-6 sm:p-7 space-y-5 font-sans select-none" style="--stagger: 1;">
+      <div class="flex flex-wrap items-baseline justify-between gap-3">
         <div>
-          <div class="flex items-center gap-2.5">
-            <h3 class="font-display text-lg sm:text-xl font-bold text-[var(--text-primary)]">
-              <span data-lang="id">{translations.id.github.calendarTitle}</span>
-              <span data-lang="en">{translations.en.github.calendarTitle}</span>
-            </h3>
-            <span class="px-2 py-0.5 rounded-full bg-[var(--bg-elevated)] border border-[var(--border-focus)] text-[10px] text-[var(--accent-secondary)] font-bold">
-              🐍 SNAKE_MODE
-            </span>
-          </div>
-          <p class="text-[var(--text-secondary)] text-xs mt-0.5">
+          <h3 class="text-lg sm:text-xl font-bold text-[var(--text-primary)]">
+            <span data-lang="id">{translations.id.github.calendarTitle}</span>
+            <span data-lang="en">{translations.en.github.calendarTitle}</span>
+          </h3>
+          <p class="text-xs sm:text-sm text-[var(--text-secondary)] mt-0.5">
             <span data-lang="id">{translations.id.github.calendarSub}</span>
             <span data-lang="en">{translations.en.github.calendarSub}</span>
           </p>
         </div>
 
-        <!-- Right Controls: Hover Info, Snake Score, Toggle & Reset -->
-        <div class="flex flex-wrap items-center gap-2">
-          <span id="calendar-hover-info" class="text-xs text-[var(--accent-secondary)] hidden md:inline font-semibold mr-1"></span>
+        <div class="flex flex-wrap items-center gap-2 text-xs">
+          <span id="calendar-hover-info" class="text-xs text-[var(--accent-primary)] hidden md:inline font-medium mr-1"></span>
 
-          <!-- Snake Eaten Counter -->
           <span
             id="snake-score-badge"
-            class="hidden rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] px-3 py-1.5 text-[11px] text-[var(--accent-primary)] font-bold"
+            class="hidden font-mono text-xs text-[var(--text-secondary)]"
           >
             🐍 0 / 0
           </span>
 
-          <!-- Snake Pause / Play Toggle -->
           <button
             type="button"
             id="snake-toggle-btn"
-            class="hidden rounded-xl bg-[var(--accent-primary)] text-[#05070b] font-bold px-3 py-1.5 text-[11px] cursor-pointer transition-all hover:opacity-90"
+            class="hidden pill-btn bg-[var(--accent-primary)] text-[var(--accent-ink)] font-semibold px-3.5 py-1 text-xs cursor-pointer"
             aria-label="Toggle contribution snake animation"
           >
-            <span id="snake-toggle-label">🐍 PAUSE</span>
+            <span id="snake-toggle-label">🐍 Jeda</span>
           </button>
 
-          <!-- Snake Reset Button -->
           <button
             type="button"
             id="snake-reset-btn"
-            class="hidden rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] hover:border-[var(--accent-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] px-2.5 py-1.5 text-[11px] cursor-pointer transition-all"
+            class="hidden pill-btn border border-[var(--border-strong)] hover:border-[var(--accent-primary)] text-[var(--text-primary)] font-medium px-3 py-1 text-xs cursor-pointer"
             title="Reset eaten contributions"
           >
             ↻ Reset
           </button>
 
-          <span id="calendar-total-count" class="text-[var(--accent-primary)] font-bold text-xs bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-xl px-3.5 py-1.5"></span>
+          <span id="calendar-total-count" class="text-[var(--text-secondary)] font-semibold text-xs"></span>
         </div>
       </div>
 
       <!-- Loading State -->
-      <div id="calendar-loading" class="py-10 text-center text-[var(--text-muted)] text-xs">
+      <div id="calendar-loading" class="py-6 text-[var(--text-muted)] text-sm">
         <span data-lang="id">{translations.id.github.calendarLoading}</span>
         <span data-lang="en">{translations.en.github.calendarLoading}</span>
       </div>
 
       <!-- Error / Fallback State -->
-      <div id="calendar-fallback" class="hidden py-8 text-center space-y-3">
-        <div class="text-[var(--status-warn)] text-xs">
+      <div id="calendar-fallback" class="hidden py-6 space-y-3">
+        <div class="text-[var(--status-warn)] text-sm font-medium">
           <span data-lang="id">{translations.id.github.calendarError}</span>
           <span data-lang="en">{translations.en.github.calendarError}</span>
         </div>
         <div>
           <a
-            href={`https://github.com/${profile.githubUsername}`}
+            id="github-fallback-link"
+            href={`https://github.com/${initialStats.login}`}
             target="_blank"
             rel="noopener noreferrer"
-            class="kinetic-btn inline-flex items-center gap-2 bg-[var(--bg-elevated)] border border-[var(--border-focus)] text-[var(--accent-primary)] px-4 py-2 text-xs font-bold"
+            class="pill-btn inline-flex items-center gap-2 border border-[var(--border-strong)] text-[var(--accent-primary)] px-4 py-2 text-xs font-semibold"
           >
             <span data-lang="id">{translations.id.github.openGithub}</span>
             <span data-lang="en">{translations.en.github.openGithub}</span>
@@ -156,27 +257,24 @@ import { translations } from '../data/i18n';
         role="region"
         aria-label="GitHub contribution heatmap for the past 12 months"
       >
-        <div id="calendar-matrix" class="flex justify-between gap-[4px] min-w-[740px] py-2">
-          <!-- Weeks generated by script -->
-        </div>
+        <div id="calendar-matrix" class="flex justify-between gap-[4px] min-w-[720px] py-2"></div>
 
-        <!-- Legend -->
-        <div class="flex flex-wrap items-center justify-between gap-2 pt-5 mt-2 border-t border-[var(--border-subtle)] text-[11px] text-[var(--text-muted)]">
+        <div class="flex flex-wrap items-center justify-between gap-2 pt-3 text-xs text-[var(--text-muted)]">
           <div class="flex items-center gap-2">
-            <span class="w-2.5 h-2.5 rounded-[3px] bg-[var(--accent-secondary)] shadow-[0_0_8px_var(--accent-secondary)]"></span>
-            <span data-lang="id">Ular otomatis memakan kotak kontribusi hijau</span>
-            <span data-lang="en">Snake automatically eats green contribution blocks</span>
+            <span class="w-2.5 h-2.5 rounded-xs bg-[var(--accent-secondary)]"></span>
+            <span data-lang="id">Ular memakan kontribusi aktif secara otomatis</span>
+            <span data-lang="en">Snake traverses active contribution cells</span>
           </div>
           <div class="flex items-center gap-1.5">
             <span>
               <span data-lang="id">{translations.id.github.less}</span>
               <span data-lang="en">{translations.en.github.less}</span>
             </span>
-            <span class="w-3 h-3 rounded-[3px] bg-[var(--bg-elevated)] border border-[var(--border-subtle)]"></span>
-            <span class="w-3 h-3 rounded-[3px] bg-[var(--gh-lvl-1)]"></span>
-            <span class="w-3 h-3 rounded-[3px] bg-[var(--gh-lvl-2)]"></span>
-            <span class="w-3 h-3 rounded-[3px] bg-[var(--gh-lvl-3)]"></span>
-            <span class="w-3 h-3 rounded-[3px] bg-[var(--gh-lvl-4)]"></span>
+            <span class="w-3 h-3 rounded-xs bg-[var(--bg-elevated)]"></span>
+            <span class="w-3 h-3 rounded-xs bg-[var(--gh-lvl-1)]"></span>
+            <span class="w-3 h-3 rounded-xs bg-[var(--gh-lvl-2)]"></span>
+            <span class="w-3 h-3 rounded-xs bg-[var(--gh-lvl-3)]"></span>
+            <span class="w-3 h-3 rounded-xs bg-[var(--gh-lvl-4)]"></span>
             <span>
               <span data-lang="id">{translations.id.github.more}</span>
               <span data-lang="en">{translations.en.github.more}</span>
@@ -186,52 +284,95 @@ import { translations } from '../data/i18n';
       </div>
     </div>
 
-    <!-- Live Recently Updated Public Repositories Feed -->
-    <div class="reveal-on-scroll space-y-4 font-mono text-xs" style="--stagger: 3;">
-      <div class="flex flex-wrap items-center justify-between gap-2">
+    <!-- 3. Recent Public Repositories: Open Hairline List Rows (No Boxy Cards) -->
+    <div class="reveal-on-scroll pt-6 border-t border-[var(--border-subtle)] space-y-4 font-sans" style="--stagger: 2;">
+      <div class="flex flex-wrap items-baseline justify-between gap-2">
         <div>
-          <h3 class="font-display text-lg sm:text-xl font-bold text-[var(--text-primary)]">
+          <h3 class="text-lg sm:text-xl font-bold text-[var(--text-primary)]">
             <span data-lang="id">{translations.id.github.recentReposTitle}</span>
             <span data-lang="en">{translations.en.github.recentReposTitle}</span>
           </h3>
-          <p class="text-[var(--text-secondary)] text-xs">
+          <p class="text-xs sm:text-sm text-[var(--text-secondary)] mt-0.5">
             <span data-lang="id">{translations.id.github.recentReposSub}</span>
             <span data-lang="en">{translations.en.github.recentReposSub}</span>
           </p>
         </div>
         <a
-          href={`https://github.com/${profile.githubUsername}?tab=repositories`}
+          id="github-all-repos-link"
+          href={`https://github.com/${initialStats.login}?tab=repositories`}
           target="_blank"
           rel="noopener noreferrer"
-          class="text-[var(--accent-primary)] hover:underline font-bold"
+          class="text-xs sm:text-sm text-[var(--accent-primary)] hover:underline font-semibold"
         >
-          git log --repos ↗
+          <span data-lang="id">Lihat semua repositori ↗</span>
+          <span data-lang="en">View all repositories ↗</span>
         </a>
       </div>
 
-      <div id="github-repos-grid" class="grid grid-cols-1 md:grid-cols-2 gap-5">
-        <div class="bento-card p-5 text-[var(--text-muted)] md:col-span-2 text-center">
-          <span data-lang="id">{translations.id.github.reposEmpty}</span>
-          <span data-lang="en">{translations.en.github.reposEmpty}</span>
-        </div>
+      <div id="github-repos-grid" class="divide-y divide-[var(--border-subtle)]">
+        {initialRepos.length > 0 ? (
+          initialRepos.map((repo) => (
+            <a
+              href={repo.html_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="py-4 flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 group transition-colors font-sans"
+            >
+              <div class="space-y-1 max-w-2xl">
+                <span class="font-sans text-base sm:text-lg font-bold text-[var(--text-primary)] group-hover:text-[var(--accent-primary)] transition-colors">
+                  {repo.name} ↗
+                </span>
+                <p class="font-sans text-sm text-[var(--text-secondary)] leading-relaxed">
+                  {repo.description || 'Public repository on GitHub.'}
+                </p>
+              </div>
+              <div class="flex items-center gap-3 text-xs text-[var(--text-muted)] shrink-0">
+                <span class="text-[var(--text-secondary)] font-medium">{repo.language || 'Code'}</span>
+                <span>
+                  ★ {repo.stargazers_count}
+                  {repo.pushed_at ? ` · ${repo.pushed_at.slice(0, 10)}` : ''}
+                </span>
+              </div>
+            </a>
+          ))
+        ) : (
+          <div class="py-4 text-sm text-[var(--text-muted)]">
+            <span data-lang="id">{translations.id.github.reposEmpty}</span>
+            <span data-lang="en">{translations.en.github.reposEmpty}</span>
+          </div>
+        )}
       </div>
     </div>
   </div>
 </section>
 
-<script define:vars={{ username: profile.githubUsername }}>
-  const CACHE_TTL_MS = 60 * 60 * 1000;
-  const STATS_CACHE_KEY = `gh_stats_v1_${username}`;
-  const CONTRIB_CACHE_KEY = `gh_contrib_v1_${username}`;
-  const REPOS_CACHE_KEY = `gh_repos_v1_${username}`;
+<script define:vars={{ username: initialStats.login, serverStats: initialStats }}>
+  const activeUsername = username;
+  const CACHE_TTL_MS = 15 * 60 * 1000;
 
-  function readCache(key) {
+  const syncStatusEl = document.getElementById('github-sync-status');
+
+  function setSyncStatus(msg, isWarn = false) {
+    if (!syncStatusEl) return;
+    if (!msg) {
+      syncStatusEl.classList.add('hidden');
+      syncStatusEl.textContent = '';
+      return;
+    }
+    syncStatusEl.textContent = msg;
+    syncStatusEl.classList.remove('hidden');
+    syncStatusEl.className = isWarn
+      ? 'text-xs text-[var(--status-warn)] font-medium'
+      : 'text-xs text-[var(--text-muted)]';
+  }
+
+  function readCache(key, allowStale = false) {
     try {
       const raw = localStorage.getItem(key);
       if (!raw) return null;
       const parsed = JSON.parse(raw);
       if (!parsed || typeof parsed.ts !== 'number') return null;
-      if (Date.now() - parsed.ts > CACHE_TTL_MS) return null;
+      if (!allowStale && Date.now() - parsed.ts > CACHE_TTL_MS) return null;
       return parsed.data;
     } catch (_) {
       return null;
@@ -248,7 +389,10 @@ import { translations } from '../data/i18n';
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs);
     try {
-      const res = await fetch(url, { signal: controller.signal });
+      const res = await fetch(url, {
+        headers: { Accept: 'application/vnd.github+json' },
+        signal: controller.signal,
+      });
       return res;
     } finally {
       clearTimeout(timer);
@@ -262,7 +406,7 @@ import { translations } from '../data/i18n';
       el.textContent = String(targetValue ?? '0');
       return;
     }
-    const duration = 700;
+    const duration = 650;
     const startTime = performance.now();
     function tick(now) {
       const elapsed = now - startTime;
@@ -278,6 +422,24 @@ import { translations } from '../data/i18n';
     requestAnimationFrame(tick);
   }
 
+  function updateProfileLinks(loginHandle, displayName) {
+    const profileLink = document.getElementById('github-profile-link');
+    const displayEl = document.getElementById('github-display-name');
+    const handleSubEl = document.getElementById('github-handle-sub');
+    const fallbackLink = document.getElementById('github-fallback-link');
+    const allReposLink = document.getElementById('github-all-repos-link');
+    const contactLink = document.getElementById('contact-github-link');
+    const contactText = document.getElementById('contact-github-text');
+
+    if (profileLink) profileLink.setAttribute('href', `https://github.com/${loginHandle}`);
+    if (fallbackLink) fallbackLink.setAttribute('href', `https://github.com/${loginHandle}`);
+    if (allReposLink) allReposLink.setAttribute('href', `https://github.com/${loginHandle}?tab=repositories`);
+    if (contactLink) contactLink.setAttribute('href', `https://github.com/${loginHandle}`);
+    if (contactText) contactText.textContent = `github.com/${loginHandle}`;
+    if (displayEl) displayEl.textContent = displayName || loginHandle;
+    if (handleSubEl) handleSubEl.textContent = `(@${loginHandle})`;
+  }
+
   function renderUserStats(data) {
     const repoEl = document.getElementById('github-stat-repos');
     const followersEl = document.getElementById('github-stat-followers');
@@ -286,38 +448,62 @@ import { translations } from '../data/i18n';
     animateCount(repoEl, data.public_repos ?? 0);
     animateCount(followersEl, data.followers ?? 0);
     animateCount(gistsEl, data.public_gists ?? 0);
+
+    updateProfileLinks(activeUsername, data.name || 'GusAdi');
   }
 
-  async function fetchUserStats() {
-    const cached = readCache(STATS_CACHE_KEY);
-    if (cached) {
-      renderUserStats(cached);
-      return;
+  async function fetchUserStats(forceRefresh = false) {
+    const cacheKey = `gh_stats_v4_${activeUsername}`;
+    if (!forceRefresh) {
+      const cached = readCache(cacheKey, false);
+      if (cached) {
+        renderUserStats(cached);
+        return;
+      }
     }
 
     try {
-      const res = await fetchWithTimeout(`https://api.github.com/users/${username}`);
-      if (!res.ok) return;
+      const res = await fetchWithTimeout(`https://api.github.com/users/${activeUsername}`);
+
+      if (!res.ok) {
+        const stale = readCache(cacheKey, true);
+        if (stale) {
+          renderUserStats(stale);
+        } else if (serverStats) {
+          renderUserStats(serverStats);
+        }
+        if (res.status === 403 || res.status === 429) {
+          setSyncStatus(
+            'Info: Batas 60 request/jam GitHub API publik tercapai. Tambahkan GITHUB_TOKEN di .env untuk kuota 5.000/jam.',
+            true
+          );
+        }
+        return;
+      }
+
       const data = await res.json();
       const subset = {
+        login: activeUsername,
+        name: data.name || 'GusAdi',
         public_repos: data.public_repos ?? 0,
         followers: data.followers ?? 0,
         public_gists: data.public_gists ?? 0,
       };
-      writeCache(STATS_CACHE_KEY, subset);
+      writeCache(cacheKey, subset);
       renderUserStats(subset);
-    } catch (_) {}
+      setSyncStatus('');
+    } catch (_) {
+      const stale = readCache(cacheKey, true);
+      if (stale) renderUserStats(stale);
+    }
   }
 
-  // ==========================================
-  // GITHUB CONTRIBUTION SNAKE ENGINE
-  // ==========================================
   let snakeInterval = null;
   let snakeRunning = false;
-  let gridCells = []; // gridCells[col][row] = HTMLElement
-  let foodCoords = new Set(); // "col,row"
-  let initialFoodCoords = []; // array of [col, row]
-  let snakeSegments = []; // array of [col, row], index 0 is head
+  let gridCells = [];
+  let foodCoords = new Set();
+  let initialFoodCoords = [];
+  let snakeSegments = [];
   let maxSnakeLength = 7;
   let eatenCount = 0;
   let totalFoodCount = 0;
@@ -385,7 +571,6 @@ import { translations } from '../data/i18n';
 
     foodCoords.forEach((key) => {
       const [fc, fr] = key.split(',').map(Number);
-      // Slight bias toward sweeping left-to-right like GitHub's snake, while picking nearby food
       const dist = Math.abs(fc - headC) + Math.abs(fr - headR);
       const score = dist + fc * 0.15;
       if (score < bestScore) {
@@ -400,7 +585,6 @@ import { translations } from '../data/i18n';
   function stepSnake() {
     if (!gridCells.length) return;
 
-    // If all food is eaten, reset board and continue
     if (foodCoords.size === 0 && totalFoodCount > 0) {
       resetFoodAndSnake();
       return;
@@ -434,20 +618,17 @@ import { translations } from '../data/i18n';
 
     if (!validMoves.length) return;
 
-    // Sort: prefer moves not in body, then shortest distance to target
     validMoves.sort((a, b) => {
       if (a.inBody !== b.inBody) return a.inBody ? 1 : -1;
       return a.dist - b.dist;
     });
 
-    // If multiple moves have same best distance, add tiny randomness to avoid loops
     const bestMove = validMoves[0];
     const nextCoord = [bestMove.nc, bestMove.nr];
     const nextKey = `${bestMove.nc},${bestMove.nr}`;
 
     snakeSegments.unshift(nextCoord);
 
-    // Check if snake ate a contribution cell
     if (foodCoords.has(nextKey)) {
       foodCoords.delete(nextKey);
       eatenCount++;
@@ -471,24 +652,20 @@ import { translations } from '../data/i18n';
   function startSnake() {
     if (snakeInterval) clearInterval(snakeInterval);
     snakeRunning = true;
-    snakeInterval = setInterval(stepSnake, 75);
-    const toggleBtn = document.getElementById('snake-toggle-btn');
+    snakeInterval = setInterval(stepSnake, 85);
     const toggleLabel = document.getElementById('snake-toggle-label');
-    if (toggleLabel) toggleLabel.textContent = '🐍 PAUSE';
-    toggleBtn?.classList.add('bg-[var(--accent-primary)]', 'text-[#05070b]');
-    toggleBtn?.classList.remove('bg-[var(--bg-elevated)]', 'text-[var(--text-primary)]');
+    if (toggleLabel) toggleLabel.textContent = '🐍 Jeda';
   }
 
   function pauseSnake() {
     if (snakeInterval) clearInterval(snakeInterval);
     snakeInterval = null;
     snakeRunning = false;
-    const toggleBtn = document.getElementById('snake-toggle-btn');
     const toggleLabel = document.getElementById('snake-toggle-label');
-    if (toggleLabel) toggleLabel.textContent = '🐍 PLAY';
-    toggleBtn?.classList.remove('bg-[var(--accent-primary)]', 'text-[#05070b]');
-    toggleBtn?.classList.add('bg-[var(--bg-elevated)]', 'text-[var(--text-primary)]', 'border', 'border-[var(--border-focus)]');
+    if (toggleLabel) toggleLabel.textContent = '🐍 Main';
   }
+
+  let snakeControlsBound = false;
 
   function initSnakeGame() {
     const scoreBadge = document.getElementById('snake-score-badge');
@@ -507,23 +684,27 @@ import { translations } from '../data/i18n';
       pauseSnake();
     }
 
-    toggleBtn?.addEventListener('click', () => {
-      if (snakeRunning) {
-        pauseSnake();
-      } else {
-        startSnake();
-      }
-    });
+    if (!snakeControlsBound) {
+      snakeControlsBound = true;
+      toggleBtn?.addEventListener('click', () => {
+        if (snakeRunning) {
+          pauseSnake();
+        } else {
+          startSnake();
+        }
+      });
 
-    resetBtn?.addEventListener('click', () => {
-      resetFoodAndSnake();
-      if (!snakeRunning) startSnake();
-    });
+      resetBtn?.addEventListener('click', () => {
+        resetFoodAndSnake();
+        if (!snakeRunning) startSnake();
+      });
+    }
   }
 
   function renderContributions(data) {
     const loadingEl = document.getElementById('calendar-loading');
     const containerEl = document.getElementById('calendar-container');
+    const fallbackEl = document.getElementById('calendar-fallback');
     const matrixEl = document.getElementById('calendar-matrix');
     const totalCountEl = document.getElementById('calendar-total-count');
     const hoverInfoEl = document.getElementById('calendar-hover-info');
@@ -532,7 +713,7 @@ import { translations } from '../data/i18n';
     if (!contributions.length) throw new Error('Empty contributions');
 
     if (totalCountEl && data.total?.lastYear !== undefined) {
-      totalCountEl.textContent = `${data.total.lastYear} contributions`;
+      totalCountEl.textContent = `· ${data.total.lastYear} contributions`;
     }
 
     const weeks = [];
@@ -547,7 +728,7 @@ import { translations } from '../data/i18n';
     });
 
     const levelClasses = [
-      'bg-[var(--bg-elevated)] border border-[var(--border-subtle)]',
+      'bg-[var(--bg-elevated)]',
       'bg-[var(--gh-lvl-1)]',
       'bg-[var(--gh-lvl-2)]',
       'bg-[var(--gh-lvl-3)]',
@@ -575,7 +756,6 @@ import { translations } from '../data/i18n';
         })
         .join('');
 
-      // Populate 2D gridCells array
       gridCells = weeks.map(() => []);
       matrixEl.querySelectorAll('.gh-cell').forEach((cell) => {
         const c = Number(cell.getAttribute('data-col'));
@@ -588,7 +768,7 @@ import { translations } from '../data/i18n';
           const dt = cell.getAttribute('data-date');
           const cnt = cell.getAttribute('data-count');
           if (hoverInfoEl && dt) {
-            hoverInfoEl.textContent = `${dt} — ${cnt} contributions`;
+            hoverInfoEl.textContent = `${dt} · ${cnt} contributions`;
           }
         });
       });
@@ -601,31 +781,42 @@ import { translations } from '../data/i18n';
     }
 
     loadingEl?.classList.add('hidden');
+    fallbackEl?.classList.add('hidden');
     containerEl?.classList.remove('hidden');
   }
 
-  async function fetchContributions() {
+  async function fetchContributions(forceRefresh = false) {
     const loadingEl = document.getElementById('calendar-loading');
     const fallbackEl = document.getElementById('calendar-fallback');
+    const cacheKey = `gh_contrib_v4_${activeUsername}`;
 
-    const cached = readCache(CONTRIB_CACHE_KEY);
-    if (cached) {
-      try {
-        renderContributions(cached);
-        return;
-      } catch (_) {}
+    if (!forceRefresh) {
+      const cached = readCache(cacheKey, false);
+      if (cached) {
+        try {
+          renderContributions(cached);
+          return;
+        } catch (_) {}
+      }
     }
 
     try {
       const res = await fetchWithTimeout(
-        `https://github-contributions-api.jogruber.de/v4/${username}?y=last`
+        `https://github-contributions-api.jogruber.de/v4/${activeUsername}?y=last`
       );
       if (!res.ok) throw new Error('API failed');
 
       const data = await res.json();
       renderContributions(data);
-      writeCache(CONTRIB_CACHE_KEY, data);
+      writeCache(cacheKey, data);
     } catch (_) {
+      const stale = readCache(cacheKey, true);
+      if (stale) {
+        try {
+          renderContributions(stale);
+          return;
+        } catch (_) {}
+      }
       loadingEl?.classList.add('hidden');
       fallbackEl?.classList.remove('hidden');
     }
@@ -638,78 +829,68 @@ import { translations } from '../data/i18n';
     gridEl.innerHTML = '';
 
     repos.slice(0, 4).forEach((repo) => {
-      const card = document.createElement('a');
-      card.href = String(repo.html_url || `https://github.com/${username}`);
-      card.target = '_blank';
-      card.rel = 'noopener noreferrer';
-      card.className =
-        'bento-card p-5 flex flex-col justify-between gap-4 group hover:-translate-y-1 transition-all';
+      const row = document.createElement('a');
+      row.href = String(repo.html_url || `https://github.com/${activeUsername}`);
+      row.target = '_blank';
+      row.rel = 'noopener noreferrer';
+      row.className =
+        'py-4 flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 group transition-colors font-sans';
 
-      const topDiv = document.createElement('div');
-      topDiv.className = 'space-y-2';
-
-      const headerRow = document.createElement('div');
-      headerRow.className = 'flex items-center justify-between gap-2';
+      const leftDiv = document.createElement('div');
+      leftDiv.className = 'space-y-1 max-w-2xl';
 
       const nameSpan = document.createElement('span');
       nameSpan.className =
-        'font-display text-base font-bold text-[var(--text-primary)] group-hover:text-[var(--accent-primary)] truncate transition-colors';
-      nameSpan.textContent = repo.name || 'repository';
-
-      const arrowSpan = document.createElement('span');
-      arrowSpan.className = 'text-[var(--accent-secondary)] text-xs shrink-0';
-      arrowSpan.textContent = '↗';
-
-      headerRow.appendChild(nameSpan);
-      headerRow.appendChild(arrowSpan);
+        'font-sans text-base sm:text-lg font-bold text-[var(--text-primary)] group-hover:text-[var(--accent-primary)] transition-colors';
+      nameSpan.textContent = `${repo.name || 'repository'} ↗`;
 
       const descP = document.createElement('p');
-      descP.className = 'font-sans text-xs text-[var(--text-secondary)] line-clamp-2 leading-relaxed';
+      descP.className = 'font-sans text-sm text-[var(--text-secondary)] leading-relaxed';
       descP.textContent = repo.description || 'Public repository on GitHub.';
 
-      topDiv.appendChild(headerRow);
-      topDiv.appendChild(descP);
+      leftDiv.appendChild(nameSpan);
+      leftDiv.appendChild(descP);
 
-      const metaRow = document.createElement('div');
-      metaRow.className =
-        'flex items-center justify-between pt-3 border-t border-[var(--border-subtle)] text-[11px] text-[var(--text-muted)]';
+      const rightDiv = document.createElement('div');
+      rightDiv.className = 'flex items-center gap-3 text-xs text-[var(--text-muted)] shrink-0';
 
-      const langWrap = document.createElement('span');
-      langWrap.className = 'flex items-center gap-1.5 text-[var(--accent-primary)] font-medium';
-      const dot = document.createElement('span');
-      dot.className = 'w-2 h-2 rounded-full bg-[var(--accent-primary)]';
       const langText = document.createElement('span');
+      langText.className = 'text-[var(--text-secondary)] font-medium';
       langText.textContent = repo.language || 'Code';
-      langWrap.appendChild(dot);
-      langWrap.appendChild(langText);
 
       const statsWrap = document.createElement('span');
       const stars = Number(repo.stargazers_count) || 0;
-      const forks = Number(repo.forks_count) || 0;
       const updatedDate = repo.pushed_at ? String(repo.pushed_at).slice(0, 10) : '';
-      statsWrap.textContent = `★ ${stars} · ⑂ ${forks}${updatedDate ? ` · ${updatedDate}` : ''}`;
+      statsWrap.textContent = `★ ${stars}${updatedDate ? ` · ${updatedDate}` : ''}`;
 
-      metaRow.appendChild(langWrap);
-      metaRow.appendChild(statsWrap);
+      rightDiv.appendChild(langText);
+      rightDiv.appendChild(statsWrap);
 
-      card.appendChild(topDiv);
-      card.appendChild(metaRow);
-      gridEl.appendChild(card);
+      row.appendChild(leftDiv);
+      row.appendChild(rightDiv);
+      gridEl.appendChild(row);
     });
   }
 
-  async function fetchRecentRepos() {
-    const cached = readCache(REPOS_CACHE_KEY);
-    if (cached) {
-      renderRecentRepos(cached);
-      return;
+  async function fetchRecentRepos(forceRefresh = false) {
+    const cacheKey = `gh_repos_v4_${activeUsername}`;
+    if (!forceRefresh) {
+      const cached = readCache(cacheKey, false);
+      if (cached) {
+        renderRecentRepos(cached);
+        return;
+      }
     }
 
     try {
       const res = await fetchWithTimeout(
-        `https://api.github.com/users/${username}/repos?sort=updated&per_page=4`
+        `https://api.github.com/users/${activeUsername}/repos?sort=updated&per_page=6`
       );
-      if (!res.ok) return;
+      if (!res.ok) {
+        const stale = readCache(cacheKey, true);
+        if (stale) renderRecentRepos(stale);
+        return;
+      }
       const data = await res.json();
       if (!Array.isArray(data)) return;
       const cleanRepos = data
@@ -725,12 +906,29 @@ import { translations } from '../data/i18n';
           pushed_at: r.pushed_at,
         }));
       const listToSave = cleanRepos.length > 0 ? cleanRepos : data.slice(0, 4);
-      writeCache(REPOS_CACHE_KEY, listToSave);
+      writeCache(cacheKey, listToSave);
       renderRecentRepos(listToSave);
-    } catch (_) {}
+    } catch (_) {
+      const stale = readCache(cacheKey, true);
+      if (stale) renderRecentRepos(stale);
+    }
   }
 
-  fetchUserStats();
-  fetchContributions();
-  fetchRecentRepos();
+  document.getElementById('github-live-refresh-btn')?.addEventListener('click', async () => {
+    setSyncStatus('Menyinkronkan data live dari GitHub...', false);
+    await fetchUserStats(true);
+    await Promise.all([
+      fetchContributions(true),
+      fetchRecentRepos(true),
+    ]);
+    window.dispatchEvent(
+      new CustomEvent('portfolio:toast', { detail: { message: '✓ Data GitHub diperbarui' } })
+    );
+  });
+
+  (async () => {
+    await fetchUserStats(false);
+    fetchContributions(false);
+    fetchRecentRepos(false);
+  })();
 </script>

@@ -1,5 +1,5 @@
 ---
-// Interactive Cyber Companion Bot + Web Audio Synth + Konami Code + Fireworks + Tab Title Easter Egg
+// Web Audio Synth + Konami Code + Fireworks + Tab Title Easter Egg
 ---
 
 <!-- Confetti / Fireworks Overlay Canvas -->
@@ -9,71 +9,22 @@
   aria-hidden="true"
 ></canvas>
 
-<!-- Floating Cursor-Tracking Cyber Drone Companion (Bottom-Left) -->
-<div
-  id="cyber-companion-wrap"
-  class="fixed bottom-5 left-5 z-40 flex items-end gap-2.5 select-none font-mono text-xs"
->
-  <!-- Bot Body Button -->
-  <div class="relative group">
-    <!-- Speech Bubble -->
-    <div
-      id="bot-speech-bubble"
-      class="hidden absolute bottom-14 left-0 w-60 sm:w-64 glass-pill rounded-2xl rounded-bl-sm p-3 border border-[var(--border-focus)] shadow-2xl text-[11px] leading-relaxed text-[var(--text-primary)] animate-boot-line"
-    >
-      <div class="flex items-center justify-between text-[10px] text-[var(--accent-primary)] font-bold mb-1">
-        <span>G-BOT // v2.4</span>
-        <button
-          type="button"
-          id="bot-hide-btn"
-          class="text-[var(--text-muted)] hover:text-[var(--text-primary)] px-1 cursor-pointer"
-          title="Minimize companion"
-          aria-label="Minimize companion"
-        >
-          [–]
-        </button>
-      </div>
-      <p id="bot-speech-text" class="text-[var(--text-secondary)]">
-        Halo! Klik aku untuk random fakta &amp; easter egg!
-      </p>
-    </div>
-
-    <!-- Cute Cyber Bot Avatar -->
-    <button
-      type="button"
-      id="cyber-bot-btn"
-      class="w-12 h-12 rounded-2xl glass-pill border border-[var(--border-focus)] shadow-[0_8px_25px_rgba(0,0,0,0.45)] hover:shadow-[0_0_20px_var(--accent-glow)] flex flex-col items-center justify-center gap-1 cursor-pointer transition-transform duration-200 hover:scale-105 active:scale-95 relative"
-      aria-label="Interact with G-Bot Cyber Companion"
-      title="Click me! (G-Bot Companion)"
-    >
-      <!-- Antenna -->
-      <span class="absolute -top-2 w-1.5 h-1.5 rounded-full bg-[var(--accent-secondary)] animate-ping"></span>
-      <span class="absolute -top-2 w-1.5 h-1.5 rounded-full bg-[var(--accent-secondary)]"></span>
-
-      <!-- Visor Screen with Cursor-Tracking Eyes -->
-      <div class="w-8 h-5 rounded-lg bg-[#05070b] border border-[var(--border-subtle)] flex items-center justify-center gap-1.5 overflow-hidden">
-        <span
-          id="bot-eye-l"
-          class="w-1.5 h-2 rounded-full bg-[var(--accent-primary)] shadow-[0_0_6px_var(--accent-primary)] transition-transform duration-75"
-        ></span>
-        <span
-          id="bot-eye-r"
-          class="w-1.5 h-2 rounded-full bg-[var(--accent-primary)] shadow-[0_0_6px_var(--accent-primary)] transition-transform duration-75"
-        ></span>
-      </div>
-
-      <!-- Tiny Status Mouth LED -->
-      <span id="bot-mouth" class="w-3 h-0.5 rounded-full bg-[var(--accent-secondary)]"></span>
-    </button>
+<!-- Hidden companion container so no floating corner widget clutters the open editorial layout -->
+<div id="cyber-companion-wrap" class="hidden" aria-hidden="true">
+  <div id="bot-speech-bubble" class="hidden">
+    <button type="button" id="bot-hide-btn">×</button>
+    <p id="bot-speech-text"></p>
   </div>
+  <button type="button" id="cyber-bot-btn">
+    <span id="bot-eye-l"></span>
+    <span id="bot-eye-r"></span>
+    <span id="bot-mouth"></span>
+  </button>
 </div>
 
 <script>
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  // ==========================================
-  // 1. WEB AUDIO MECHANICAL SWITCH & UI SYNTH
-  // ==========================================
   let sfxEnabled = false;
   let audioCtx: AudioContext | null = null;
 
@@ -108,7 +59,6 @@
       osc.start(now);
       osc.stop(now + 0.028);
     } else if (type === 'click' || type === 'key') {
-      // Mechanical keyboard switch "thock"
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = 'triangle';
@@ -147,7 +97,7 @@
     window.dispatchEvent(new CustomEvent('portfolio:sfx-changed', { detail: { enabled: sfxEnabled } }));
     window.dispatchEvent(
       new CustomEvent('portfolio:toast', {
-        detail: { message: sfxEnabled ? '🔊 Mechanical & Sci-Fi SFX: ON' : '🔇 UI Sound Effects: OFF' },
+        detail: { message: sfxEnabled ? '🔊 Efek Suara UI: Aktif' : '🔇 Efek Suara UI: Nonaktif' },
       })
     );
   }
@@ -169,13 +119,6 @@
     }
   });
 
-  document.querySelectorAll('a, button, .bento-card').forEach((el) => {
-    el.addEventListener('mouseenter', () => playSynth('hover'));
-  });
-
-  // ==========================================
-  // 2. FIREWORKS CONFETTI BURST ENGINE
-  // ==========================================
   const confettiCanvas = document.getElementById('fx-confetti-canvas') as HTMLCanvasElement | null;
   interface ConfettiPiece {
     x: number;
@@ -196,7 +139,7 @@
     confettiCanvas.width = window.innerWidth;
     confettiCanvas.height = window.innerHeight;
 
-    const palette = ['#10b981', '#38bdf8', '#818cf8', '#f59e0b', '#f43f5e', '#a855f7'];
+    const palette = ['#b85032', '#2f6f55', '#b47828', '#df7a5c', '#6eb093', '#d9a45b'];
     const origins = [
       [window.innerWidth * 0.25, window.innerHeight * 0.45],
       [window.innerWidth * 0.5, window.innerHeight * 0.35],
@@ -233,7 +176,7 @@
           const c = confettiPieces[i];
           c.x += c.vx;
           c.y += c.vy;
-          c.vy += 0.14; // gravity
+          c.vy += 0.14;
           c.vx *= 0.985;
           c.rot += c.vrot;
           c.alpha -= 0.012;
@@ -268,7 +211,7 @@
     void document.body.offsetWidth;
     document.body.classList.add('is-barrel-rolling');
     window.dispatchEvent(
-      new CustomEvent('portfolio:toast', { detail: { message: '🌀 Do a Cyber Barrel Roll!' } })
+      new CustomEvent('portfolio:toast', { detail: { message: '🌀 Do a Barrel Roll!' } })
     );
     setTimeout(() => document.body.classList.remove('is-barrel-rolling'), 1150);
   });
@@ -281,9 +224,6 @@
     setTimeout(() => document.body.classList.remove('is-glitching'), 500);
   });
 
-  // ==========================================
-  // 3. KONAMI CODE DETECTOR (↑↑↓↓←→←→BA)
-  // ==========================================
   const konamiSeq = [
     'ArrowUp',
     'ArrowUp',
@@ -305,111 +245,14 @@
       if (konamiIdx === konamiSeq.length) {
         konamiIdx = 0;
         launchFireworks();
-        window.dispatchEvent(new CustomEvent('portfolio:toggle-matrix'));
         window.dispatchEvent(
           new CustomEvent('portfolio:toast', {
-            detail: { message: '🚀 KONAMI GOD MODE UNLOCKED! Sudo Hire Gus Adi!' },
+            detail: { message: '✨ Konami Code Unlocked! Hire Gus Adi!' },
           })
         );
       }
     } else {
       konamiIdx = key === konamiSeq[0] ? 1 : 0;
-    }
-  });
-
-  // ==========================================
-  // 4. CURSOR-TRACKING CYBER COMPANION BOT
-  // ==========================================
-  const botBtn = document.getElementById('cyber-bot-btn');
-  const eyeL = document.getElementById('bot-eye-l');
-  const eyeR = document.getElementById('bot-eye-r');
-  const botBubble = document.getElementById('bot-speech-bubble');
-  const botSpeechText = document.getElementById('bot-speech-text');
-  const botHideBtn = document.getElementById('bot-hide-btn');
-
-  const botQuotesId = [
-    '💡 Tip: Tekan ⌘K (atau Ctrl+K) buat buka Command Center super cepat!',
-    '🐍 Sudah lihat ular makan kontribusi hijau di section 05.GitHub belum?',
-    '🎮 Easter Egg: Coba ketik Konami Code (↑ ↑ ↓ ↓ ← → ← → B A) di keyboard!',
-    '🔊 Klik ikon SFX di navbar atas kalau mau dengar suara mechanical switch!',
-    '🧪 Di section Proyek, kamu bisa ngetik 2 kalimat sendiri buat tes kemiripan NLP!',
-    '☕ git commit -m "feat: nambahin fitur random biar makin keren"',
-    '🌀 Ketik "barrel" atau "party" di tab 4:shell Hero buat kejutan!',
-  ];
-
-  const botQuotesEn = [
-    '💡 Tip: Press ⌘K (or Ctrl+K) to launch the searchable Command Center!',
-    '🐍 Have you watched the snake eat green contributions in 05.GitHub?',
-    '🎮 Secret: Try typing the Konami Code (↑ ↑ ↓ ↓ ← → ← → B A) on your keyboard!',
-    '🔊 Toggle SFX in the top navbar for crisp mechanical keyboard synth sounds!',
-    '🧪 Test real-time Cosine Similarity with your own text in 03.Projects!',
-    '☕ git commit -m "feat: ship cool interactive details"',
-    '🌀 Type "barrel" or "party" in the Hero 4:shell tab for a surprise!',
-  ];
-
-  let quoteIdx = 0;
-  let bubbleTimeout: number | null = null;
-
-  if (!reducedMotion) {
-    document.addEventListener(
-      'mousemove',
-      (e) => {
-        if (!botBtn || !eyeL || !eyeR) return;
-        const rect = botBtn.getBoundingClientRect();
-        const cx = rect.left + rect.width / 2;
-        const cy = rect.top + rect.height / 2;
-        const angle = Math.atan2(e.clientY - cy, e.clientX - cx);
-        const dist = Math.min(3.2, Math.hypot(e.clientX - cx, e.clientY - cy) / 40);
-        const tx = (Math.cos(angle) * dist).toFixed(1);
-        const ty = (Math.sin(angle) * dist).toFixed(1);
-        eyeL.style.transform = `translate(${tx}px, ${ty}px)`;
-        eyeR.style.transform = `translate(${tx}px, ${ty}px)`;
-      },
-      { passive: true }
-    );
-  }
-
-  botBtn?.addEventListener('click', () => {
-    const isEn = document.documentElement.getAttribute('lang') === 'en';
-    const list = isEn ? botQuotesEn : botQuotesId;
-    const text = list[quoteIdx % list.length];
-    quoteIdx++;
-
-    if (botSpeechText) botSpeechText.textContent = text;
-    botBubble?.classList.remove('hidden');
-
-    botBtn.style.transform = 'translateY(-8px) rotate(-6deg)';
-    setTimeout(() => {
-      botBtn.style.transform = '';
-    }, 220);
-
-    if (quoteIdx % 5 === 0) {
-      launchFireworks();
-    }
-
-    if (bubbleTimeout) clearTimeout(bubbleTimeout);
-    bubbleTimeout = window.setTimeout(() => {
-      botBubble?.classList.add('hidden');
-    }, 6500);
-  });
-
-  botHideBtn?.addEventListener('click', (e) => {
-    e.stopPropagation();
-    botBubble?.classList.add('hidden');
-  });
-
-  // ==========================================
-  // 5. TAB VISIBILITY TITLE EASTER EGG
-  // ==========================================
-  const originalTitle = document.title;
-  document.addEventListener('visibilitychange', () => {
-    if (document.hidden) {
-      document.title = '⚡ System Idle — ~/gusadi';
-    } else {
-      document.title = '🚀 Welcome Back! — Gus Adi';
-      setTimeout(() => {
-        document.title = originalTitle;
-      }, 1800);
     }
   });
 </script>

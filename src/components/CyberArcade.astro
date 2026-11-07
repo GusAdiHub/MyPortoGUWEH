@@ -1,99 +1,95 @@
 ---
-// Interactive Multi-Game Developer Cyber Arcade Modal:
+// Interactive Multi-Game Developer Arcade Modal (Warm Editorial Edition):
 // 1. Bug Blaster (Canvas Arcade Shooter)
-// 2. Speed Code Typer (30s WPM Challenge)
+// 2. Speed Code Typer (WPM Challenge with visible spaces & symbols)
 // 3. Neural Memory Matrix (3x3 Sequence Hacker)
 // 4. Whack-a-Bug (30s reflex grid)
 // 5. Ping Reflex (reaction-time test in ms)
-// 6. Cyber Snake (classic neon serpent with Portal/Wall modes)
+// 6. Cyber Snake (serpent with Speed & Portal/Wall modes)
 ---
 
-<!-- Floating Quick Arcade Pill next to G-Bot (Mobile & Desktop friendly) -->
+<!-- Hidden floating trigger so the main editorial canvas stays clean (accessible via Footer, G key, or Cmd+K) -->
 <button
   type="button"
   id="floating-arcade-btn"
-  class="fixed bottom-5 left-20 z-40 h-12 rounded-2xl glass-pill border border-[var(--border-focus)] px-3.5 shadow-[0_8px_25px_rgba(0,0,0,0.45)] hover:shadow-[0_0_20px_var(--accent-glow)] font-mono text-xs font-bold text-[var(--accent-primary)] flex items-center gap-2 cursor-pointer transition-transform duration-200 hover:scale-105 active:scale-95 select-none"
-  aria-label="Open Cyber Mini-Game Arcade"
-  title="Open Cyber Arcade (Shortcut: G)"
+  class="hidden"
+  aria-label="Open Mini-Game Arcade"
+  title="Open Arcade (Shortcut: G)"
 >
-  <span class="text-base">🎮</span>
-  <span class="hidden sm:inline">ARCADE</span>
+  Arcade
 </button>
 
-<!-- Cyber Arcade Modal -->
+<!-- Warm Editorial Arcade Modal -->
 <div
   id="cyber-arcade-modal"
-  class="modal-backdrop fixed inset-0 z-50 hidden bg-black/80 p-3 sm:p-6 flex items-center justify-center select-none"
+  class="modal-backdrop fixed inset-0 z-50 hidden bg-black/55 p-3 sm:p-6 flex items-center justify-center select-none"
   role="dialog"
   aria-modal="true"
-  aria-label="Cyber Mini-Game Arcade"
+  aria-label="Developer Mini-Game Arcade"
 >
-  <div class="modal-panel w-full max-w-2xl rounded-2xl border border-[var(--border-focus)] bg-[var(--bg-surface)] shadow-2xl overflow-hidden font-mono text-xs">
+  <div class="modal-panel w-full max-w-2xl rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-base)] shadow-2xl overflow-hidden font-sans text-xs">
     <!-- Top Arcade Header & Game Selector Tabs -->
-    <div class="px-4 sm:px-5 py-3.5 bg-[var(--bg-elevated)] border-b border-[var(--border-subtle)] flex flex-wrap items-center justify-between gap-3">
-      <div class="flex items-center gap-2">
-        <span class="text-base">🕹️</span>
-        <span class="font-display font-bold text-sm sm:text-base text-[var(--text-primary)]">
-          CYBER_ARCADE
-        </span>
-        <span class="px-2 py-0.5 rounded-full bg-[var(--bg-base)] border border-[var(--border-subtle)] text-[10px] text-[var(--accent-secondary)]">
-          6 MINIGAMES
+    <div class="px-4 sm:px-6 py-4 bg-[var(--bg-surface)] border-b border-[var(--border-subtle)] flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-2.5">
+        <span class="px-3 py-1 rounded-full bg-[var(--accent-primary)] text-[var(--accent-ink)] font-semibold">🕹️ Arcade</span>
+        <span class="text-[11px] text-[var(--text-secondary)] font-medium">
+          6 Mini-Games
         </span>
       </div>
 
       <div class="flex flex-wrap items-center gap-1.5">
-        <div class="flex flex-wrap items-center gap-1 bg-[var(--bg-base)] p-1 rounded-xl border border-[var(--border-subtle)]">
+        <div class="flex flex-wrap items-center gap-1 rounded-full bg-[var(--bg-base)] p-1 border border-[var(--border-subtle)]">
           <button
             type="button"
             data-arcade-tab="shooter"
-            class="arcade-tab-btn px-2.5 py-1 rounded-lg bg-[var(--accent-primary)] text-[#05070b] font-bold cursor-pointer transition-all text-[11px]"
+            class="arcade-tab-btn px-2.5 py-1 rounded-full bg-[var(--accent-primary)] text-[var(--accent-ink)] font-semibold cursor-pointer transition-colors text-[11px]"
           >
-            👾 Bug Blaster
+            👾 Blaster
           </button>
           <button
             type="button"
             data-arcade-tab="snake"
-            class="arcade-tab-btn px-2.5 py-1 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer transition-all text-[11px]"
+            class="arcade-tab-btn px-2.5 py-1 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer transition-colors text-[11px]"
           >
-            🐍 Cyber Snake
+            🐍 Snake
           </button>
           <button
             type="button"
             data-arcade-tab="typer"
-            class="arcade-tab-btn px-2.5 py-1 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer transition-all text-[11px]"
+            class="arcade-tab-btn px-2.5 py-1 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer transition-colors text-[11px]"
           >
-            ⌨️ Code Typer
+            ⌨️ Typer
           </button>
           <button
             type="button"
             data-arcade-tab="memory"
-            class="arcade-tab-btn px-2.5 py-1 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer transition-all text-[11px]"
+            class="arcade-tab-btn px-2.5 py-1 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer transition-colors text-[11px]"
           >
-            🧠 Memory Hack
+            🧠 Memory
           </button>
           <button
             type="button"
             data-arcade-tab="whack"
-            class="arcade-tab-btn px-2.5 py-1 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer transition-all text-[11px]"
+            class="arcade-tab-btn px-2.5 py-1 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer transition-colors text-[11px]"
           >
-            🔨 Whack-a-Bug
+            🔨 Whack
           </button>
           <button
             type="button"
             data-arcade-tab="reflex"
-            class="arcade-tab-btn px-2.5 py-1 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer transition-all text-[11px]"
+            class="arcade-tab-btn px-2.5 py-1 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer transition-colors text-[11px]"
           >
-            ⚡ Ping Reflex
+            ⚡ Reflex
           </button>
         </div>
 
         <button
           type="button"
           id="arcade-close-btn"
-          class="px-2.5 py-1.5 rounded-xl bg-[var(--bg-base)] border border-[var(--border-subtle)] hover:border-[var(--accent-primary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer"
+          class="px-3 py-1.5 rounded-full border border-[var(--border-strong)] hover:border-[var(--accent-primary)] text-[var(--text-primary)] font-semibold cursor-pointer"
           aria-label="Close Arcade"
         >
-          ESC ✕
+          ESC ×
         </button>
       </div>
     </div>
@@ -107,17 +103,17 @@
           <span data-lang="id">Gerakkan kursor / tombol <strong>← →</strong> untuk menembak bug sebelum menyentuh server!</span>
           <span data-lang="en">Move mouse or press <strong>← →</strong> to blast falling bugs before they hit prod!</span>
         </div>
-        <div class="flex items-center gap-3">
-          <span class="px-2.5 py-1 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--accent-primary)] font-bold">
+        <div class="flex items-center gap-2.5">
+          <span class="px-2.5 py-1 rounded-full bg-[var(--bg-surface)] text-[var(--accent-primary)] font-bold">
             SCORE: <span id="shooter-score">0</span>
           </span>
-          <span class="px-2.5 py-1 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--accent-secondary)] font-bold">
+          <span class="px-2.5 py-1 rounded-full bg-[var(--bg-surface)] text-[var(--text-primary)] font-bold">
             HI: <span id="shooter-best">0</span>
           </span>
         </div>
       </div>
 
-      <div class="relative rounded-xl border border-[var(--border-subtle)] bg-[#05070b] overflow-hidden">
+      <div class="relative rounded-xl border border-[var(--border-strong)] bg-[#181715] overflow-hidden">
         <canvas
           id="bug-blaster-canvas"
           width="600"
@@ -125,23 +121,22 @@
           class="w-full h-[270px] sm:h-[320px] block cursor-crosshair"
         ></canvas>
 
-        <!-- Start / Game Over Overlay -->
         <div
           id="shooter-overlay"
-          class="absolute inset-0 bg-black/75 backdrop-blur-xs flex flex-col items-center justify-center gap-3 p-4 text-center"
+          class="absolute inset-0 bg-[#181715]/90 flex flex-col items-center justify-center gap-3 p-4 text-center"
         >
-          <div id="shooter-status-title" class="font-display text-2xl font-bold text-[var(--accent-primary)]">
-            👾 PROD BUG BLASTER
+          <div id="shooter-status-title" class="font-sans text-2xl font-bold tracking-tight text-[#df7a5c]">
+            👾 Prod Bug Blaster
           </div>
-          <p id="shooter-status-sub" class="text-[var(--text-secondary)] text-xs max-w-sm">
-            Destroy falling <span class="text-[var(--status-err)]">BUG</span>, <span class="text-[var(--status-warn)]">404</span>, and <span class="text-[var(--accent-tertiary)]">NULL</span> blocks. Catch green <span class="text-[var(--status-ok)]">+HP</span> patches!
+          <p id="shooter-status-sub" class="text-[#b5aea4] text-xs max-w-sm">
+            Destroy falling <span class="text-[#dc2626] font-semibold">BUG</span>, <span class="text-[#d9a45b] font-semibold">404</span>, and <span class="text-[#df7a5c] font-semibold">NULL</span> blocks. Catch green <span class="text-[#6eb093] font-semibold">+FIX</span> patches!
           </p>
           <button
             type="button"
             id="shooter-start-btn"
-            class="kinetic-btn bg-[var(--accent-primary)] text-[#05070b] font-bold px-6 py-2.5 cursor-pointer shadow-[0_0_20px_var(--accent-glow)]"
+            class="pill-btn bg-[var(--accent-primary)] text-[var(--accent-ink)] font-semibold px-6 py-2.5 cursor-pointer"
           >
-            ▶ START MISSION
+            ▶ Start Mission
           </button>
         </div>
       </div>
@@ -156,90 +151,86 @@
           <span data-lang="id">Ketik baris kode di bawah secepat &amp; setepat mungkin!</span>
           <span data-lang="en">Type the developer code snippet as fast and accurately as possible!</span>
         </div>
-        <div class="flex items-center gap-2.5">
-          <span class="px-2.5 py-1 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--accent-primary)] font-bold">
+        <div class="flex items-center gap-2">
+          <span class="px-2.5 py-1 rounded-full bg-[var(--bg-surface)] text-[var(--accent-primary)] font-bold">
             WPM: <span id="typer-wpm">0</span>
           </span>
-          <span class="px-2.5 py-1 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--accent-secondary)] font-bold">
+          <span class="px-2.5 py-1 rounded-full bg-[var(--bg-surface)] text-[var(--text-primary)] font-bold">
             STREAK: <span id="typer-streak">0</span>
           </span>
           <button
             type="button"
             id="typer-next-btn"
-            class="px-2.5 py-1 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] hover:border-[var(--accent-primary)] text-[var(--text-primary)] cursor-pointer"
+            class="px-3 py-1 rounded-full border border-[var(--border-strong)] hover:border-[var(--accent-primary)] text-[var(--text-primary)] font-semibold cursor-pointer"
           >
             ↻ Skip
           </button>
         </div>
       </div>
 
-      <!-- Target Snippet Display (inner block keeps whitespace visible; flex children collapse space-only spans) -->
-      <div class="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-base)] p-5 min-h-[88px] flex items-center">
+      <div class="rounded-xl border border-[var(--border-strong)] bg-[var(--bg-surface)] p-5 min-h-[88px] flex items-center">
         <div
           id="typer-target-box"
-          class="w-full text-sm sm:text-base leading-relaxed tracking-wide whitespace-pre-wrap break-all"
+          class="w-full font-mono text-sm sm:text-base leading-relaxed tracking-wide whitespace-pre-wrap break-all"
         ></div>
       </div>
 
-      <!-- Next Key Hint + Accuracy -->
       <div class="flex flex-wrap items-center justify-between gap-2 text-[11px]">
-        <span class="text-[var(--text-muted)] flex items-center gap-2">
+        <span class="text-[var(--text-muted)] flex items-center gap-2 font-semibold">
           NEXT KEY:
           <kbd
             id="typer-next-key"
-            class="min-w-[2rem] text-center px-2 py-0.5 rounded-md bg-[var(--bg-elevated)] border border-[var(--border-focus)] text-[var(--accent-secondary)] font-bold text-xs"
+            class="min-w-[2.2rem] text-center px-2 py-0.5 rounded bg-[var(--bg-surface)] border border-[var(--border-strong)] text-[var(--accent-primary)] font-mono font-bold text-xs"
           >-</kbd>
         </span>
         <span class="text-[var(--text-muted)]">
           ACCURACY: <strong id="typer-accuracy" class="text-[var(--accent-primary)]">100%</strong>
           <span class="mx-1">·</span>
-          <span data-lang="id"><span class="text-[var(--accent-secondary)]">·</span> = spasi</span>
-          <span data-lang="en"><span class="text-[var(--accent-secondary)]">·</span> = space</span>
+          <span data-lang="id"><span class="text-[var(--accent-primary)] font-bold">·</span> = spasi</span>
+          <span data-lang="en"><span class="text-[var(--accent-primary)] font-bold">·</span> = space</span>
         </span>
       </div>
 
-      <!-- Typing Input -->
       <input
         id="typer-input"
         type="text"
         autocomplete="off"
         spellcheck="false"
         placeholder="Start typing the snippet here..."
-        class="w-full rounded-xl border border-[var(--border-focus)] bg-[var(--bg-elevated)] px-4 py-3 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none"
+        class="w-full border-b-2 border-[var(--border-strong)] focus:border-[var(--accent-primary)] bg-transparent px-2 py-2.5 font-mono text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none"
       />
     </div>
 
     <!-- ==========================================
-         GAME 3: NEURAL MEMORY MATRIX (Sequence Hack)
+         GAME 3: NEURAL MEMORY MATRIX
          ========================================== -->
     <div id="arcade-panel-memory" class="hidden p-4 sm:p-6 space-y-5">
       <div class="flex flex-wrap items-center justify-between gap-2">
         <div class="text-[var(--text-secondary)] text-[11px]">
           <span data-lang="id">Hafalkan urutan node yang menyala lalu klik dengan urutan yang sama!</span>
-          <span data-lang="en">Memorize the flashing neural node sequence and repeat it in order!</span>
+          <span data-lang="en">Memorize the flashing matrix sequence and repeat it in order!</span>
         </div>
-        <div class="flex items-center gap-3">
-          <span class="px-2.5 py-1 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--accent-primary)] font-bold">
+        <div class="flex items-center gap-2.5">
+          <span class="px-2.5 py-1 rounded-full bg-[var(--bg-surface)] text-[var(--accent-primary)] font-bold">
             LEVEL: <span id="memory-level">1</span>
           </span>
-          <span class="px-2.5 py-1 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--accent-secondary)] font-bold">
+          <span class="px-2.5 py-1 rounded-full bg-[var(--bg-surface)] text-[var(--text-primary)] font-bold">
             BEST: <span id="memory-best">0</span>
           </span>
         </div>
       </div>
 
       <div class="flex flex-col items-center gap-4 py-2">
-        <div id="memory-status" class="text-xs font-bold text-[var(--accent-secondary)]">
-          Click START HACK to begin sequence
+        <div id="memory-status" class="text-xs font-semibold text-[var(--accent-primary)]">
+          Click Start to begin sequence
         </div>
 
-        <!-- 3x3 Neural Matrix -->
         <div class="grid grid-cols-3 gap-3 w-56 sm:w-64">
           {Array.from({ length: 9 }).map((_, idx) => (
             <button
               type="button"
               data-mem-idx={idx}
-              class="mem-cell aspect-square rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)] hover:border-[var(--accent-primary)] transition-all duration-150 cursor-pointer flex items-center justify-center font-display text-sm font-bold text-[var(--text-muted)]"
+              class="mem-cell aspect-square rounded-xl border border-[var(--border-strong)] bg-[var(--bg-surface)] hover:border-[var(--accent-primary)] transition-all duration-100 cursor-pointer flex items-center justify-center font-mono text-sm font-bold text-[var(--text-muted)]"
             >
               0{idx + 1}
             </button>
@@ -249,9 +240,9 @@
         <button
           type="button"
           id="memory-start-btn"
-          class="kinetic-btn bg-[var(--accent-primary)] text-[#05070b] font-bold px-6 py-2.5 cursor-pointer"
+          class="pill-btn bg-[var(--accent-primary)] text-[var(--accent-ink)] font-semibold px-6 py-2.5 cursor-pointer"
         >
-          ▶ START HACK
+          ▶ Start Memory
         </button>
       </div>
     </div>
@@ -265,22 +256,22 @@
           <span data-lang="id">Pukul 🐛 bug secepatnya! Jangan pukul ✨ fitur (−15). Waktu 30 detik.</span>
           <span data-lang="en">Whack 🐛 bugs fast! Don't hit ✨ features (−15). 30 seconds.</span>
         </div>
-        <div class="flex items-center gap-2.5">
-          <span class="px-2.5 py-1 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--accent-primary)] font-bold">
+        <div class="flex items-center gap-2">
+          <span class="px-2.5 py-1 rounded-full bg-[var(--bg-surface)] text-[var(--accent-primary)] font-bold">
             SCORE: <span id="whack-score">0</span>
           </span>
-          <span class="px-2.5 py-1 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--status-warn)] font-bold">
+          <span class="px-2.5 py-1 rounded-full bg-[var(--bg-surface)] text-[var(--status-warn)] font-bold">
             ⏱ <span id="whack-time">30</span>s
           </span>
-          <span class="px-2.5 py-1 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--accent-secondary)] font-bold">
+          <span class="px-2.5 py-1 rounded-full bg-[var(--bg-surface)] text-[var(--text-primary)] font-bold">
             HI: <span id="whack-best">0</span>
           </span>
         </div>
       </div>
 
       <div class="flex flex-col items-center gap-4 py-1">
-        <div id="whack-status" class="text-xs font-bold text-[var(--accent-secondary)]" aria-live="polite">
-          Click START to begin bug hunt
+        <div id="whack-status" class="text-xs font-semibold text-[var(--accent-primary)]" aria-live="polite">
+          Click Start to begin bug hunt
         </div>
 
         <div class="grid grid-cols-4 gap-2.5 w-full max-w-sm">
@@ -290,7 +281,7 @@
               data-whack-idx={idx}
               data-state="empty"
               aria-label="Empty slot"
-              class="whack-hole aspect-square rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-base)] text-2xl sm:text-3xl flex items-center justify-center cursor-pointer transition-all duration-100 data-[state=bug]:border-[var(--status-err)] data-[state=bug]:bg-[var(--status-err)]/10 data-[state=bug]:scale-105 data-[state=feat]:border-[var(--accent-primary)] data-[state=feat]:bg-[var(--accent-primary)]/10 active:scale-95"
+              class="whack-hole aspect-square rounded-xl border border-[var(--border-strong)] bg-[var(--bg-surface)] text-2xl sm:text-3xl flex items-center justify-center cursor-pointer transition-all duration-100 data-[state=bug]:border-[var(--status-err)] data-[state=bug]:bg-[var(--status-err)]/15 data-[state=feat]:border-[var(--accent-primary)] data-[state=feat]:bg-[var(--accent-primary)]/15"
             ></button>
           ))}
         </div>
@@ -298,9 +289,9 @@
         <button
           type="button"
           id="whack-start-btn"
-          class="kinetic-btn bg-[var(--accent-primary)] text-[#05070b] font-bold px-6 py-2.5 cursor-pointer"
+          class="pill-btn bg-[var(--accent-primary)] text-[var(--accent-ink)] font-semibold px-6 py-2.5 cursor-pointer"
         >
-          ▶ START HUNT
+          ▶ Start Hunt
         </button>
       </div>
     </div>
@@ -314,11 +305,11 @@
           <span data-lang="id">Tunggu panel jadi <strong>HIJAU</strong>, lalu klik / tekan Space secepat mungkin.</span>
           <span data-lang="en">Wait for the panel to turn <strong>GREEN</strong>, then click / press Space ASAP.</span>
         </div>
-        <div class="flex items-center gap-2.5">
-          <span class="px-2.5 py-1 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--accent-primary)] font-bold">
+        <div class="flex items-center gap-2">
+          <span class="px-2.5 py-1 rounded-full bg-[var(--bg-surface)] text-[var(--accent-primary)] font-bold">
             AVG: <span id="reflex-avg">-</span>
           </span>
-          <span class="px-2.5 py-1 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--accent-secondary)] font-bold">
+          <span class="px-2.5 py-1 rounded-full bg-[var(--bg-surface)] text-[var(--text-primary)] font-bold">
             BEST: <span id="reflex-best">-</span>
           </span>
         </div>
@@ -328,13 +319,13 @@
         type="button"
         id="reflex-pad"
         data-state="idle"
-        class="w-full h-[220px] sm:h-[260px] rounded-xl border-2 border-[var(--border-subtle)] bg-[var(--bg-base)] flex flex-col items-center justify-center gap-2 p-4 text-center cursor-pointer select-none transition-colors duration-75 data-[state=wait]:border-[var(--status-err)] data-[state=wait]:bg-[var(--status-err)]/15 data-[state=go]:border-[var(--accent-primary)] data-[state=go]:bg-[var(--accent-primary)]/30 data-[state=early]:border-[var(--status-warn)] data-[state=early]:bg-[var(--status-warn)]/15"
+        class="w-full h-[220px] sm:h-[260px] rounded-xl border border-[var(--border-strong)] bg-[var(--bg-surface)] flex flex-col items-center justify-center gap-2 p-4 text-center cursor-pointer select-none transition-colors duration-75 data-[state=wait]:border-[var(--status-err)] data-[state=wait]:bg-[var(--status-err)]/20 data-[state=go]:border-[var(--status-ok)] data-[state=go]:bg-[var(--status-ok)]/30 data-[state=early]:border-[var(--status-warn)] data-[state=early]:bg-[var(--status-warn)]/20"
       >
-        <span id="reflex-title" class="font-display text-xl sm:text-2xl font-bold text-[var(--text-primary)]">⚡ PING REFLEX TEST</span>
+        <span id="reflex-title" class="font-sans text-xl sm:text-2xl font-bold tracking-tight text-[var(--text-primary)]">⚡ Ping Reflex Test</span>
         <span id="reflex-sub" class="text-xs text-[var(--text-secondary)]">Click or press Space to start</span>
       </button>
 
-      <div class="flex flex-wrap items-center gap-2 text-[11px] text-[var(--text-muted)]">
+      <div class="flex flex-wrap items-center gap-2 text-[11px] text-[var(--text-muted)] font-semibold">
         <span>LAST 5:</span>
         <div id="reflex-history" class="flex flex-wrap gap-1.5">
           <span>-</span>
@@ -343,7 +334,7 @@
     </div>
 
     <!-- ==========================================
-         GAME 6: CYBER SNAKE (Canvas Neon Serpent)
+         GAME 6: CYBER SNAKE
          ========================================== -->
     <div id="arcade-panel-snake" class="hidden p-4 sm:p-6 space-y-4">
       <div class="flex flex-wrap items-center justify-between gap-2">
@@ -351,11 +342,11 @@
           <span data-lang="id">Gunakan <strong>WASD / Panah / Swipe</strong> untuk makan node data &amp; ★ bonus!</span>
           <span data-lang="en">Use <strong>WASD / Arrows / Swipe</strong> to eat data nodes &amp; ★ bonus orbs!</span>
         </div>
-        <div class="flex flex-wrap items-center gap-2">
+        <div class="flex flex-wrap items-center gap-1.5">
           <button
             type="button"
             id="snake-speed-btn"
-            class="px-2.5 py-1 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--accent-primary)] font-bold cursor-pointer hover:border-[var(--accent-primary)] transition-colors"
+            class="px-2.5 py-1 rounded-full bg-[var(--bg-surface)] border border-[var(--border-strong)] text-[var(--accent-primary)] font-semibold cursor-pointer hover:border-[var(--accent-primary)] transition-colors"
             title="Cycle snake speed (Slow / Normal / Fast)"
           >
             🐍 NORMAL
@@ -363,24 +354,24 @@
           <button
             type="button"
             id="snake-mode-btn"
-            class="px-2.5 py-1 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-focus)] text-[var(--accent-secondary)] font-bold cursor-pointer hover:border-[var(--accent-primary)] transition-colors"
+            class="px-2.5 py-1 rounded-full bg-[var(--bg-surface)] border border-[var(--border-strong)] text-[var(--accent-primary)] font-semibold cursor-pointer hover:border-[var(--accent-primary)] transition-colors"
             title="Toggle Portal Wrap vs Solid Wall mode"
           >
             🌀 PORTAL
           </button>
-          <span class="px-2.5 py-1 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--accent-primary)] font-bold">
+          <span class="px-2.5 py-1 rounded-full bg-[var(--bg-surface)] text-[var(--accent-primary)] font-bold">
             SCORE: <span id="snake-score">0</span>
           </span>
-          <span class="px-2.5 py-1 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--text-primary)] font-bold">
+          <span class="px-2.5 py-1 rounded-full bg-[var(--bg-surface)] text-[var(--text-primary)] font-bold">
             LEN: <span id="snake-len">4</span>
           </span>
-          <span class="px-2.5 py-1 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--accent-secondary)] font-bold">
+          <span class="px-2.5 py-1 rounded-full bg-[var(--bg-surface)] text-[var(--text-primary)] font-bold">
             HI: <span id="snake-best">0</span>
           </span>
         </div>
       </div>
 
-      <div class="relative rounded-xl border border-[var(--border-subtle)] bg-[#05070b] overflow-hidden">
+      <div class="relative rounded-xl border border-[var(--border-strong)] bg-[#181715] overflow-hidden">
         <canvas
           id="cyber-snake-canvas"
           width="600"
@@ -388,41 +379,39 @@
           class="w-full h-[260px] sm:h-[320px] block touch-none"
         ></canvas>
 
-        <!-- Start / Game Over Overlay -->
         <div
           id="snake-overlay"
-          class="absolute inset-0 bg-black/75 backdrop-blur-xs flex flex-col items-center justify-center gap-3 p-4 text-center"
+          class="absolute inset-0 bg-[#181715]/90 flex flex-col items-center justify-center gap-3 p-4 text-center"
         >
-          <div id="snake-status-title" class="font-display text-2xl font-bold text-[var(--accent-primary)]">
-            🐍 NEON CYBER SNAKE
+          <div id="snake-status-title" class="font-sans text-2xl font-bold tracking-tight text-[#df7a5c]">
+            🐍 Botanical Snake
           </div>
-          <p id="snake-status-sub" class="text-[var(--text-secondary)] text-xs max-w-sm">
-            <span data-lang="id">Makan node <span class="text-[var(--accent-primary)]">● +10</span> &amp; paket emas <span class="text-[var(--status-warn)]">★ +30</span> sebelum waktunya habis. Jangan tabrak ekor sendiri!</span>
-            <span data-lang="en">Collect <span class="text-[var(--accent-primary)]">● +10</span> nodes &amp; timed <span class="text-[var(--status-warn)]">★ +30</span> star packets. Don't bite your own tail!</span>
+          <p id="snake-status-sub" class="text-[#b5aea4] text-xs max-w-sm">
+            <span data-lang="id">Makan node <span class="text-[#6eb093] font-semibold">● +10</span> &amp; paket emas <span class="text-[#d9a45b] font-semibold">★ +30</span> sebelum waktunya habis. Jangan tabrak ekor sendiri!</span>
+            <span data-lang="en">Collect <span class="text-[#6eb093] font-semibold">● +10</span> nodes &amp; timed <span class="text-[#d9a45b] font-semibold">★ +30</span> star packets. Don't bite your own tail!</span>
           </p>
           <button
             type="button"
             id="snake-start-btn"
-            class="kinetic-btn bg-[var(--accent-primary)] text-[#05070b] font-bold px-6 py-2.5 cursor-pointer shadow-[0_0_20px_var(--accent-glow)]"
+            class="pill-btn bg-[var(--accent-primary)] text-[var(--accent-ink)] font-semibold px-6 py-2.5 cursor-pointer"
           >
-            ▶ START SERPENT
+            ▶ Start Snake
           </button>
         </div>
       </div>
 
       <!-- Mobile Touch D-Pad -->
       <div class="flex sm:hidden items-center justify-center gap-2 pt-1" role="group" aria-label="Snake directional controls">
-        <button type="button" data-snake-dir="left" aria-label="Turn left" class="snake-dpad-btn px-4 py-2 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] active:border-[var(--accent-primary)] text-sm font-bold text-[var(--text-primary)] cursor-pointer">◀</button>
-        <button type="button" data-snake-dir="up" aria-label="Turn up" class="snake-dpad-btn px-4 py-2 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] active:border-[var(--accent-primary)] text-sm font-bold text-[var(--text-primary)] cursor-pointer">▲</button>
-        <button type="button" data-snake-dir="down" aria-label="Turn down" class="snake-dpad-btn px-4 py-2 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] active:border-[var(--accent-primary)] text-sm font-bold text-[var(--text-primary)] cursor-pointer">▼</button>
-        <button type="button" data-snake-dir="right" aria-label="Turn right" class="snake-dpad-btn px-4 py-2 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] active:border-[var(--accent-primary)] text-sm font-bold text-[var(--text-primary)] cursor-pointer">▶</button>
+        <button type="button" data-snake-dir="left" aria-label="Turn left" class="snake-dpad-btn px-4 py-2 rounded-full bg-[var(--bg-surface)] border border-[var(--border-strong)] text-sm font-bold text-[var(--text-primary)] cursor-pointer">◀</button>
+        <button type="button" data-snake-dir="up" aria-label="Turn up" class="snake-dpad-btn px-4 py-2 rounded-full bg-[var(--bg-surface)] border border-[var(--border-strong)] text-sm font-bold text-[var(--text-primary)] cursor-pointer">▲</button>
+        <button type="button" data-snake-dir="down" aria-label="Turn down" class="snake-dpad-btn px-4 py-2 rounded-full bg-[var(--bg-surface)] border border-[var(--border-strong)] text-sm font-bold text-[var(--text-primary)] cursor-pointer">▼</button>
+        <button type="button" data-snake-dir="right" aria-label="Turn right" class="snake-dpad-btn px-4 py-2 rounded-full bg-[var(--bg-surface)] border border-[var(--border-strong)] text-sm font-bold text-[var(--text-primary)] cursor-pointer">▶</button>
       </div>
     </div>
   </div>
 </div>
 
 <script>
-  // Safe localStorage helpers
   function getSavedNum(key: string): number {
     try {
       return Number(localStorage.getItem(key)) || 0;
@@ -436,7 +425,6 @@
     } catch (_) {}
   }
 
-  // Modal & Tab Controls
   const arcadeModal = document.getElementById('cyber-arcade-modal');
   const arcadeCloseBtn = document.getElementById('arcade-close-btn');
   const floatingArcadeBtn = document.getElementById('floating-arcade-btn');
@@ -454,7 +442,6 @@
   let shooterActive = false;
   let snakeRunning = false;
 
-  // Stop every running loop/timer (called on close + tab switch)
   function stopAllGames() {
     shooterActive = false;
     snakeRunning = false;
@@ -469,10 +456,10 @@
     tabBtns.forEach((b) => {
       const active = b.getAttribute('data-arcade-tab') === target;
       if (active) {
-        b.classList.add('bg-[var(--accent-primary)]', 'text-[#05070b]', 'font-bold');
+        b.classList.add('bg-[var(--accent-primary)]', 'text-[var(--accent-ink)]', 'font-semibold');
         b.classList.remove('text-[var(--text-secondary)]');
       } else {
-        b.classList.remove('bg-[var(--accent-primary)]', 'text-[#05070b]', 'font-bold');
+        b.classList.remove('bg-[var(--accent-primary)]', 'text-[var(--accent-ink)]', 'font-semibold');
         b.classList.add('text-[var(--text-secondary)]');
       }
     });
@@ -602,10 +589,10 @@
     if (!canvas) return;
     const types = [
       { label: 'BUG', color: '#ef4444', isHeal: false },
-      { label: '404', color: '#f59e0b', isHeal: false },
-      { label: 'NULL', color: '#818cf8', isHeal: false },
-      { label: 'RACE', color: '#f43f5e', isHeal: false },
-      { label: '+FIX', color: '#10b981', isHeal: true },
+      { label: '404', color: '#d9a45b', isHeal: false },
+      { label: 'NULL', color: '#df7a5c', isHeal: false },
+      { label: 'RACE', color: '#f97316', isHeal: false },
+      { label: '+FIX', color: '#6eb093', isHeal: true },
     ];
     const pick = Math.random() < 0.14 ? types[4] : types[Math.floor(Math.random() * 4)];
     const w = 48;
@@ -639,37 +626,23 @@
     frameTick++;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Subtle cyber grid lines
-    ctx.strokeStyle = 'rgba(56, 189, 248, 0.06)';
-    ctx.lineWidth = 1;
-    for (let gx = 0; gx < canvas.width; gx += 40) {
-      ctx.beginPath();
-      ctx.moveTo(gx, 0);
-      ctx.lineTo(gx, canvas.height);
-      ctx.stroke();
-    }
-
     if (leftPressed) playerX = Math.max(28, playerX - 5.5);
     if (rightPressed) playerX = Math.min(canvas.width - 28, playerX + 5.5);
 
-    // Auto-fire laser bolts
     if (frameTick % 11 === 0) {
       bullets.push({ x: playerX, y: canvas.height - 34 });
     }
 
-    // Spawn falling bugs
     const spawnRate = Math.max(22, 48 - Math.floor(score / 25));
     if (frameTick % spawnRate === 0) {
       spawnEnemy();
     }
 
-    // Draw HP hearts top-left
     ctx.font = 'bold 12px "JetBrains Mono", monospace';
-    ctx.fillStyle = '#10b981';
-    ctx.fillText(`SERVER HP: ${'♥ '.repeat(hp)}`, 14, 22);
+    ctx.fillStyle = '#6eb093';
+    ctx.fillText(`SERVER HP: ${'● '.repeat(hp)}`, 14, 22);
 
-    // Update & draw bullets
-    ctx.fillStyle = '#38bdf8';
+    ctx.fillStyle = '#df7a5c';
     for (let i = bullets.length - 1; i >= 0; i--) {
       const b = bullets[i];
       b.y -= 7.5;
@@ -680,25 +653,20 @@
       ctx.fillRect(b.x - 2, b.y, 4, 12);
     }
 
-    // Update & draw enemies
     for (let i = enemies.length - 1; i >= 0; i--) {
       const en = enemies[i];
       en.y += en.vy;
 
-      // Draw block
-      ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
+      ctx.fillStyle = '#211f1c';
       ctx.strokeStyle = en.color;
-      ctx.lineWidth = 1.5;
-      ctx.beginPath();
-      ctx.roundRect(en.x, en.y, en.w, en.h, 5);
-      ctx.fill();
-      ctx.stroke();
+      ctx.lineWidth = 2;
+      ctx.fillRect(en.x, en.y, en.w, en.h);
+      ctx.strokeRect(en.x, en.y, en.w, en.h);
 
       ctx.fillStyle = en.color;
       ctx.font = 'bold 11px "JetBrains Mono", monospace';
       ctx.fillText(en.label, en.x + 8, en.y + 15);
 
-      // Check collision with player ship (catch +FIX or take damage)
       if (
         en.y + en.h >= canvas.height - 34 &&
         en.y <= canvas.height - 10 &&
@@ -708,7 +676,7 @@
         if (en.isHeal) {
           hp = Math.min(5, hp + 1);
           score += 15;
-          addBoom(en.x + en.w / 2, en.y + en.h / 2, '#10b981');
+          addBoom(en.x + en.w / 2, en.y + en.h / 2, '#6eb093');
         } else {
           hp--;
           addBoom(en.x + en.w / 2, en.y + en.h / 2, '#ef4444');
@@ -718,7 +686,6 @@
         continue;
       }
 
-      // Check if enemy breached bottom server line
       if (en.y > canvas.height) {
         if (!en.isHeal) {
           hp--;
@@ -728,7 +695,6 @@
         continue;
       }
 
-      // Bullet collision
       for (let j = bullets.length - 1; j >= 0; j--) {
         const b = bullets[j];
         if (b.x >= en.x && b.x <= en.x + en.w && b.y >= en.y && b.y <= en.y + en.h) {
@@ -745,7 +711,6 @@
       }
     }
 
-    // Draw particles
     for (let i = booms.length - 1; i >= 0; i--) {
       const p = booms[i];
       p.x += p.vx;
@@ -757,20 +722,20 @@
       }
       ctx.globalAlpha = p.alpha;
       ctx.fillStyle = p.color;
-      ctx.fillRect(p.x, p.y, 3, 3);
+      ctx.fillRect(p.x, p.y, 4, 4);
       ctx.globalAlpha = 1;
     }
 
-    // Draw Player Ship
-    ctx.fillStyle = '#10b981';
+    ctx.fillStyle = '#df7a5c';
     ctx.beginPath();
     ctx.moveTo(playerX, canvas.height - 34);
     ctx.lineTo(playerX - 18, canvas.height - 12);
     ctx.lineTo(playerX + 18, canvas.height - 12);
     ctx.closePath();
     ctx.fill();
+    ctx.fillStyle = '#6eb093';
+    ctx.fillRect(playerX - 3, canvas.height - 36, 6, 6);
 
-    // Check Game Over
     if (hp <= 0) {
       shooterActive = false;
       if (score > bestShooter) {
@@ -779,9 +744,9 @@
         if (shooterBestEl) shooterBestEl.textContent = String(bestShooter);
         window.dispatchEvent(new CustomEvent('portfolio:fireworks'));
       }
-      if (shooterTitleEl) shooterTitleEl.textContent = `💥 PROD CRASHED // SCORE: ${score}`;
+      if (shooterTitleEl) shooterTitleEl.textContent = `💥 Prod Crashed · Score: ${score}`;
       if (shooterSubEl) shooterSubEl.textContent = `High Score: ${bestShooter}. Ready to redeploy?`;
-      if (shooterStartBtn) shooterStartBtn.textContent = '↻ REDEPLOY SHIP';
+      if (shooterStartBtn) shooterStartBtn.textContent = '↻ Redeploy Ship';
       shooterOverlay?.classList.remove('hidden');
       return;
     }
@@ -809,7 +774,7 @@
     'const score = cosineSimilarity(vecA, vecB);',
     'export async function fetchGitHubStats(user: string)',
     'SELECT id, title FROM documents WHERE score > 0.75;',
-    'git commit -m "feat: deploy astro static portfolio"',
+    'git commit -m "feat: warm editorial portfolio"',
     'const tokens = text.toLowerCase().split(/\\s+/);',
     'app.get("/api/health", (req, res) => res.json({ ok: true }));',
     'SELECT * FROM repos ORDER BY stars DESC LIMIT 4;',
@@ -838,25 +803,22 @@
       const ch = currentSnippet[i];
       const isSpace = ch === ' ';
       const span = document.createElement('span');
-      // Render spaces as a visible middle dot so cursor/errors on whitespace are visible
       span.textContent = isSpace ? '·' : ch;
 
       if (i < typed.length) {
         if (typed[i] === ch) {
           correct++;
           span.className = isSpace
-            ? 'text-[var(--accent-primary)] opacity-40'
+            ? 'text-[var(--accent-primary)] opacity-45'
             : 'text-[var(--accent-primary)] font-bold';
         } else {
-          span.className = 'bg-[var(--status-err)]/30 text-[var(--status-err)] font-bold rounded-sm';
+          span.className = 'bg-[var(--status-err)]/30 text-[var(--status-err)] font-bold';
         }
       } else if (i === typed.length) {
-        span.className =
-          'bg-[var(--accent-secondary)]/25 border-b-2 border-[var(--accent-secondary)] text-[var(--text-primary)] font-bold rounded-sm';
+        span.className = 'bg-[var(--accent-primary)] text-[var(--accent-ink)] font-bold';
       } else if (isSpace) {
-        span.className = 'text-[var(--accent-secondary)] opacity-45';
+        span.className = 'text-[var(--accent-primary)] opacity-50';
       } else if (/[^A-Za-z0-9]/.test(ch)) {
-        // Symbols (*, ;, (, ", /, etc.) get a high-contrast accent so they are never missed
         span.className = 'text-[var(--accent-tertiary)] font-bold';
       } else {
         span.className = 'text-[var(--text-secondary)]';
@@ -940,9 +902,9 @@
   function flashMemCell(idx: number) {
     const cell = memCells[idx];
     if (!cell) return;
-    cell.classList.add('!bg-[var(--accent-primary)]', '!text-[#05070b]', 'scale-105', 'shadow-[0_0_20px_var(--accent-primary)]');
+    cell.classList.add('!bg-[var(--accent-primary)]', '!text-[var(--accent-ink)]');
     setTimeout(() => {
-      cell.classList.remove('!bg-[var(--accent-primary)]', '!text-[#05070b]', 'scale-105', 'shadow-[0_0_20px_var(--accent-primary)]');
+      cell.classList.remove('!bg-[var(--accent-primary)]', '!text-[var(--accent-ink)]');
     }, 340);
   }
 
@@ -950,7 +912,7 @@
     memAcceptingInput = false;
     memPlayerStep = 0;
     if (memLevelEl) memLevelEl.textContent = String(memSequence.length);
-    if (memStatusEl) memStatusEl.textContent = '👀 Watch the neural pattern...';
+    if (memStatusEl) memStatusEl.textContent = '👀 Watch the pattern...';
 
     memSequence.forEach((cellIdx, i) => {
       setTimeout(() => {
@@ -991,7 +953,7 @@
             setSavedNum('arcade_memory_best', memBest);
             if (memBestEl) memBestEl.textContent = String(memBest);
           }
-          if (memStatusEl) memStatusEl.textContent = `✓ Level ${cleared} Hacked! Loading next layer...`;
+          if (memStatusEl) memStatusEl.textContent = `✓ Level ${cleared} Cleared!`;
           if (cleared % 4 === 0) {
             window.dispatchEvent(new CustomEvent('portfolio:fireworks'));
           }
@@ -1002,7 +964,7 @@
         cell.classList.add('!bg-[var(--status-err)]', '!text-white');
         setTimeout(() => cell.classList.remove('!bg-[var(--status-err)]', '!text-white'), 450);
         if (memStatusEl) {
-          memStatusEl.textContent = `✕ Access Denied at Level ${memSequence.length}! Click START HACK to retry.`;
+          memStatusEl.textContent = `✕ Missed at Level ${memSequence.length}! Click Start to retry.`;
         }
       }
     });
@@ -1022,7 +984,7 @@
   let whackScore = 0;
   let whackTimeLeft = WHACK_DURATION;
   let whackRunning = false;
-  let whackRound = 0; // bumps on every start/stop so stale timeouts are ignored
+  let whackRound = 0;
   let whackClockId: number | null = null;
   let whackSpawnId: number | null = null;
   let whackBest = getSavedNum('arcade_whack_best');
@@ -1051,7 +1013,6 @@
       setHole(hole, isFeat ? 'feat' : 'bug');
       const token = String(performance.now());
       hole.dataset.token = token;
-      // Targets get shorter-lived as the clock runs down
       const lifetime = Math.max(520, 1000 - (WHACK_DURATION - whackTimeLeft) * 16);
       window.setTimeout(() => {
         if (round !== whackRound || hole.dataset.token !== token) return;
@@ -1071,10 +1032,10 @@
     whackClockId = null;
     whackSpawnId = null;
     whackHoles.forEach((h) => setHole(h, 'empty'));
-    if (whackStartBtn) whackStartBtn.textContent = finished ? '↻ HUNT AGAIN' : '▶ START HUNT';
+    if (whackStartBtn) whackStartBtn.textContent = finished ? '↻ Hunt Again' : '▶ Start Hunt';
 
     if (!finished) {
-      if (whackStatusEl) whackStatusEl.textContent = 'Click START to begin bug hunt';
+      if (whackStatusEl) whackStatusEl.textContent = 'Click Start to begin bug hunt';
       return;
     }
     const isRecord = whackScore > whackBest;
@@ -1086,7 +1047,7 @@
     }
     if (whackStatusEl) {
       whackStatusEl.textContent = isRecord
-        ? `🏆 NEW RECORD! ${whackScore} pts`
+        ? `🏆 New Record! ${whackScore} pts`
         : `⏱ Time's up! Score: ${whackScore} (HI ${whackBest})`;
     }
   }
@@ -1100,7 +1061,7 @@
     updateWhackScore();
     if (whackTimeEl) whackTimeEl.textContent = String(whackTimeLeft);
     if (whackStatusEl) whackStatusEl.textContent = '🔨 Squash those bugs!';
-    whackStartBtn.textContent = '⏳ HUNTING...';
+    whackStartBtn.textContent = '⏳ Hunting...';
 
     whackClockId = window.setInterval(() => {
       whackTimeLeft--;
@@ -1147,7 +1108,7 @@
   let reflexTimerId: number | null = null;
   let reflexGoAt = 0;
   let reflexHistory: number[] = [];
-  let reflexBest = getSavedNum('arcade_reflex_best'); // 0 = no record yet (lower ms is better)
+  let reflexBest = getSavedNum('arcade_reflex_best');
   if (reflexBestEl && reflexBest > 0) reflexBestEl.textContent = `${reflexBest}ms`;
 
   function setReflexView(state: ReflexState, title: string, sub: string) {
@@ -1161,7 +1122,7 @@
     if (reflexTimerId !== null) window.clearTimeout(reflexTimerId);
     reflexTimerId = null;
     if (reflexState === 'wait' || reflexState === 'go') {
-      setReflexView('idle', '⚡ PING REFLEX TEST', 'Click or press Space to start');
+      setReflexView('idle', '⚡ Ping Reflex Test', 'Click or press Space to start');
     }
   }
 
@@ -1182,7 +1143,7 @@
     reflexHistory.forEach((ms) => {
       const chip = document.createElement('span');
       chip.className =
-        'px-2 py-0.5 rounded-md bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--text-secondary)]';
+        'px-2 py-0.5 rounded-full bg-[var(--bg-surface)] text-[var(--text-primary)] font-semibold';
       chip.textContent = `${ms}ms`;
       reflexHistoryEl.appendChild(chip);
     });
@@ -1192,21 +1153,20 @@
 
   function handleReflexPress() {
     if (reflexState === 'idle' || reflexState === 'early') {
-      setReflexView('wait', '🔴 WAIT FOR GREEN...', 'Do not click yet');
+      setReflexView('wait', '🔴 Wait for Green...', 'Do not click yet');
       const delay = 1400 + Math.random() * 2600;
       reflexTimerId = window.setTimeout(() => {
         reflexGoAt = performance.now();
-        setReflexView('go', '🟢 CLICK NOW!', 'GO GO GO');
+        setReflexView('go', '🟢 Click Now!', 'GO GO GO');
       }, delay);
       return;
     }
     if (reflexState === 'wait') {
       if (reflexTimerId !== null) window.clearTimeout(reflexTimerId);
       reflexTimerId = null;
-      setReflexView('early', '⚠ TOO EARLY!', 'Packet dropped. Click to retry.');
+      setReflexView('early', '⚠ Too Early!', 'Click to retry.');
       return;
     }
-    // state === 'go'
     const ms = Math.round(performance.now() - reflexGoAt);
     reflexHistory = [ms, ...reflexHistory].slice(0, 5);
     renderReflexHistory();
@@ -1221,7 +1181,6 @@
     setReflexView('idle', `${ms} ms`, sub);
   }
 
-  // pointerdown (not click) so measured time excludes mouse-up delay
   reflexPad?.addEventListener('pointerdown', (e) => {
     e.preventDefault();
     handleReflexPress();
@@ -1232,14 +1191,13 @@
     if (e.repeat || arcadeModal?.classList.contains('hidden') || reflexPanel?.classList.contains('hidden')) return;
     const tag = (e.target as HTMLElement | null)?.tagName;
     if (tag === 'INPUT' || tag === 'TEXTAREA') return;
-    // Leave Enter/Space on other buttons (tabs, close) alone
     if (tag === 'BUTTON' && e.target !== reflexPad) return;
     e.preventDefault();
     handleReflexPress();
   });
 
   // ==========================================
-  // GAME 6: CYBER SNAKE
+  // GAME 6: BOTANICAL SNAKE
   // ==========================================
   const snakeCanvas = document.getElementById('cyber-snake-canvas') as HTMLCanvasElement | null;
   const snakeOverlay = document.getElementById('snake-overlay');
@@ -1254,8 +1212,8 @@
   const snakeDpadBtns = document.querySelectorAll<HTMLButtonElement>('.snake-dpad-btn');
 
   const SNAKE_CELL = 20;
-  const SNAKE_COLS = 30; // 30 * 20 = 600
-  const SNAKE_ROWS = 16; // 16 * 20 = 320
+  const SNAKE_COLS = 30;
+  const SNAKE_ROWS = 16;
 
   interface GridPt {
     x: number;
@@ -1281,7 +1239,7 @@
     { label: '🐍 NORMAL', baseMs: 185, minMs: 120 },
     { label: '⚡ FAST', baseMs: 130, minMs: 82 },
   ] as const;
-  let snakeSpeedIdx = 1; // default: NORMAL (185ms/cell)
+  let snakeSpeedIdx = 1;
 
   let snakePortalMode = true;
   let snakeBest = getSavedNum('arcade_snake_best');
@@ -1326,7 +1284,6 @@
 
   function queueSnakeDir(nx: number, ny: number) {
     const ref = snakeDirQueue.length > 0 ? snakeDirQueue[snakeDirQueue.length - 1] : snakeDir;
-    // Reject duplicate or 180-degree opposite turn
     if ((ref.x === nx && ref.y === ny) || (ref.x === -nx && ref.y === -ny)) return;
     if (snakeDirQueue.length < 2) {
       snakeDirQueue.push({ x: nx, y: ny });
@@ -1341,9 +1298,6 @@
   snakeModeBtn?.addEventListener('click', () => {
     snakePortalMode = !snakePortalMode;
     snakeModeBtn.textContent = snakePortalMode ? '🌀 PORTAL' : '🧱 WALL';
-    snakeModeBtn.className = snakePortalMode
-      ? 'px-2.5 py-1 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-focus)] text-[var(--accent-secondary)] font-bold cursor-pointer hover:border-[var(--accent-primary)] transition-colors'
-      : 'px-2.5 py-1 rounded-lg bg-[var(--bg-elevated)] border border-[var(--status-err)] text-[var(--status-err)] font-bold cursor-pointer hover:border-[var(--accent-primary)] transition-colors';
     drawSnakeBoard(performance.now());
   });
 
@@ -1367,7 +1321,6 @@
     const ateBonus = snakeBonus !== null && nx === snakeBonus.x && ny === snakeBonus.y;
     const growing = ateFood || ateBonus;
 
-    // Tail moves forward unless growing, so moving into old tail cell is legal when !growing
     const checkLen = growing ? snakeBody.length : snakeBody.length - 1;
     for (let i = 0; i < checkLen; i++) {
       if (snakeBody[i].x === nx && snakeBody[i].y === ny) {
@@ -1383,7 +1336,7 @@
 
     if (ateFood) {
       snakeScore += 10;
-      spawnSnakeBurst(nx, ny, '#10b981', 12);
+      spawnSnakeBurst(nx, ny, '#6eb093', 12);
       snakeFood = randomFreeCell(snakeBonus);
       if (!snakeBonus && Math.random() < 0.3) {
         const pt = randomFreeCell(snakeFood);
@@ -1393,7 +1346,7 @@
 
     if (ateBonus) {
       snakeScore += 30;
-      spawnSnakeBurst(nx, ny, '#f59e0b', 18);
+      spawnSnakeBurst(nx, ny, '#d9a45b', 18);
       snakeBonus = null;
     }
 
@@ -1413,8 +1366,7 @@
 
     ctx.clearRect(0, 0, snakeCanvas.width, snakeCanvas.height);
 
-    // Subtle matrix grid
-    ctx.strokeStyle = 'rgba(56, 189, 248, 0.06)';
+    ctx.strokeStyle = 'rgba(243, 239, 232, 0.04)';
     ctx.lineWidth = 1;
     for (let gx = SNAKE_CELL; gx < snakeCanvas.width; gx += SNAKE_CELL) {
       ctx.beginPath();
@@ -1429,50 +1381,48 @@
       ctx.stroke();
     }
 
-    // Arena border indicates PORTAL (dashed cyan) vs WALL (solid red)
     ctx.save();
     ctx.lineWidth = 2;
     if (snakePortalMode) {
       ctx.setLineDash([6, 6]);
-      ctx.strokeStyle = 'rgba(56, 189, 248, 0.35)';
+      ctx.strokeStyle = 'rgba(110, 176, 147, 0.45)';
     } else {
-      ctx.strokeStyle = 'rgba(239, 68, 68, 0.65)';
+      ctx.strokeStyle = 'rgba(223, 122, 92, 0.78)';
     }
     ctx.strokeRect(1, 1, snakeCanvas.width - 2, snakeCanvas.height - 2);
     ctx.restore();
 
     const pulse = 0.5 + 0.5 * Math.sin(now * 0.008);
 
-    // Primary emerald food node
     const fx = snakeFood.x * SNAKE_CELL + SNAKE_CELL / 2;
     const fy = snakeFood.y * SNAKE_CELL + SNAKE_CELL / 2;
+    const outerSz = 7 + pulse * 2.5;
     ctx.beginPath();
-    ctx.arc(fx, fy, 7.5 + pulse * 2.5, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(16, 185, 129, 0.22)';
-    ctx.fill();
+    ctx.arc(fx, fy, outerSz, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(110, 176, 147, 0.45)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
     ctx.beginPath();
-    ctx.arc(fx, fy, 5.2, 0, Math.PI * 2);
-    ctx.fillStyle = '#10b981';
+    ctx.arc(fx, fy, 4.5, 0, Math.PI * 2);
+    ctx.fillStyle = '#6eb093';
     ctx.fill();
 
-    // Timed golden star bonus packet
     if (snakeBonus) {
       const rem = Math.max(0, (snakeBonus.expiresAt - now) / snakeBonus.duration);
       const bx = snakeBonus.x * SNAKE_CELL + SNAKE_CELL / 2;
       const by = snakeBonus.y * SNAKE_CELL + SNAKE_CELL / 2;
       ctx.beginPath();
       ctx.arc(bx, by, 8.5, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * rem);
-      ctx.strokeStyle = '#f59e0b';
+      ctx.strokeStyle = '#d9a45b';
       ctx.lineWidth = 2;
       ctx.stroke();
-      ctx.fillStyle = '#fbbf24';
+      ctx.fillStyle = '#d9a45b';
       ctx.font = 'bold 12px "JetBrains Mono", monospace';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText('★', bx, by + 0.5);
     }
 
-    // Draw snake body from tail to head with emerald -> cyan -> indigo gradient
     for (let i = snakeBody.length - 1; i >= 0; i--) {
       const seg = snakeBody[i];
       const sx = seg.x * SNAKE_CELL;
@@ -1480,41 +1430,32 @@
       const t = snakeBody.length > 1 ? i / (snakeBody.length - 1) : 0;
 
       if (i === 0) {
-        // Glowing Serpent Head
-        ctx.fillStyle = '#10b981';
-        ctx.shadowColor = 'rgba(16, 185, 129, 0.75)';
-        ctx.shadowBlur = 10;
-        ctx.beginPath();
-        ctx.roundRect(sx + 1.5, sy + 1.5, SNAKE_CELL - 3, SNAKE_CELL - 3, 6);
-        ctx.fill();
-        ctx.shadowBlur = 0;
+        ctx.fillStyle = '#df7a5c';
+        ctx.fillRect(sx + 1.5, sy + 1.5, SNAKE_CELL - 3, SNAKE_CELL - 3);
+        ctx.strokeStyle = '#f3efe8';
+        ctx.lineWidth = 1.2;
+        ctx.strokeRect(sx + 1.5, sy + 1.5, SNAKE_CELL - 3, SNAKE_CELL - 3);
 
-        // Directional eyes
-        ctx.fillStyle = '#05070b';
+        ctx.fillStyle = '#181715';
         const cx = sx + SNAKE_CELL / 2;
         const cy = sy + SNAKE_CELL / 2;
         const perpX = -snakeDir.y;
         const perpY = snakeDir.x;
-        const fwdX = snakeDir.x * 3.5;
-        const fwdY = snakeDir.y * 3.5;
-        ctx.beginPath();
-        ctx.arc(cx + fwdX + perpX * 3.6, cy + fwdY + perpY * 3.6, 1.8, 0, Math.PI * 2);
-        ctx.arc(cx + fwdX - perpX * 3.6, cy + fwdY - perpY * 3.6, 1.8, 0, Math.PI * 2);
-        ctx.fill();
+        const fwdX = snakeDir.x * 3.6;
+        const fwdY = snakeDir.y * 3.6;
+        ctx.fillRect(cx + fwdX + perpX * 3.6 - 1.8, cy + fwdY + perpY * 3.6 - 1.8, 3.6, 3.6);
+        ctx.fillRect(cx + fwdX - perpX * 3.6 - 1.8, cy + fwdY - perpY * 3.6 - 1.8, 3.6, 3.6);
       } else {
-        const r = Math.round(16 + (56 - 16) * t);
-        const g = Math.round(185 + (189 - 185) * (1 - t * 0.4));
-        const b = Math.round(129 + (248 - 129) * t);
-        const alpha = Math.max(0.38, 0.95 - t * 0.5);
-        const pad = 2.2 + t * 2.2;
+        const r = Math.round(223 + (110 - 223) * t);
+        const g = Math.round(122 + (176 - 122) * t);
+        const b = Math.round(92 + (147 - 92) * t);
+        const alpha = Math.max(0.4, 0.95 - t * 0.48);
+        const pad = 2.4 + t * 2.2;
         ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${alpha})`;
-        ctx.beginPath();
-        ctx.roundRect(sx + pad, sy + pad, SNAKE_CELL - pad * 2, SNAKE_CELL - pad * 2, 4);
-        ctx.fill();
+        ctx.fillRect(sx + pad, sy + pad, SNAKE_CELL - pad * 2, SNAKE_CELL - pad * 2);
       }
     }
 
-    // Sparks
     for (let i = snakeSparks.length - 1; i >= 0; i--) {
       const sp = snakeSparks[i];
       sp.x += sp.vx;
@@ -1526,7 +1467,7 @@
       }
       ctx.globalAlpha = sp.alpha;
       ctx.fillStyle = sp.color;
-      ctx.fillRect(sp.x - 1.5, sp.y - 1.5, 3, 3);
+      ctx.fillRect(sp.x - 2, sp.y - 2, 4, 4);
       ctx.globalAlpha = 1;
     }
   }
@@ -1543,13 +1484,13 @@
     }
     if (snakeTitleEl) {
       snakeTitleEl.textContent = isRecord
-        ? `🏆 NEW RECORD // ${snakeScore} PTS`
-        : `💥 SERPENT CRASHED // ${snakeScore} PTS`;
+        ? `🏆 New Record · ${snakeScore} pts`
+        : `💥 Serpent Crashed · ${snakeScore} pts`;
     }
     if (snakeSubEl) {
       snakeSubEl.textContent = `Length: ${snakeBody.length} · High Score: ${snakeBest}. Ready for another run?`;
     }
-    if (snakeStartBtn) snakeStartBtn.textContent = '↻ PLAY AGAIN';
+    if (snakeStartBtn) snakeStartBtn.textContent = '↻ Play Again';
     snakeOverlay?.classList.remove('hidden');
   }
 
@@ -1592,7 +1533,6 @@
 
   snakeStartBtn?.addEventListener('click', startSnakeGame);
 
-  // Keyboard steering (Arrows + WASD) when Snake is active
   document.addEventListener('keydown', (e) => {
     if (!snakeRunning) return;
     const k = e.key.toLowerCase();
@@ -1611,7 +1551,6 @@
     }
   });
 
-  // Mobile D-Pad buttons
   snakeDpadBtns.forEach((btn) => {
     btn.addEventListener('pointerdown', (e) => {
       e.preventDefault();
@@ -1624,7 +1563,6 @@
     });
   });
 
-  // Touch swipe steering on canvas
   let touchStartX = 0;
   let touchStartY = 0;
   snakeCanvas?.addEventListener(

@@ -2,80 +2,43 @@
 import { translations } from '../data/i18n';
 ---
 
-<footer class="w-full bg-[var(--bg-surface)]/90 border-t border-[var(--border-subtle)] py-6 px-4 sm:px-8 lg:px-14 pb-20 sm:pb-8 font-mono text-xs text-[var(--text-muted)] select-none">
-  <div class="max-w-[1440px] mx-auto flex flex-col lg:flex-row items-center justify-between gap-4">
-    <!-- Left: NeoVim Statusline Mode + Live Telemetry HUD -->
-    <div class="flex flex-wrap items-center justify-center gap-2.5">
-      <span class="rounded-lg bg-[var(--accent-primary)] text-[#05070b] px-2.5 py-1 font-bold tracking-wider">
-        {translations.id.footer.statuslineMode}
+<footer class="w-full border-t border-[var(--border-subtle)] bg-[var(--bg-surface)]/60 py-10 font-sans text-xs text-[var(--text-muted)] select-none">
+  <div class="w-full max-w-5xl mx-auto px-5 sm:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+    <!-- Left: Clean Colophon -->
+    <div class="flex flex-wrap items-center justify-center sm:justify-start gap-3">
+      <span class="font-display font-bold text-base text-[var(--text-primary)]">
+        Gus Adi<span class="text-[var(--accent-primary)]">.</span>
       </span>
-      <span class="px-2 py-0.5 rounded bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--status-ok)]" id="footer-fps-meter">
-        60 FPS
-      </span>
-      <span class="hidden sm:inline px-2 py-0.5 rounded bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--text-secondary)]" id="footer-xy-coords">
-        X:0000 Y:0000
-      </span>
-      <span class="hidden md:inline px-2 py-0.5 rounded bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--accent-tertiary)]" id="footer-last-key">
-        KEY: --
-      </span>
-      <span class="text-[var(--border-focus)] hidden sm:inline">//</span>
+      <span>·</span>
       <span class="text-[var(--text-secondary)]">{translations.id.footer.statuslineStack}</span>
+      <span>·</span>
+      <button
+        type="button"
+        id="footer-arcade-trigger"
+        class="text-[var(--accent-primary)] hover:underline font-semibold cursor-pointer transition-colors"
+      >
+        🎮 Mini-Game Arcade
+      </button>
     </div>
 
-    <!-- Right: Copyright, Live Scroll Position & Back to Top -->
+    <!-- Right: Copyright & Back to Top -->
     <div class="flex flex-wrap items-center justify-center gap-4">
-      <span>{translations.id.footer.copyright}</span>
-      <span id="footer-scroll-pct" class="hidden sm:inline text-[var(--accent-secondary)]">
-        0% scrolled
-      </span>
+      <span class="text-[var(--text-secondary)]">{translations.id.footer.copyright}</span>
+      <span id="footer-scroll-pct" class="hidden">0%</span>
       <a
         href="#hero"
-        class="kinetic-btn rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-elevated)] hover:border-[var(--accent-primary)] text-[var(--text-primary)] px-3 py-1.5"
+        class="pill-btn bg-[var(--bg-elevated)] hover:bg-[var(--accent-primary)] hover:text-[var(--accent-ink)] text-[var(--text-primary)] font-semibold px-4 py-1.5 text-xs"
         aria-label="Scroll back to top"
       >
-        {translations.id.footer.backToTop}
+        <span data-lang="id">{translations.id.footer.backToTop}</span>
+        <span data-lang="en">{translations.en.footer.backToTop}</span>
       </a>
     </div>
   </div>
 </footer>
 
 <script>
-  // Live FPS Counter, Mouse XY Telemetry & Keystroke Indicator
-  const fpsEl = document.getElementById('footer-fps-meter');
-  const xyEl = document.getElementById('footer-xy-coords');
-  const keyEl = document.getElementById('footer-last-key');
-
-  let frames = 0;
-  let lastFpsCheck = performance.now();
-
-  function trackFps(now: number) {
-    frames++;
-    if (now - lastFpsCheck >= 1000) {
-      const fps = Math.min(144, Math.round((frames * 1000) / (now - lastFpsCheck)));
-      if (fpsEl) fpsEl.textContent = `${fps} FPS`;
-      frames = 0;
-      lastFpsCheck = now;
-    }
-    requestAnimationFrame(trackFps);
-  }
-  requestAnimationFrame(trackFps);
-
-  document.addEventListener(
-    'mousemove',
-    (e) => {
-      if (xyEl) {
-        const x = String(Math.round(e.clientX)).padStart(4, '0');
-        const y = String(Math.round(e.clientY)).padStart(4, '0');
-        xyEl.textContent = `X:${x} Y:${y}`;
-      }
-    },
-    { passive: true }
-  );
-
-  document.addEventListener('keydown', (e) => {
-    if (keyEl) {
-      const label = e.key === ' ' ? 'SPACE' : e.key.toUpperCase().slice(0, 6);
-      keyEl.textContent = `KEY: ${label}`;
-    }
+  document.getElementById('footer-arcade-trigger')?.addEventListener('click', () => {
+    window.dispatchEvent(new CustomEvent('portfolio:open-arcade'));
   });
 </script>

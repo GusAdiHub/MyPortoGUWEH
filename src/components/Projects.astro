@@ -1,521 +1,489 @@
 ---
-import SectionHeader from './SectionHeader.astro';
 import { projects } from '../data/profile';
 import { translations } from '../data/i18n';
+import { FlaskConical, Layers, Play, Sparkles, X, Wallet, Plus, RotateCcw, Disc3 } from 'lucide-astro';
 
 const featuredProject = projects.find((p) => p.featured) || projects[0];
-const supportingProjects = projects.filter((p) => !p.featured);
+const secondProject = projects.find((p) => !p.featured) || projects[1];
 ---
 
-<section id="projects" class="w-full py-16 sm:py-24 border-b border-[var(--border-subtle)]">
-  <div class="w-full max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-14 space-y-10">
-    <SectionHeader
-      index="03"
-      title={{ id: 'PROYEK PILIHAN', en: 'FEATURED PROJECTS' }}
-      path={translations.id.projects.filePath}
-    />
-
-    <!-- 1. Featured Project Widescreen Bento Showcase -->
-    {featuredProject && (
-      <div
-        class="reveal-on-scroll bento-card border border-[var(--border-focus)] shadow-2xl overflow-hidden"
-        style="--stagger: 0;"
-      >
-        <!-- Top Status Bar -->
-        <div class="border-b border-[var(--border-subtle)] bg-[var(--bg-elevated)] px-6 py-3.5 font-mono text-xs flex flex-wrap items-center justify-between gap-2 select-none">
-          <div class="flex items-center gap-2.5">
-            <span class="w-2.5 h-2.5 rounded-full bg-[var(--accent-primary)] animate-pulse"></span>
-            <span class="text-[var(--accent-primary)] font-bold uppercase tracking-wider">
-              ✦ {translations.id.projects.featuredBadge} // {featuredProject.slug}
+<section id="projects" class="w-full py-8 sm:py-12">
+  <div class="w-full max-w-6xl mx-auto px-4 sm:px-8">
+    <!-- Non-Template Master-Detail Interactive App Cartridge Stage -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+      <!-- LEFT 4 COLS: Interactive Cartridge Selector Dock + Live Pipeline Telemetry -->
+      <div class="lg:col-span-4 flex flex-col justify-between gap-5 reveal-on-scroll" style="--stagger: 0;">
+        <div class="tactile-card p-5 sm:p-6 space-y-5 font-sans">
+          <div class="flex items-center justify-between">
+            <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--tint-mint)] text-teal-950 font-mono text-xs font-extrabold">
+              <Disc3 class="w-3.5 h-3.5 text-teal-700 animate-spin" style="animation-duration: 9s;" />
+              <span>APP CARTRIDGE DECK</span>
             </span>
+            <span class="font-mono text-xs font-bold text-[var(--text-muted)]">2 APPS</span>
           </div>
-          <span class="px-3 py-1 rounded-full bg-[var(--bg-surface)] border border-[var(--border-subtle)] text-[var(--status-warn)] text-[11px] font-medium">
-            status: {featuredProject.status}
-          </span>
-        </div>
 
-        <!-- Main Split Body -->
-        <div class="p-6 sm:p-8 lg:p-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-          <!-- Left: Interactive Pipeline Simulator (5 cols) -->
-          <div class="lg:col-span-5 flex flex-col">
-            {featuredProject.image ? (
-              <div class="aspect-[16/10] w-full rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-base)] overflow-hidden">
-                <img
-                  src={featuredProject.image}
-                  alt={featuredProject.title}
-                  loading="lazy"
-                  class="w-full h-full object-cover brightness-95 hover:brightness-105 hover:scale-105 transition-all duration-500"
-                />
-              </div>
-            ) : (
-              <div
-                id="pipeline-simulator"
-                class="w-full flex-1 min-h-[280px] rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-base)] p-5 font-mono text-xs flex flex-col justify-between select-none relative overflow-hidden"
+          <div class="space-y-1.5">
+            <h2 class="font-display text-2xl sm:text-3xl font-extrabold tracking-tight text-[var(--text-primary)]">
+              <span data-lang="id">{translations.id.projects.header}</span>
+              <span data-lang="en">{translations.en.projects.header}</span>
+            </h2>
+            <p class="text-xs sm:text-sm text-[var(--text-secondary)] leading-relaxed">
+              <span data-lang="id">Pilih salah satu katrid proyek di bawah untuk memuat studi kasus &amp; simulator interaktifnya di panggung utama.</span>
+              <span data-lang="en">Select a project cartridge below to load its case study &amp; interactive simulator onto the main stage.</span>
+            </p>
+          </div>
+
+          <!-- Cartridge Buttons -->
+          <div class="space-y-3" role="tablist" aria-label="Select project cartridge">
+            {featuredProject && (
+              <button
+                type="button"
+                data-cartridge="0"
+                class="cartridge-btn w-full text-left p-4 rounded-2xl border-2 border-[var(--accent-primary)] bg-[var(--tint-mint)] transition-all cursor-pointer space-y-1.5 shadow-sm"
               >
-                <!-- Header -->
-                <div class="flex items-center justify-between text-[11px] text-[var(--text-muted)] border-b border-[var(--border-subtle)] pb-3">
-                  <span class="text-[var(--accent-secondary)] font-semibold">{featuredProject.slug}.engine</span>
-                  <button
-                    type="button"
-                    id="run-pipeline-btn"
-                    class="rounded-lg border border-[var(--border-focus)] bg-[var(--bg-elevated)] hover:bg-[var(--accent-primary)] hover:text-[#05070b] text-[var(--accent-primary)] font-bold px-3 py-1 cursor-pointer transition-all text-[11px]"
-                  >
-                    <span data-lang="id">{translations.id.projects.runPipeline}</span>
-                    <span data-lang="en">{translations.en.projects.runPipeline}</span>
-                  </button>
+                <div class="flex items-center justify-between text-[11px] font-mono font-extrabold text-teal-900">
+                  <span>CARTRIDGE #01 · NLP</span>
+                  <span class="px-2 py-0.5 rounded-full bg-white text-teal-900">{featuredProject.status}</span>
                 </div>
-
-                <!-- Pipeline Stages -->
-                <div class="space-y-3 my-auto py-4">
-                  <div class="text-[var(--text-secondary)] text-[11px] truncate">
-                    <span class="text-[var(--accent-primary)]">$</span> analyze_docs --source doc_a.txt --target doc_b.txt
-                  </div>
-
-                  <!-- Stage 1 -->
-                  <div
-                    data-pipe-step="0"
-                    class="pipe-step rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-3 flex items-center justify-between transition-all duration-300"
-                  >
-                    <div class="flex items-center gap-2.5">
-                      <span class="pipe-dot w-2.5 h-2.5 rounded-full bg-[var(--text-muted)]"></span>
-                      <span class="text-[var(--text-primary)] font-medium">01. Tokenize &amp; Normalize</span>
-                    </div>
-                    <span class="pipe-badge text-[10px] px-2 py-0.5 rounded bg-[var(--bg-elevated)] text-[var(--text-muted)]">IDLE</span>
-                  </div>
-
-                  <!-- Stage 2 -->
-                  <div
-                    data-pipe-step="1"
-                    class="pipe-step rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-3 flex items-center justify-between transition-all duration-300"
-                  >
-                    <div class="flex items-center gap-2.5">
-                      <span class="pipe-dot w-2.5 h-2.5 rounded-full bg-[var(--text-muted)]"></span>
-                      <span class="text-[var(--text-primary)] font-medium">02. Stopword &amp; Stemming</span>
-                    </div>
-                    <span class="pipe-badge text-[10px] px-2 py-0.5 rounded bg-[var(--bg-elevated)] text-[var(--text-muted)]">IDLE</span>
-                  </div>
-
-                  <!-- Stage 3 -->
-                  <div
-                    data-pipe-step="2"
-                    class="pipe-step rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)] p-3 flex items-center justify-between transition-all duration-300"
-                  >
-                    <div class="flex items-center gap-2.5">
-                      <span class="pipe-dot w-2.5 h-2.5 rounded-full bg-[var(--text-muted)]"></span>
-                      <span class="text-[var(--text-primary)] font-medium">03. Similarity Scoring Matrix</span>
-                    </div>
-                    <span class="pipe-badge text-[10px] px-2 py-0.5 rounded bg-[var(--bg-elevated)] text-[var(--text-muted)]">IDLE</span>
-                  </div>
-
-                  <!-- Animated Token Stream & Vector Bar -->
-                  <div class="rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-surface)]/70 p-2.5 space-y-2">
-                    <div class="flex items-center justify-between text-[10px] text-[var(--text-muted)]">
-                      <span>token.stream</span>
-                      <span id="pipe-vector-status" class="text-[var(--accent-secondary)]">vec[0..n]</span>
-                    </div>
-                    <div id="pipe-token-chips" class="flex flex-wrap gap-1.5 text-[10px]">
-                      <span class="pipe-token px-2 py-0.5 rounded bg-[var(--bg-elevated)] text-[var(--text-secondary)] transition-all">"algoritma"</span>
-                      <span class="pipe-token px-2 py-0.5 rounded bg-[var(--bg-elevated)] text-[var(--text-secondary)] transition-all">"kemiripan"</span>
-                      <span class="pipe-token px-2 py-0.5 rounded bg-[var(--bg-elevated)] text-[var(--text-secondary)] transition-all">"dokumen"</span>
-                      <span class="pipe-token px-2 py-0.5 rounded bg-[var(--bg-elevated)] text-[var(--text-secondary)] transition-all">"teks"</span>
-                    </div>
-                  </div>
+                <div class="font-display text-lg font-extrabold text-teal-950 leading-snug">
+                  {featuredProject.title}
                 </div>
-
-                <!-- Footer Status -->
-                <div class="text-[11px] text-[var(--text-muted)] border-t border-[var(--border-subtle)] pt-3 flex items-center justify-between">
-                  <span class="text-[var(--status-ok)] font-medium">
-                    <span data-lang="id">{translations.id.projects.pipelineReady}</span>
-                    <span data-lang="en">{translations.en.projects.pipelineReady}</span>
-                  </span>
-                  <span class="text-[var(--accent-primary)]">NLP // PIPELINE</span>
+                <div class="text-xs text-teal-800 font-medium">
+                  Python · TF-IDF Cosine · Live Lab
                 </div>
-              </div>
+              </button>
+            )}
+
+            {secondProject && (
+              <button
+                type="button"
+                data-cartridge="1"
+                class="cartridge-btn w-full text-left p-4 rounded-2xl border-2 border-[var(--border-subtle)] bg-[var(--bg-surface)] hover:border-[var(--accent-primary)] transition-all cursor-pointer space-y-1.5"
+              >
+                <div class="flex items-center justify-between text-[11px] font-mono font-extrabold text-[var(--text-muted)]">
+                  <span>CARTRIDGE #02 · WEB APP</span>
+                  <span class="px-2 py-0.5 rounded-full bg-[var(--bg-elevated)] text-[var(--text-secondary)]">{secondProject.status}</span>
+                </div>
+                <div class="font-display text-lg font-extrabold text-[var(--text-primary)] leading-snug">
+                  {secondProject.title}
+                </div>
+                <div class="text-xs text-[var(--text-secondary)] font-medium">
+                  JavaScript · SQL · Cashflow Simulator
+                </div>
+              </button>
             )}
           </div>
+        </div>
 
-          <!-- Right: Project Details, Problem/Solution Cards & Actions (7 cols) -->
-          <div class="lg:col-span-7 flex flex-col justify-between space-y-6">
-            <div class="space-y-4">
-              <div>
-                <div class="font-mono text-xs text-[var(--accent-secondary)] mb-1">
-                  // {featuredProject.category}
-                </div>
-                <h3 class="font-display text-2xl sm:text-3xl font-bold text-[var(--text-primary)]">
-                  {featuredProject.title}
-                </h3>
+        <!-- Compact NLP Pipeline Telemetry Box -->
+        <div class="tactile-card p-5 space-y-3 font-sans" id="pipeline-simulator">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-extrabold uppercase tracking-wider text-[var(--text-primary)]">
+              <span data-lang="id">⚙️ Engine Telemetry</span>
+              <span data-lang="en">⚙️ Engine Telemetry</span>
+            </span>
+            <button
+              type="button"
+              id="run-pipeline-btn"
+              class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[var(--accent-primary)] text-white font-bold text-[11px] cursor-pointer"
+            >
+              <Play class="w-3 h-3" />
+              <span>Test Run</span>
+            </button>
+          </div>
+
+          <div class="space-y-1.5 text-xs">
+            <div data-pipe-step="0" class="pipe-step px-3 py-2 rounded-xl bg-[var(--bg-elevated)]/60 flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="pipe-dot w-2 h-2 rounded-full bg-[var(--status-ok)]"></span>
+                <span class="font-semibold text-[var(--text-primary)]">1. Tokenization</span>
+              </div>
+              <span class="pipe-badge font-mono text-[10px] text-[var(--status-ok)] font-bold">READY</span>
+            </div>
+            <div data-pipe-step="1" class="pipe-step px-3 py-2 rounded-xl bg-[var(--bg-elevated)]/60 flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="pipe-dot w-2 h-2 rounded-full bg-[var(--status-ok)]"></span>
+                <span class="font-semibold text-[var(--text-primary)]">2. Stopword Filter</span>
+              </div>
+              <span class="pipe-badge font-mono text-[10px] text-[var(--status-ok)] font-bold">READY</span>
+            </div>
+            <div data-pipe-step="2" class="pipe-step px-3 py-2 rounded-xl bg-[var(--bg-elevated)]/60 flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="pipe-dot w-2 h-2 rounded-full bg-[var(--status-ok)]"></span>
+                <span class="font-semibold text-[var(--text-primary)]">3. Vector Scoring</span>
+              </div>
+              <span class="pipe-badge font-mono text-[10px] text-[var(--status-ok)] font-bold">READY</span>
+            </div>
+          </div>
+          <span id="pipe-vector-status" class="hidden">ready</span>
+        </div>
+      </div>
+
+      <!-- RIGHT 8 COLS: Active Cartridge Live Interactive Stage -->
+      <div class="lg:col-span-8 reveal-on-scroll" style="--stagger: 1;">
+        <!-- STAGE 0: Plagiarism Checker + Live NLP Lab -->
+        {featuredProject && (
+          <article id="cartridge-stage-0" class="tactile-card spotlight-surface h-full flex flex-col justify-between overflow-hidden">
+            <div class="bg-[var(--tint-mint)] border-b-2 border-[var(--border-subtle)] px-6 py-4 flex flex-wrap items-center justify-between gap-3">
+              <div class="flex items-center gap-2 font-sans text-xs">
+                <span class="px-2.5 py-1 rounded-xl bg-teal-800 text-white font-display font-extrabold">STAGE #01</span>
+                <span class="font-extrabold text-teal-950">{featuredProject.category}</span>
               </div>
 
-              <p class="text-sm sm:text-base leading-relaxed text-[var(--text-secondary)]">
-                <span data-lang="id">{featuredProject.summary.id}</span>
-                <span data-lang="en">{featuredProject.summary.en}</span>
-              </p>
-
-              <!-- Structured Problem / Solution / Role Grid -->
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-2 text-xs sm:text-sm">
-                {featuredProject.problem && (
-                  <div class="rounded-xl bg-[var(--bg-elevated)]/80 border border-[var(--border-subtle)] p-4 space-y-1.5">
-                    <div class="font-mono text-xs font-bold text-[var(--accent-secondary)]">
-                      <span data-lang="id">{translations.id.projects.problem}</span>
-                      <span data-lang="en">{translations.en.projects.problem}</span>
-                    </div>
-                    <p class="text-[var(--text-secondary)] leading-relaxed text-xs">
-                      <span data-lang="id">{featuredProject.problem.id}</span>
-                      <span data-lang="en">{featuredProject.problem.en}</span>
-                    </p>
-                  </div>
-                )}
-
-                {featuredProject.solution && (
-                  <div class="rounded-xl bg-[var(--bg-elevated)]/80 border border-[var(--border-subtle)] p-4 space-y-1.5">
-                    <div class="font-mono text-xs font-bold text-[var(--accent-primary)]">
-                      <span data-lang="id">{translations.id.projects.solution}</span>
-                      <span data-lang="en">{translations.en.projects.solution}</span>
-                    </div>
-                    <p class="text-[var(--text-secondary)] leading-relaxed text-xs">
-                      <span data-lang="id">{featuredProject.solution.id}</span>
-                      <span data-lang="en">{featuredProject.solution.en}</span>
-                    </p>
-                  </div>
-                )}
-              </div>
-
-              {featuredProject.role && (
-                <div class="rounded-xl bg-[var(--bg-base)]/60 border border-[var(--border-subtle)] px-4 py-2.5 text-xs">
-                  <span class="font-mono font-bold text-[var(--text-primary)]">
-                    <span data-lang="id">{translations.id.projects.role}</span>
-                    <span data-lang="en">{translations.en.projects.role}</span>
-                  </span>{' '}
-                  <span class="text-[var(--text-secondary)]">
-                    <span data-lang="id">{featuredProject.role.id}</span>
-                    <span data-lang="en">{featuredProject.role.en}</span>
-                  </span>
-                </div>
-              )}
-
-              <!-- Tech Stack Pills -->
-              <div class="flex flex-wrap gap-2 font-mono text-xs pt-1">
-                {featuredProject.techStack.map((t) => (
-                  <span class="rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-elevated)] px-3 py-1 text-[var(--accent-primary)] font-medium">
-                    {t}
-                  </span>
-                ))}
+              <div class="inline-flex items-center gap-1 font-sans text-xs bg-white/90 p-1 rounded-full border border-teal-600/20">
+                <button
+                  type="button"
+                  data-proj-view="overview"
+                  class="proj-view-btn inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[var(--accent-primary)] text-[var(--accent-ink)] font-bold cursor-pointer transition-all"
+                >
+                  <Layers class="w-3.5 h-3.5" />
+                  <span data-lang="id">Studi Kasus</span>
+                  <span data-lang="en">Case Study</span>
+                </button>
+                <button
+                  type="button"
+                  data-proj-view="sandbox"
+                  class="proj-view-btn inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-primary)] font-semibold cursor-pointer transition-all"
+                >
+                  <FlaskConical class="w-3.5 h-3.5" />
+                  <span data-lang="id">🔬 Live NLP Lab</span>
+                  <span data-lang="en">🔬 Live NLP Lab</span>
+                </button>
               </div>
             </div>
 
-            <!-- Action Row -->
-            <div class="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-[var(--border-subtle)] font-mono text-xs">
-              <div class="flex flex-wrap items-center gap-2.5">
-                {featuredProject.repoUrl ? (
-                  <a
-                    href={featuredProject.repoUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="kinetic-btn bg-[var(--accent-primary)] text-[#05070b] font-bold px-4 py-2"
-                  >
-                    <span data-lang="id">{translations.id.projects.repo}</span>
-                    <span data-lang="en">{translations.en.projects.repo}</span>
-                  </a>
-                ) : (
-                  <span class="rounded-lg border border-[var(--border-subtle)] border-dashed text-[var(--text-muted)] px-3 py-2 text-[11px] select-none">
-                    <span data-lang="id">{translations.id.projects.repoPrivate}</span>
-                    <span data-lang="en">{translations.en.projects.repoPrivate}</span>
-                  </span>
-                )}
+            <div class="p-6 sm:p-8 flex-1 flex flex-col justify-between">
+              <!-- Overview Mode -->
+              <div id="proj-panel-overview" class="space-y-6 font-sans">
+                <div class="space-y-2.5">
+                  <h3 class="font-display text-2xl sm:text-4xl font-extrabold tracking-tight text-[var(--text-primary)]">
+                    {featuredProject.title}
+                  </h3>
+                  <p class="text-base leading-relaxed text-[var(--text-secondary)]">
+                    <span data-lang="id">{featuredProject.summary.id}</span>
+                    <span data-lang="en">{featuredProject.summary.en}</span>
+                  </p>
+                </div>
 
-                {featuredProject.demoUrl ? (
-                  <a
-                    href={featuredProject.demoUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="kinetic-btn border border-[var(--border-subtle)] bg-[var(--bg-elevated)] text-[var(--text-primary)] px-4 py-2"
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {featuredProject.problem && (
+                    <div class="p-4 rounded-2xl bg-[var(--tint-amber)] border border-amber-500/20 space-y-1.5">
+                      <div class="text-xs font-extrabold uppercase tracking-wider text-amber-900">
+                        <span data-lang="id">{translations.id.projects.problem}</span>
+                        <span data-lang="en">{translations.en.projects.problem}</span>
+                      </div>
+                      <p class="text-sm text-amber-950/85 leading-relaxed">
+                        <span data-lang="id">{featuredProject.problem.id}</span>
+                        <span data-lang="en">{featuredProject.problem.en}</span>
+                      </p>
+                    </div>
+                  )}
+
+                  {featuredProject.solution && (
+                    <div class="p-4 rounded-2xl bg-[var(--tint-mint)] border border-teal-500/20 space-y-1.5">
+                      <div class="text-xs font-extrabold uppercase tracking-wider text-teal-900">
+                        <span data-lang="id">{translations.id.projects.solution}</span>
+                        <span data-lang="en">{translations.en.projects.solution}</span>
+                      </div>
+                      <p class="text-sm text-teal-950/85 leading-relaxed">
+                        <span data-lang="id">{featuredProject.solution.id}</span>
+                        <span data-lang="en">{featuredProject.solution.en}</span>
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                <div class="flex flex-wrap items-center gap-2 text-xs font-bold text-[var(--text-primary)]">
+                  {featuredProject.techStack.map((t) => (
+                    <span class="px-3.5 py-1.5 rounded-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)]">{t}</span>
+                  ))}
+                </div>
+
+                <div class="pt-2 flex flex-wrap items-center gap-3 text-xs sm:text-sm">
+                  <button
+                    type="button"
+                    id="jump-to-sandbox-btn"
+                    class="pill-btn inline-flex items-center gap-2 bg-[var(--accent-primary)] text-[var(--accent-ink)] font-bold px-5 py-2.5 cursor-pointer"
                   >
-                    <span data-lang="id">{translations.id.projects.demo}</span>
-                    <span data-lang="en">{translations.en.projects.demo}</span>
-                  </a>
-                ) : (
-                  <span class="rounded-lg border border-[var(--border-subtle)] border-dashed text-[var(--text-muted)] px-3 py-2 text-[11px] select-none">
-                    <span data-lang="id">{translations.id.projects.demoUnavailable}</span>
-                    <span data-lang="en">{translations.en.projects.demoUnavailable}</span>
-                  </span>
-                )}
+                    <Sparkles class="w-4 h-4" />
+                    <span data-lang="id">Coba Simulator Kemiripan Dokumen</span>
+                    <span data-lang="en">Try Document Similarity Simulator</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    class="project-detail-btn pill-btn border-2 border-[var(--border-subtle)] hover:border-[var(--accent-primary)] text-[var(--text-primary)] font-bold px-4 py-2.5 cursor-pointer"
+                    data-project-slug={featuredProject.slug}
+                  >
+                    <span data-lang="id">{translations.id.projects.details}</span>
+                    <span data-lang="en">{translations.en.projects.details}</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Live NLP Lab Mode -->
+              <div id="proj-panel-sandbox" class="hidden space-y-5 font-sans">
+                <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-[var(--border-subtle)]">
+                  <div>
+                    <h4 class="text-lg font-extrabold text-[var(--text-primary)]">
+                      <span data-lang="id">{translations.id.projects.sandboxTitle}</span>
+                      <span data-lang="en">{translations.en.projects.sandboxTitle}</span>
+                    </h4>
+                    <p class="text-xs text-[var(--text-secondary)]">
+                      <span data-lang="id">{translations.id.projects.sandboxSub}</span>
+                      <span data-lang="en">{translations.en.projects.sandboxSub}</span>
+                    </p>
+                  </div>
+
+                  <div class="flex items-center gap-2 text-xs">
+                    <button type="button" id="nlp-preset-1" class="pill-btn bg-[var(--tint-mint)] text-teal-900 font-bold px-3 py-1 cursor-pointer">
+                      Preset 1
+                    </button>
+                    <button type="button" id="nlp-preset-2" class="pill-btn bg-[var(--tint-sky)] text-blue-900 font-bold px-3 py-1 cursor-pointer">
+                      Preset 2
+                    </button>
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div class="space-y-1.5">
+                    <label for="nlp-doc-a" class="text-xs font-bold text-[var(--text-secondary)] flex justify-between">
+                      <span>Dokumen A</span>
+                      <span id="nlp-count-a" class="font-mono text-[var(--accent-primary)]">0 tokens</span>
+                    </label>
+                    <textarea
+                      id="nlp-doc-a"
+                      rows="4"
+                      class="w-full rounded-2xl border-2 border-[var(--border-subtle)] focus:border-[var(--accent-primary)] bg-[var(--bg-elevated)]/40 p-3 font-sans text-sm text-[var(--text-primary)] leading-relaxed focus:outline-none resize-none"
+                    >Sistem deteksi kemiripan dokumen memproses teks melalui tahap tokenisasi, penghapusan stopword, dan pembobotan vektor TF-IDF untuk mengukur skor kemiripan secara terstruktur.</textarea>
+                  </div>
+
+                  <div class="space-y-1.5">
+                    <label for="nlp-doc-b" class="text-xs font-bold text-[var(--text-secondary)] flex justify-between">
+                      <span>Dokumen B</span>
+                      <span id="nlp-count-b" class="font-mono text-[var(--accent-secondary)]">0 tokens</span>
+                    </label>
+                    <textarea
+                      id="nlp-doc-b"
+                      rows="4"
+                      class="w-full rounded-2xl border-2 border-[var(--border-subtle)] focus:border-[var(--accent-primary)] bg-[var(--bg-elevated)]/40 p-3 font-sans text-sm text-[var(--text-primary)] leading-relaxed focus:outline-none resize-none"
+                    >Metode pemrosesan teks menggunakan tokenisasi dan representasi vektor dokumen untuk menghitung tingkat kemiripan antar teks akademik dengan cepat.</textarea>
+                  </div>
+                </div>
+
+                <div class="p-4 rounded-2xl bg-[var(--tint-mint)] border border-teal-500/20 flex flex-wrap items-center justify-between gap-4">
+                  <div class="flex items-center gap-4">
+                    <div class="relative w-14 h-14 flex items-center justify-center shrink-0">
+                      <svg class="w-14 h-14 -rotate-90" viewBox="0 0 64 64">
+                        <circle cx="32" cy="32" r="26" fill="none" stroke="rgba(13,148,136,0.18)" stroke-width="6"></circle>
+                        <circle
+                          id="nlp-gauge-circle"
+                          cx="32"
+                          cy="32"
+                          r="26"
+                          fill="none"
+                          stroke="var(--accent-primary)"
+                          stroke-width="6"
+                          stroke-linecap="round"
+                          stroke-dasharray="163.36"
+                          stroke-dashoffset="163.36"
+                        ></circle>
+                      </svg>
+                      <span id="nlp-match-badge" class="absolute font-mono text-[10px] font-bold text-teal-950">--</span>
+                    </div>
+                    <div>
+                      <div class="text-xs font-bold text-teal-800 uppercase">Cosine Similarity</div>
+                      <div id="nlp-cosine-score" class="font-display text-3xl font-extrabold text-teal-950">0%</div>
+                      <div class="text-xs text-teal-800">Jaccard: <strong id="nlp-jaccard-score">0%</strong></div>
+                    </div>
+                  </div>
+
+                  <div class="flex-1 min-w-[180px] space-y-1">
+                    <div class="text-xs font-bold text-teal-800">Shared Vocabulary Tokens:</div>
+                    <div id="nlp-shared-tokens" class="flex flex-wrap gap-1.5"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </article>
+        )}
+
+        <!-- STAGE 1: SakuKu Web App + Interactive Cashflow Simulator -->
+        {secondProject && (
+          <article id="cartridge-stage-1" class="hidden tactile-card spotlight-surface h-full flex flex-col justify-between overflow-hidden">
+            <div class="bg-[var(--tint-sky)] border-b-2 border-[var(--border-subtle)] px-6 py-4 flex flex-wrap items-center justify-between gap-3">
+              <div class="flex items-center gap-2 font-sans text-xs">
+                <span class="px-2.5 py-1 rounded-xl bg-blue-800 text-white font-display font-extrabold">STAGE #02</span>
+                <span class="font-extrabold text-blue-950">{secondProject.category}</span>
               </div>
 
               <button
                 type="button"
-                class="project-detail-btn kinetic-btn border border-[var(--border-focus)] bg-[var(--bg-elevated)] hover:bg-[var(--accent-primary)] hover:text-[#05070b] text-[var(--accent-primary)] font-bold px-4 py-2 cursor-pointer"
-                data-project-slug={featuredProject.slug}
-                aria-label={`View details for ${featuredProject.title}`}
+                class="project-detail-btn pill-btn bg-white text-blue-950 border border-blue-600/20 font-sans text-xs font-bold px-3.5 py-1.5 cursor-pointer"
+                data-project-slug={secondProject.slug}
               >
                 <span data-lang="id">{translations.id.projects.details}</span>
                 <span data-lang="en">{translations.en.projects.details}</span>
               </button>
             </div>
-          </div>
-        </div>
 
-        <!-- Interactive Live NLP Document Similarity Sandbox -->
-        <div class="border-t border-[var(--border-subtle)] bg-[var(--bg-base)]/60 p-6 sm:p-8 lg:px-10 space-y-5">
-          <div class="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <div class="flex items-center gap-2 font-mono text-xs text-[var(--accent-primary)] font-bold">
-                <span class="w-2 h-2 rounded-full bg-[var(--status-ok)] animate-pulse"></span>
-                <span data-lang="id">{translations.id.projects.sandboxTitle}</span>
-                <span data-lang="en">{translations.en.projects.sandboxTitle}</span>
-              </div>
-              <p class="text-xs text-[var(--text-secondary)] mt-0.5">
-                <span data-lang="id">{translations.id.projects.sandboxSub}</span>
-                <span data-lang="en">{translations.en.projects.sandboxSub}</span>
-              </p>
-            </div>
-
-            <div class="flex flex-wrap items-center gap-2 font-mono text-[11px]">
-              <button
-                type="button"
-                id="nlp-preset-1"
-                class="rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-elevated)] hover:border-[var(--accent-primary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] px-3 py-1.5 cursor-pointer transition-all"
-              >
-                <span data-lang="id">{translations.id.projects.presetAcademic}</span>
-                <span data-lang="en">{translations.en.projects.presetAcademic}</span>
-              </button>
-              <button
-                type="button"
-                id="nlp-preset-2"
-                class="rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-elevated)] hover:border-[var(--accent-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] px-3 py-1.5 cursor-pointer transition-all"
-              >
-                <span data-lang="id">{translations.id.projects.presetTech}</span>
-                <span data-lang="en">{translations.en.projects.presetTech}</span>
-              </button>
-            </div>
-          </div>
-
-          <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
-            <!-- Doc A Input -->
-            <div class="lg:col-span-4 flex flex-col gap-1.5">
-              <label for="nlp-doc-a" class="font-mono text-xs text-[var(--text-secondary)] flex justify-between">
-                <span>
-                  <span data-lang="id">{translations.id.projects.docALabel}</span>
-                  <span data-lang="en">{translations.en.projects.docALabel}</span>
-                </span>
-                <span id="nlp-count-a" class="text-[var(--text-muted)]">0 tokens</span>
-              </label>
-              <textarea
-                id="nlp-doc-a"
-                rows="4"
-                class="w-full flex-1 rounded-xl border border-[var(--border-subtle)] focus:border-[var(--accent-primary)] bg-[var(--bg-surface)] p-3.5 font-mono text-xs text-[var(--text-primary)] leading-relaxed focus:outline-none transition-colors resize-none"
-              >Sistem deteksi kemiripan dokumen memproses teks melalui tahap tokenisasi, penghapusan stopword, dan pembobotan vektor TF-IDF untuk mengukur skor kemiripan secara terstruktur.</textarea>
-            </div>
-
-            <!-- Doc B Input -->
-            <div class="lg:col-span-4 flex flex-col gap-1.5">
-              <label for="nlp-doc-b" class="font-mono text-xs text-[var(--text-secondary)] flex justify-between">
-                <span>
-                  <span data-lang="id">{translations.id.projects.docBLabel}</span>
-                  <span data-lang="en">{translations.en.projects.docBLabel}</span>
-                </span>
-                <span id="nlp-count-b" class="text-[var(--text-muted)]">0 tokens</span>
-              </label>
-              <textarea
-                id="nlp-doc-b"
-                rows="4"
-                class="w-full flex-1 rounded-xl border border-[var(--border-subtle)] focus:border-[var(--accent-secondary)] bg-[var(--bg-surface)] p-3.5 font-mono text-xs text-[var(--text-primary)] leading-relaxed focus:outline-none transition-colors resize-none"
-              >Metode pemrosesan teks menggunakan tokenisasi dan representasi vektor dokumen untuk menghitung tingkat kemiripan antar teks akademik dengan cepat.</textarea>
-            </div>
-
-            <!-- Live Similarity Telemetry Result -->
-            <div class="lg:col-span-4 rounded-xl border border-[var(--border-focus)] bg-[var(--bg-surface)] p-4 flex flex-col justify-between gap-3 font-mono text-xs">
-              <div class="flex items-center justify-between gap-4">
-                <div>
-                  <div class="text-[11px] text-[var(--text-muted)]">Cosine Similarity</div>
-                  <div id="nlp-cosine-score" class="font-display text-3xl font-bold text-[var(--accent-primary)]">
-                    0%
-                  </div>
-                  <div class="text-[11px] text-[var(--text-secondary)] mt-0.5">
-                    Jaccard Index: <strong id="nlp-jaccard-score" class="text-[var(--accent-secondary)]">0%</strong>
-                  </div>
-                </div>
-
-                <!-- Animated SVG Circular Gauge -->
-                <div class="relative w-16 h-16 flex items-center justify-center shrink-0">
-                  <svg class="w-16 h-16 -rotate-90" viewBox="0 0 64 64">
-                    <circle cx="32" cy="32" r="26" fill="none" stroke="var(--bg-elevated)" stroke-width="6"></circle>
-                    <circle
-                      id="nlp-gauge-circle"
-                      cx="32"
-                      cy="32"
-                      r="26"
-                      fill="none"
-                      stroke="var(--accent-primary)"
-                      stroke-width="6"
-                      stroke-linecap="round"
-                      stroke-dasharray="163.36"
-                      stroke-dashoffset="163.36"
-                      style="transition: stroke-dashoffset 500ms cubic-bezier(0.16, 1, 0.3, 1);"
-                    ></circle>
-                  </svg>
-                  <span id="nlp-match-badge" class="absolute text-[10px] font-bold text-[var(--text-primary)]">--</span>
-                </div>
-              </div>
-
-              <!-- Shared Tokens Chips -->
-              <div class="space-y-1.5 border-t border-[var(--border-subtle)] pt-2.5">
-                <div class="text-[10px] text-[var(--text-muted)]">
-                  <span data-lang="id">{translations.id.projects.sharedTokens}</span>
-                  <span data-lang="en">{translations.en.projects.sharedTokens}</span>
-                </div>
-                <div id="nlp-shared-tokens" class="flex flex-wrap gap-1.5 max-h-[54px] overflow-y-auto"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    )}
-
-    <!-- 2. Supporting Projects Widescreen Grid -->
-    {supportingProjects.length > 0 && (
-      <div class="space-y-4">
-        <div class="font-mono text-xs text-[var(--text-muted)] uppercase tracking-wider select-none flex items-center gap-2">
-          <span class="text-[var(--accent-secondary)]">✦</span>
-          <span>Supporting Systems &amp; Applications</span>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {supportingProjects.map((project, idx) => (
-            <div
-              data-tilt
-              class="reveal-on-scroll bento-card p-6 sm:p-7 flex flex-col justify-between"
-              style={`--stagger: ${idx + 1};`}
-            >
-              <div class="space-y-4">
-                <div class="flex items-start justify-between border-b border-[var(--border-subtle)] pb-3">
-                  <div>
-                    <p class="font-mono text-xs text-[var(--accent-secondary)] mb-1">
-                      // {project.category}
-                    </p>
-                    <h3 class="font-display text-xl font-bold text-[var(--text-primary)]">
-                      {project.title}
-                    </h3>
-                  </div>
-                  <span class="font-mono text-[11px] text-[var(--status-warn)] rounded-full border border-[var(--border-subtle)] px-3 py-1 bg-[var(--bg-elevated)]">
-                    {project.status}
-                  </span>
-                </div>
-
-                <p class="text-sm leading-relaxed text-[var(--text-secondary)]">
-                  <span data-lang="id">{project.summary.id}</span>
-                  <span data-lang="en">{project.summary.en}</span>
+            <div class="p-6 sm:p-8 space-y-6 font-sans">
+              <div class="space-y-2">
+                <h3 class="font-display text-2xl sm:text-4xl font-extrabold text-[var(--text-primary)]">
+                  {secondProject.title}
+                </h3>
+                <p class="text-sm sm:text-base leading-relaxed text-[var(--text-secondary)]">
+                  <span data-lang="id">{secondProject.summary.id}</span>
+                  <span data-lang="en">{secondProject.summary.en}</span>
                 </p>
-
-                <!-- Stack -->
-                <div class="flex flex-wrap gap-2 font-mono text-xs pt-1">
-                  {project.techStack.map((stk) => (
-                    <span class="rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-elevated)] px-2.5 py-1 text-[var(--text-primary)]">
-                      {stk}
-                    </span>
-                  ))}
-                </div>
               </div>
 
-              <!-- Action links row -->
-              <div class="flex items-center justify-between pt-5 mt-5 border-t border-[var(--border-subtle)] font-mono text-xs">
-                <div class="flex items-center gap-2">
-                  {project.repoUrl ? (
-                    <a
-                      href={project.repoUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      class="text-[var(--accent-primary)] hover:underline"
-                    >
-                      <span data-lang="id">{translations.id.projects.repo}</span>
-                      <span data-lang="en">{translations.en.projects.repo}</span>
-                    </a>
-                  ) : (
-                    <span class="text-[var(--text-muted)] text-[11px]">
-                      <span data-lang="id">{translations.id.projects.repoPrivate}</span>
-                      <span data-lang="en">{translations.en.projects.repoPrivate}</span>
-                    </span>
-                  )}
+              <!-- Interactive SakuKu Cashflow Simulator right inside Stage #02 -->
+              <div class="p-5 rounded-2xl bg-[var(--bg-elevated)]/60 border-2 border-[var(--border-subtle)] space-y-4">
+                <div class="flex items-center justify-between pb-2.5 border-b border-[var(--border-subtle)]">
+                  <div class="inline-flex items-center gap-2 text-xs font-extrabold uppercase tracking-wider text-[var(--text-primary)]">
+                    <Wallet class="w-4 h-4 text-[var(--accent-secondary)]" />
+                    <span data-lang="id">Simulasi Interaktif UI SakuKu (Demo Lokal)</span>
+                    <span data-lang="en">SakuKu Interactive UI Simulator (Local Demo)</span>
+                  </div>
+                  <button
+                    type="button"
+                    id="sakuku-reset-btn"
+                    class="inline-flex items-center gap-1 text-xs text-[var(--text-muted)] hover:text-[var(--text-primary)] cursor-pointer font-bold"
+                  >
+                    <RotateCcw class="w-3.5 h-3.5" />
+                    <span>Reset</span>
+                  </button>
                 </div>
 
-                <button
-                  type="button"
-                  class="project-detail-btn kinetic-btn border border-[var(--border-subtle)] bg-[var(--bg-elevated)] hover:border-[var(--accent-primary)] text-[var(--text-primary)] px-3.5 py-1.5 cursor-pointer"
-                  data-project-slug={project.slug}
-                  aria-label={`View details for ${project.title}`}
-                >
-                  <span data-lang="id">{translations.id.projects.details}</span>
-                  <span data-lang="en">{translations.en.projects.details}</span>
-                </button>
+                <div class="grid grid-cols-3 gap-2.5">
+                  <div class="p-3 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-subtle)]">
+                    <div class="text-[10px] font-bold uppercase text-[var(--text-muted)]">Pemasukan</div>
+                    <div id="sakuku-inc-val" class="font-display text-sm sm:text-base font-extrabold text-emerald-600 mt-0.5">Rp 2.500.000</div>
+                  </div>
+                  <div class="p-3 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-subtle)]">
+                    <div class="text-[10px] font-bold uppercase text-[var(--text-muted)]">Pengeluaran</div>
+                    <div id="sakuku-exp-val" class="font-display text-sm sm:text-base font-extrabold text-rose-600 mt-0.5">Rp 650.000</div>
+                  </div>
+                  <div class="p-3 rounded-xl bg-[var(--tint-sky)] border border-blue-500/20">
+                    <div class="text-[10px] font-bold uppercase text-blue-800">Saldo Bersih</div>
+                    <div id="sakuku-net-val" class="font-display text-sm sm:text-base font-extrabold text-blue-950 mt-0.5">Rp 1.850.000</div>
+                  </div>
+                </div>
+
+                <div class="space-y-1">
+                  <div class="flex justify-between text-[11px] font-semibold text-[var(--text-secondary)]">
+                    <span>Rasio Kas Simulasi</span>
+                    <span id="sakuku-ratio-label" class="font-mono text-[var(--accent-primary)]">74% Tersimpan</span>
+                  </div>
+                  <div class="w-full h-2.5 rounded-full bg-rose-200 overflow-hidden flex">
+                    <div id="sakuku-ratio-bar" class="h-full bg-emerald-500 transition-all duration-300" style="width: 74%;"></div>
+                  </div>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    data-saku-title="Freelance Web"
+                    data-saku-amount="500000"
+                    data-saku-type="in"
+                    class="sakuku-add-btn inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-[var(--tint-mint)] text-teal-900 text-xs font-bold hover:scale-105 transition-transform cursor-pointer"
+                  >
+                    <Plus class="w-3 h-3" />
+                    <span>+ Rp 500rb (Freelance)</span>
+                  </button>
+                  <button
+                    type="button"
+                    data-saku-title="Buku & Kursus"
+                    data-saku-amount="150000"
+                    data-saku-type="out"
+                    class="sakuku-add-btn inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-[var(--tint-rose)] text-rose-900 text-xs font-bold hover:scale-105 transition-transform cursor-pointer"
+                  >
+                    <span>- Rp 150rb (Buku)</span>
+                  </button>
+                  <button
+                    type="button"
+                    data-saku-title="Kopi & Makan"
+                    data-saku-amount="45000"
+                    data-saku-type="out"
+                    class="sakuku-add-btn inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-[var(--tint-amber)] text-amber-900 text-xs font-bold hover:scale-105 transition-transform cursor-pointer"
+                  >
+                    <span>- Rp 45rb (Kopi)</span>
+                  </button>
+                </div>
+
+                <div id="sakuku-log-list" class="space-y-1.5 max-h-[100px] overflow-y-auto pr-1 text-xs"></div>
               </div>
             </div>
-          ))}
-        </div>
+          </article>
+        )}
       </div>
-    )}
+    </div>
   </div>
 
   <!-- Project Detail Modal -->
   <div
     id="project-modal"
-    class="modal-backdrop fixed inset-0 z-50 hidden bg-black/75 p-4 flex items-center justify-center select-none"
+    class="modal-backdrop fixed inset-0 z-50 hidden bg-black/50 p-4 flex items-center justify-center select-none"
     role="dialog"
     aria-modal="true"
     aria-labelledby="modal-project-title"
   >
-    <div class="modal-panel w-full max-w-xl rounded-2xl border border-[var(--border-focus)] bg-[var(--bg-surface)] shadow-2xl overflow-hidden">
-      <div class="border-b border-[var(--border-subtle)] bg-[var(--bg-elevated)] px-5 py-3.5 font-mono text-xs flex items-center justify-between">
-        <span id="modal-project-header-slug" class="text-[var(--accent-primary)] font-bold">
-          [ details // buffer ]
+    <div class="modal-panel w-full max-w-xl rounded-3xl border-2 border-[var(--border-subtle)] bg-[var(--bg-surface)] shadow-2xl overflow-hidden font-sans">
+      <div class="border-b border-[var(--border-subtle)] px-6 py-4 flex items-center justify-between bg-[var(--tint-mint)]">
+        <span id="modal-project-header-slug" class="font-mono text-xs text-teal-900 font-bold">
+          project
         </span>
         <button
           type="button"
           id="modal-close-btn"
-          class="rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-surface)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--accent-primary)] px-2.5 py-1 cursor-pointer transition-all"
+          class="inline-flex items-center gap-1 rounded-full bg-white text-teal-950 px-3 py-1 text-xs font-bold cursor-pointer"
           aria-label="Close dialog"
         >
+          <X class="w-3.5 h-3.5" />
           <span data-lang="id">{translations.id.projects.closeModal}</span>
           <span data-lang="en">{translations.en.projects.closeModal}</span>
         </button>
       </div>
 
-      <div class="p-6 sm:p-7 space-y-4 font-sans text-sm">
+      <div class="p-6 sm:p-8 space-y-5 text-sm">
         <div>
-          <p id="modal-project-category" class="font-mono text-xs text-[var(--accent-secondary)] mb-1">
+          <p id="modal-project-category" class="text-xs text-[var(--accent-primary)] font-bold mb-1">
             Category
           </p>
-          <h3 id="modal-project-title" class="font-display text-2xl font-bold text-[var(--text-primary)]">
+          <h3 id="modal-project-title" class="text-2xl font-extrabold tracking-tight text-[var(--text-primary)]">
             Project Title
           </h3>
         </div>
 
         <div id="modal-project-summary" class="text-[var(--text-secondary)] leading-relaxed"></div>
 
-        <div class="space-y-3 border-t border-[var(--border-subtle)] pt-4 text-xs">
-          <div class="rounded-xl bg-[var(--bg-elevated)] p-3.5">
-            <span class="font-mono font-bold text-[var(--accent-secondary)]">
+        <div class="space-y-4 border-t border-[var(--border-subtle)] pt-4 text-sm">
+          <div class="border-l-2 border-[var(--border-strong)] pl-4">
+            <div class="text-xs font-bold text-[var(--text-primary)] mb-1">
               <span data-lang="id">{translations.id.projects.problem}</span>
               <span data-lang="en">{translations.en.projects.problem}</span>
-            </span>{' '}
-            <span id="modal-project-problem" class="text-[var(--text-secondary)]"></span>
+            </div>
+            <div id="modal-project-problem" class="text-[var(--text-secondary)] leading-relaxed"></div>
           </div>
-          <div class="rounded-xl bg-[var(--bg-elevated)] p-3.5">
-            <span class="font-mono font-bold text-[var(--accent-primary)]">
+          <div class="border-l-2 border-[var(--accent-primary)] pl-4">
+            <div class="text-xs font-bold text-[var(--accent-primary)] mb-1">
               <span data-lang="id">{translations.id.projects.solution}</span>
               <span data-lang="en">{translations.en.projects.solution}</span>
-            </span>{' '}
-            <span id="modal-project-solution" class="text-[var(--text-secondary)]"></span>
+            </div>
+            <div id="modal-project-solution" class="text-[var(--text-secondary)] leading-relaxed"></div>
           </div>
-          <div class="px-2 py-1">
-            <span class="font-mono font-bold text-[var(--text-primary)]">
-              <span data-lang="id">{translations.id.projects.role}</span>
-              <span data-lang="en">{translations.en.projects.role}</span>
-            </span>{' '}
+          <div class="text-xs">
+            <strong class="font-bold text-[var(--text-primary)]">
+              <span data-lang="id">{translations.id.projects.role}:</span>
+              <span data-lang="en">{translations.en.projects.role}:</span>
+            </strong>{' '}
             <span id="modal-project-role" class="text-[var(--text-secondary)]"></span>
           </div>
         </div>
 
-        <div class="pt-4 border-t border-[var(--border-subtle)] flex items-center justify-between font-mono text-xs">
-          <div id="modal-project-stack" class="flex flex-wrap gap-1.5"></div>
+        <div class="pt-4 border-t border-[var(--border-subtle)] flex flex-wrap items-center justify-between gap-3 text-xs">
+          <div id="modal-project-stack" class="flex flex-wrap gap-2"></div>
           <div id="modal-project-link"></div>
         </div>
       </div>
@@ -524,7 +492,70 @@ const supportingProjects = projects.filter((p) => !p.featured);
 </section>
 
 <script define:vars={{ projectsData: projects }}>
-  // 1. Interactive Pipeline Simulation in Featured Project
+  // 0. Cartridge Switcher (Stage #01 vs Stage #02)
+  const cartridgeBtns = document.querySelectorAll('.cartridge-btn');
+  const stage0 = document.getElementById('cartridge-stage-0');
+  const stage1 = document.getElementById('cartridge-stage-1');
+
+  cartridgeBtns.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const idx = btn.getAttribute('data-cartridge');
+      cartridgeBtns.forEach((b) => {
+        if (b === btn) {
+          b.classList.add('border-[var(--accent-primary)]', 'bg-[var(--tint-mint)]', 'shadow-sm');
+          b.classList.remove('border-[var(--border-subtle)]', 'bg-[var(--bg-surface)]');
+        } else {
+          b.classList.remove('border-[var(--accent-primary)]', 'bg-[var(--tint-mint)]', 'shadow-sm');
+          b.classList.add('border-[var(--border-subtle)]', 'bg-[var(--bg-surface)]');
+        }
+      });
+
+      if (idx === '1') {
+        stage0?.classList.add('hidden');
+        stage1?.classList.remove('hidden');
+      } else {
+        stage1?.classList.add('hidden');
+        stage0?.classList.remove('hidden');
+      }
+    });
+  });
+
+  // 1. Plagiarism Checker Case Study vs Live NLP Lab Switcher
+  const viewBtns = document.querySelectorAll('.proj-view-btn');
+  const overviewPanel = document.getElementById('proj-panel-overview');
+  const sandboxPanel = document.getElementById('proj-panel-sandbox');
+
+  function setProjectView(view) {
+    viewBtns.forEach((b) => {
+      const active = b.getAttribute('data-proj-view') === view;
+      if (active) {
+        b.classList.add('bg-[var(--accent-primary)]', 'text-[var(--accent-ink)]', 'font-bold');
+        b.classList.remove('text-[var(--text-secondary)]', 'font-semibold');
+      } else {
+        b.classList.remove('bg-[var(--accent-primary)]', 'text-[var(--accent-ink)]', 'font-bold');
+        b.classList.add('text-[var(--text-secondary)]', 'font-semibold');
+      }
+    });
+    if (view === 'sandbox') {
+      overviewPanel?.classList.add('hidden');
+      sandboxPanel?.classList.remove('hidden');
+    } else {
+      sandboxPanel?.classList.add('hidden');
+      overviewPanel?.classList.remove('hidden');
+    }
+  }
+
+  viewBtns.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      setProjectView(btn.getAttribute('data-proj-view') || 'overview');
+    });
+  });
+
+  document.getElementById('jump-to-sandbox-btn')?.addEventListener('click', () => {
+    setProjectView('sandbox');
+  });
+
+  // 2. Step-by-Step Pipeline Animation
   const runPipelineBtn = document.getElementById('run-pipeline-btn');
   const pipeSteps = document.querySelectorAll('.pipe-step');
   let isSimulating = false;
@@ -533,67 +564,33 @@ const supportingProjects = projects.filter((p) => !p.featured);
     if (isSimulating || !pipeSteps.length) return;
     isSimulating = true;
 
-    const tokens = document.querySelectorAll('.pipe-token');
-    const vecStatus = document.getElementById('pipe-vector-status');
-    tokens.forEach((t) => {
-      t.classList.remove('text-[var(--accent-primary)]', 'border', 'border-[var(--border-focus)]');
-    });
-    if (vecStatus) vecStatus.textContent = 'indexing...';
-
     pipeSteps.forEach((step) => {
-      step.classList.remove('border-[var(--accent-primary)]', 'bg-[var(--bg-elevated)]');
       const dot = step.querySelector('.pipe-dot');
       const badge = step.querySelector('.pipe-badge');
-      if (dot) dot.className = 'pipe-dot w-2.5 h-2.5 rounded-full bg-[var(--text-muted)]';
+      if (dot) dot.className = 'pipe-dot w-2 h-2 rounded-full bg-[var(--text-muted)]';
       if (badge) {
-        badge.textContent = 'QUEUE';
-        badge.className = 'pipe-badge text-[10px] px-2 py-0.5 rounded bg-[var(--bg-elevated)] text-[var(--text-muted)]';
+        badge.textContent = 'RUN...';
+        badge.className = 'pipe-badge text-[10px] text-[var(--text-muted)] font-mono';
       }
-    });
-
-    tokens.forEach((t, i) => {
-      setTimeout(() => {
-        t.classList.add('text-[var(--accent-primary)]', 'border', 'border-[var(--border-focus)]');
-      }, (i + 1) * 180);
     });
 
     pipeSteps.forEach((step, idx) => {
       setTimeout(() => {
-        step.classList.add('border-[var(--accent-primary)]', 'bg-[var(--bg-elevated)]');
         const dot = step.querySelector('.pipe-dot');
         const badge = step.querySelector('.pipe-badge');
-        if (dot) dot.className = 'pipe-dot w-2.5 h-2.5 rounded-full bg-[var(--status-ok)] shadow-[0_0_8px_var(--status-ok)]';
+        if (dot) dot.className = 'pipe-dot w-2 h-2 rounded-full bg-[var(--status-ok)]';
         if (badge) {
-          badge.textContent = '✓ DONE';
-          badge.className = 'pipe-badge text-[10px] px-2 py-0.5 rounded bg-[var(--bg-surface)] text-[var(--status-ok)] font-bold';
+          badge.textContent = 'DONE';
+          badge.className = 'pipe-badge text-[10px] text-[var(--status-ok)] font-mono font-bold';
         }
-        if (idx === pipeSteps.length - 1) {
-          if (vecStatus) vecStatus.textContent = '✓ vectors aligned';
-          isSimulating = false;
-        }
-      }, (idx + 1) * 340);
+        if (idx === pipeSteps.length - 1) isSimulating = false;
+      }, (idx + 1) * 260);
     });
   }
 
   runPipelineBtn?.addEventListener('click', runPipelineSimulation);
 
-  const simulatorEl = document.getElementById('pipeline-simulator');
-  if (simulatorEl && 'IntersectionObserver' in window) {
-    const simObserver = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            runPipelineSimulation();
-            simObserver.unobserve(entry.target);
-          }
-        });
-      },
-      { threshold: 0.4 }
-    );
-    simObserver.observe(simulatorEl);
-  }
-
-  // 2. Real-Time NLP Cosine & Jaccard Similarity Sandbox
+  // 3. Live NLP Similarity Engine
   const docAInput = document.getElementById('nlp-doc-a');
   const docBInput = document.getElementById('nlp-doc-b');
   const countAEl = document.getElementById('nlp-count-a');
@@ -675,14 +672,14 @@ const supportingProjects = projects.filter((p) => !p.featured);
       sharedTokensEl.innerHTML = '';
       if (shared.length === 0) {
         const empty = document.createElement('span');
-        empty.className = 'text-[10px] text-[var(--text-muted)]';
+        empty.className = 'text-xs text-teal-800/70';
         empty.textContent = '0 shared tokens';
         sharedTokensEl.appendChild(empty);
       } else {
         shared.forEach((word) => {
           const badge = document.createElement('span');
           badge.className =
-            'px-2 py-0.5 rounded-md bg-[var(--bg-elevated)] border border-[var(--border-focus)] text-[10px] text-[var(--accent-primary)] font-semibold animate-boot-line';
+            'px-2.5 py-0.5 rounded-full bg-white text-xs text-teal-900 font-bold border border-teal-600/20';
           badge.textContent = word;
           sharedTokensEl.appendChild(badge);
         });
@@ -694,36 +691,100 @@ const supportingProjects = projects.filter((p) => !p.featured);
   docBInput?.addEventListener('input', computeSimilarityLive);
 
   document.getElementById('nlp-preset-1')?.addEventListener('click', () => {
-    const isEn = document.documentElement.getAttribute('lang') === 'en';
     if (docAInput && docBInput) {
-      docAInput.value = isEn
-        ? 'Document similarity detection preprocesses text using tokenization, stopword removal, and TF-IDF vector weighting to measure cosine similarity.'
-        : 'Sistem deteksi kemiripan dokumen memproses teks melalui tahap tokenisasi, penghapusan stopword, dan pembobotan vektor TF-IDF untuk mengukur skor kemiripan.';
-      docBInput.value = isEn
-        ? 'Text preprocessing applies tokenization and TF-IDF document vectors to calculate cosine similarity scores across academic documents.'
-        : 'Metode pemrosesan teks menggunakan tokenisasi dan vektor TF-IDF dokumen untuk menghitung skor kemiripan antar dokumen akademik.';
+      docAInput.value = 'Sistem deteksi kemiripan dokumen memproses teks melalui tahap tokenisasi, penghapusan stopword, dan pembobotan vektor TF-IDF untuk mengukur skor kemiripan.';
+      docBInput.value = 'Metode pemrosesan teks menggunakan tokenisasi dan vektor TF-IDF dokumen untuk menghitung skor kemiripan antar dokumen akademik.';
       computeSimilarityLive();
-      runPipelineSimulation();
     }
   });
 
   document.getElementById('nlp-preset-2')?.addEventListener('click', () => {
-    const isEn = document.documentElement.getAttribute('lang') === 'en';
     if (docAInput && docBInput) {
-      docAInput.value = isEn
-        ? 'Clean backend architecture separates REST API routing, business service logic, and PostgreSQL relational database queries with TypeScript.'
-        : 'Arsitektur backend bersih memisahkan routing REST API, logika layanan bisnis, dan kueri basis data relasional PostgreSQL menggunakan TypeScript.';
-      docBInput.value = isEn
-        ? 'Modern backend services use TypeScript, modular REST API handlers, and structured PostgreSQL database repositories for maintainable software.'
-        : 'Layanan backend modern menggunakan TypeScript, handler REST API modular, dan repositori basis data PostgreSQL terstruktur.';
+      docAInput.value = 'Arsitektur backend bersih memisahkan routing REST API, logika layanan bisnis, dan kueri basis data relasional PostgreSQL menggunakan TypeScript.';
+      docBInput.value = 'Layanan backend modern menggunakan TypeScript, handler REST API modular, dan repositori basis data PostgreSQL terstruktur.';
       computeSimilarityLive();
-      runPipelineSimulation();
     }
   });
 
   computeSimilarityLive();
 
-  // 3. Modal Logic
+  // 4. Interactive SakuKu Cashflow Mini-Simulator
+  const incEl = document.getElementById('sakuku-inc-val');
+  const expEl = document.getElementById('sakuku-exp-val');
+  const netEl = document.getElementById('sakuku-net-val');
+  const ratioBar = document.getElementById('sakuku-ratio-bar');
+  const ratioLabel = document.getElementById('sakuku-ratio-label');
+  const logList = document.getElementById('sakuku-log-list');
+
+  const defaultSakuItems = [
+    { title: 'Saldo Awal Bulan', amount: 2500000, type: 'in' },
+    { title: 'Kebutuhan Kampus & Internet', amount: 650000, type: 'out' },
+  ];
+  let sakuItems = [...defaultSakuItems];
+
+  function formatRupiah(n) {
+    return 'Rp ' + Number(n).toLocaleString('id-ID');
+  }
+
+  function renderSakuSimulator() {
+    let inc = 0;
+    let exp = 0;
+    sakuItems.forEach((item) => {
+      if (item.type === 'in') inc += item.amount;
+      else exp += item.amount;
+    });
+    const net = inc - exp;
+    const savedPct = inc > 0 ? Math.max(0, Math.min(100, Math.round((net / inc) * 100))) : 0;
+
+    if (incEl) incEl.textContent = formatRupiah(inc);
+    if (expEl) expEl.textContent = formatRupiah(exp);
+    if (netEl) netEl.textContent = formatRupiah(net);
+    if (ratioBar) ratioBar.style.width = `${savedPct}%`;
+    if (ratioLabel) ratioLabel.textContent = `${savedPct}% Tersimpan`;
+
+    if (logList) {
+      logList.innerHTML = '';
+      sakuItems
+        .slice()
+        .reverse()
+        .forEach((item) => {
+          const row = document.createElement('div');
+          row.className =
+            'flex items-center justify-between px-3 py-1.5 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-subtle)]';
+          const left = document.createElement('span');
+          left.className = 'font-medium text-[var(--text-primary)]';
+          left.textContent = item.title;
+          const right = document.createElement('span');
+          right.className =
+            item.type === 'in' ? 'font-mono font-bold text-emerald-600' : 'font-mono font-bold text-rose-600';
+          right.textContent = `${item.type === 'in' ? '+' : '-'} ${formatRupiah(item.amount)}`;
+          row.appendChild(left);
+          row.appendChild(right);
+          logList.appendChild(row);
+        });
+    }
+  }
+
+  document.querySelectorAll('.sakuku-add-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const title = btn.getAttribute('data-saku-title') || 'Transaksi';
+      const amount = parseInt(btn.getAttribute('data-saku-amount') || '0', 10);
+      const type = btn.getAttribute('data-saku-type') || 'out';
+      if (amount > 0) {
+        sakuItems.push({ title, amount, type });
+        renderSakuSimulator();
+      }
+    });
+  });
+
+  document.getElementById('sakuku-reset-btn')?.addEventListener('click', () => {
+    sakuItems = [...defaultSakuItems];
+    renderSakuSimulator();
+  });
+
+  renderSakuSimulator();
+
+  // 5. Project Detail Modal
   const modal = document.getElementById('project-modal');
   const closeBtn = document.getElementById('modal-close-btn');
   const titleEl = document.getElementById('modal-project-title');
@@ -757,9 +818,9 @@ const supportingProjects = projects.filter((p) => !p.featured);
       el.appendChild(spanEn);
     };
 
-    if (headerSlugEl) headerSlugEl.textContent = `[ buffer // ${proj.slug} ]`;
+    if (headerSlugEl) headerSlugEl.textContent = proj.slug;
     if (titleEl) titleEl.textContent = proj.title;
-    if (catEl) catEl.textContent = `// ${proj.category}`;
+    if (catEl) catEl.textContent = proj.category;
     setBilingualText(summaryEl, proj.summary);
     setBilingualText(problemEl, proj.problem);
     setBilingualText(solutionEl, proj.solution);
@@ -769,7 +830,7 @@ const supportingProjects = projects.filter((p) => !p.featured);
       stackEl.innerHTML = '';
       proj.techStack.forEach((t) => {
         const chip = document.createElement('span');
-        chip.className = 'rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-elevated)] px-2.5 py-1 text-[var(--accent-primary)] text-[11px]';
+        chip.className = 'px-2.5 py-1 rounded-full bg-[var(--bg-elevated)] text-[var(--text-primary)] font-bold text-xs';
         chip.textContent = t;
         stackEl.appendChild(chip);
       });
@@ -777,9 +838,9 @@ const supportingProjects = projects.filter((p) => !p.featured);
 
     if (linkEl) {
       if (proj.repoUrl) {
-        linkEl.innerHTML = `<a href="${proj.repoUrl}" target="_blank" rel="noopener noreferrer" class="text-[var(--accent-primary)] hover:underline">[ ↗ repo ]</a>`;
+        linkEl.innerHTML = `<a href="${proj.repoUrl}" target="_blank" rel="noopener noreferrer" class="text-[var(--accent-primary)] font-bold hover:underline">Repository ↗</a>`;
       } else {
-        linkEl.innerHTML = `<span class="text-[var(--text-muted)]">[ repo: private/wip ]</span>`;
+        linkEl.innerHTML = `<span class="text-[var(--text-muted)]">Private / In Progress</span>`;
       }
     }
 
@@ -808,31 +869,7 @@ const supportingProjects = projects.filter((p) => !p.featured);
   });
 
   closeBtn?.addEventListener('click', closeModal);
-
   modal?.addEventListener('click', (e) => {
     if (e.target === modal) closeModal();
-  });
-
-  document.addEventListener('keydown', (e) => {
-    if (modal?.classList.contains('hidden')) return;
-    if (e.key === 'Escape') {
-      closeModal();
-      return;
-    }
-    if (e.key === 'Tab') {
-      const focusable = modal.querySelectorAll(
-        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-      );
-      if (!focusable.length) return;
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-      if (e.shiftKey && document.activeElement === first) {
-        e.preventDefault();
-        last.focus();
-      } else if (!e.shiftKey && document.activeElement === last) {
-        e.preventDefault();
-        first.focus();
-      }
-    }
   });
 </script>

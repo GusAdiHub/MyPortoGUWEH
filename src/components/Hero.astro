@@ -1,372 +1,508 @@
 ---
 import { profile } from '../data/profile';
 import { translations } from '../data/i18n';
+import { ArrowRight, Sparkles, Gamepad2, Copy, Music, Palette, Terminal, Square } from 'lucide-astro';
+
+interface MyInstantItem {
+  id: string;
+  emoji: string;
+  shortTitle: string;
+  fullTitle: string;
+  mp3Url: string;
+  fallbackSfx: string;
+  tint: string;
+}
+
+const TINT_STYLES = [
+  'bg-[var(--tint-amber)] text-amber-950 border-amber-600/20',
+  'bg-[var(--tint-rose)] text-rose-950 border-rose-600/20',
+  'bg-[var(--tint-mint)] text-teal-950 border-teal-600/20',
+  'bg-[var(--tint-sky)] text-blue-950 border-blue-600/20',
+  'bg-[var(--tint-violet)] text-violet-950 border-violet-600/20',
+];
+
+// Default curated MyInstants MP3s (overridden/enriched by live fetch from myinstants.com below)
+let memePads: MyInstantItem[] = [
+  {
+    id: 'antek',
+    emoji: '📢',
+    shortTitle: 'Antek Asing',
+    fullTitle: '📢 Hey Antek-Antek Asing!',
+    mp3Url: 'https://www.myinstants.com/media/sounds/hidup-jokowi.mp3',
+    fallbackSfx: 'antek',
+    tint: TINT_STYLES[0],
+  },
+  {
+    id: 'gokgok',
+    emoji: '🐶',
+    shortTitle: 'Gok Gok!',
+    fullTitle: '🐶 Gok Gok Gok Gok!',
+    mp3Url: 'https://www.myinstants.com/media/sounds/gok-gok-gok.mp3',
+    fallbackSfx: 'gokgok',
+    tint: TINT_STYLES[1],
+  },
+  {
+    id: 'vineboom',
+    emoji: '🗿',
+    shortTitle: 'Vine Boom',
+    fullTitle: '🗿 Vine Boom Sound Effect',
+    mp3Url: 'https://www.myinstants.com/media/sounds/vine-boom.mp3',
+    fallbackSfx: 'chuaks',
+    tint: TINT_STYLES[2],
+  },
+  {
+    id: 'emotional',
+    emoji: '💔',
+    shortTitle: 'Damage!',
+    fullTitle: '💔 Emotional Damage!',
+    mp3Url: 'https://www.myinstants.com/media/sounds/emotional-damage-meme.mp3',
+    fallbackSfx: 'mental',
+    tint: TINT_STYLES[3],
+  },
+  {
+    id: 'animewow',
+    emoji: '✨',
+    shortTitle: 'Anime Wow',
+    fullTitle: '✨ Anime Wow Sound Effect',
+    mp3Url: 'https://www.myinstants.com/media/sounds/anime-wow-sound-effect.mp3',
+    fallbackSfx: 'bercyanda',
+    tint: TINT_STYLES[4],
+  },
+  {
+    id: 'bruh',
+    emoji: '😐',
+    shortTitle: 'Bruh',
+    fullTitle: '😐 Bruh Sound Effect #2',
+    mp3Url: 'https://www.myinstants.com/media/sounds/movie_1.mp3',
+    fallbackSfx: 'chuaks',
+    tint: TINT_STYLES[0],
+  },
+  {
+    id: 'fail',
+    emoji: '🎺',
+    shortTitle: 'Spongebob',
+    fullTitle: '🎺 Spongebob Fail Horn',
+    mp3Url: 'https://www.myinstants.com/media/sounds/spongebob-fail.mp3',
+    fallbackSfx: 'mental',
+    tint: TINT_STYLES[1],
+  },
+  {
+    id: 'winxp',
+    emoji: '💻',
+    shortTitle: 'XP Error',
+    fullTitle: '💻 Windows XP Error',
+    mp3Url: 'https://www.myinstants.com/media/sounds/erro.mp3',
+    fallbackSfx: 'kijang',
+    tint: TINT_STYLES[2],
+  },
+];
+
+let gbCategoryPads: MyInstantItem[] = [];
+
+function parseMyInstantsHtml(html: string, limit = 8): { title: string; mp3Url: string }[] {
+  const results: { title: string; mp3Url: string }[] = [];
+  const seen = new Set<string>();
+  const regex = /play\('(\/media\/sounds\/[^']+\.mp3)'[^)]*\)[^>]*title="Play ([^"]+) sound"/gi;
+  let match: RegExpExecArray | null;
+  while ((match = regex.exec(html)) !== null && results.length < limit) {
+    const path = match[1];
+    const rawTitle = match[2]
+      .replace(/&amp;/g, '&')
+      .replace(/&#x27;/g, "'")
+      .replace(/&quot;/g, '"')
+      .trim();
+    const fullUrl = `https://www.myinstants.com${path}`;
+    if (!seen.has(fullUrl)) {
+      seen.add(fullUrl);
+      results.push({ title: rawTitle, mp3Url: fullUrl });
+    }
+  }
+  return results;
+}
+
+// Fetch live sound effects from MyInstants GB category & Indo search at dev/build time
+try {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 3800);
+  const headers = {
+    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+    Accept: 'text/html',
+  };
+
+  const [gbRes, antekRes, gokRes] = await Promise.allSettled([
+    fetch('https://www.myinstants.com/en/categories/sound%20effects/gb/', { headers, signal: controller.signal }),
+    fetch('https://www.myinstants.com/en/search/?name=antek', { headers, signal: controller.signal }),
+    fetch('https://www.myinstants.com/en/search/?name=gok+gok', { headers, signal: controller.signal }),
+  ]);
+
+  clearTimeout(timer);
+
+  if (antekRes.status === 'fulfilled' && antekRes.value.ok) {
+    const html = await antekRes.value.text();
+    const found = parseMyInstantsHtml(html, 1);
+    if (found[0]) {
+      memePads[0].mp3Url = found[0].mp3Url;
+      memePads[0].fullTitle = `📢 ${found[0].title}`;
+    }
+  }
+
+  if (gokRes.status === 'fulfilled' && gokRes.value.ok) {
+    const html = await gokRes.value.text();
+    const found = parseMyInstantsHtml(html, 1);
+    if (found[0]) {
+      memePads[1].mp3Url = found[0].mp3Url;
+      memePads[1].fullTitle = `🐶 ${found[0].title}`;
+    }
+  }
+
+  if (gbRes.status === 'fulfilled' && gbRes.value.ok) {
+    const html = await gbRes.value.text();
+    const found = parseMyInstantsHtml(html, 8);
+    const emojis = ['🔊', '💥', '🎵', '🔔', '⚡', '🎺', '🚨', '🎉'];
+    gbCategoryPads = found.map((item, idx) => ({
+      id: `gb-${idx}`,
+      emoji: emojis[idx % emojis.length],
+      shortTitle: item.title.slice(0, 12),
+      fullTitle: `${emojis[idx % emojis.length]} ${item.title}`,
+      mp3Url: item.mp3Url,
+      fallbackSfx: idx % 2 === 0 ? 'chuaks' : 'basuri',
+      tint: TINT_STYLES[idx % TINT_STYLES.length],
+    }));
+  }
+} catch (_) {
+  // Fallback to curated MyInstants CDN MP3 list above
+}
 ---
 
-<section id="hero" class="w-full min-h-[calc(100vh-4.5rem)] flex flex-col justify-between relative overflow-hidden pt-6 sm:pt-12">
-  <!-- Main Widescreen Hero Grid -->
-  <div class="w-full max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-14 my-auto py-8 lg:py-12">
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
-      <!-- Left Column: Giant Kinetic Typography & CTAs (7 cols) -->
-      <div class="lg:col-span-7 flex flex-col gap-6">
-        <!-- Status Pill -->
-        <div
-          class="reveal-on-scroll inline-flex items-center gap-2.5 font-mono text-xs text-[var(--status-ok)] bg-[var(--bg-surface)]/90 border border-[var(--border-focus)] rounded-full px-4 py-1.5 w-fit shadow-[0_0_25px_var(--accent-glow)] select-none"
-          style="--stagger: 0;"
-        >
-          <span class="relative flex h-2.5 w-2.5" aria-hidden="true">
-            <span class="animate-pulse-ring absolute inline-flex h-full w-full rounded-full bg-[var(--status-ok)]"></span>
-            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-[var(--status-ok)]"></span>
+<section id="hero" class="w-full pt-4 sm:pt-8 pb-10">
+  <div class="w-full max-w-6xl mx-auto px-4 sm:px-8 space-y-5">
+    <!-- 1. Giant Kinetic Poster Centerpiece (Non-Template Magazine + Interactive Canvas Header) -->
+    <div
+      data-tilt
+      class="reveal-on-scroll tactile-card tilt-card blueprint-surface spotlight-surface p-6 sm:p-10 lg:p-12 relative overflow-hidden"
+      style="--stagger: 0;"
+    >
+      <!-- Top Floating Sticker Badges -->
+      <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+        <div class="flex flex-wrap items-center gap-2 text-xs font-sans">
+          <span class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[var(--tint-mint)] border border-teal-600/20 font-extrabold text-teal-950 shadow-2xs">
+            <span class="h-2 w-2 rounded-full bg-[var(--status-ok)] status-pulse-dot" aria-hidden="true"></span>
+            <span data-lang="id">{profile.availabilityStatus.id}</span>
+            <span data-lang="en">{profile.availabilityStatus.en}</span>
           </span>
-          <span data-lang="id" class="font-medium tracking-wide">{profile.availabilityStatus.id}</span>
-          <span data-lang="en" class="font-medium tracking-wide">{profile.availabilityStatus.en}</span>
+
+          <span class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[var(--tint-sky)] border border-blue-600/20 text-blue-950 font-extrabold -rotate-1">
+            <Sparkles class="w-3.5 h-3.5 shrink-0 text-blue-700" />
+            <span id="hero-rotating-badge">Web &amp; Backend Engineering</span>
+          </span>
+
+          <span class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[var(--tint-amber)] border border-amber-600/20 text-amber-950 font-extrabold rotate-1">
+            <span>📍 Bali, Indonesia</span>
+          </span>
         </div>
 
-        <!-- Display Headline -->
-        <div class="reveal-on-scroll space-y-3" style="--stagger: 1;">
-          <div class="font-mono text-xs sm:text-sm text-[var(--accent-secondary)] flex items-center gap-2 select-none">
-            <span>~/workspace/portfolio</span>
-            <span class="text-[var(--text-muted)]">/</span>
-            <span class="text-[var(--accent-primary)]">$ init --fullscreen</span>
-          </div>
+        <!-- Celebrate Confetti Pill -->
+        <button
+          type="button"
+          id="hero-celebrate-btn"
+          class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[var(--bg-surface)] border-2 border-[var(--border-subtle)] hover:border-[var(--accent-primary)] text-xs font-extrabold text-[var(--text-primary)] hover:scale-105 cursor-pointer transition-all"
+        >
+          <span>🎉</span>
+          <span data-lang="id">Rayakan Kunjungan</span>
+          <span data-lang="en">Celebrate Visit</span>
+        </button>
+      </div>
 
-          <h1
-            id="hero-name-heading"
-            data-original={profile.name}
-            class="font-display text-5xl sm:text-6xl lg:text-7xl xl:text-[80px] font-bold tracking-tight leading-[1.02] text-gradient-accent cursor-default w-fit"
-          >
-            {profile.name}
-          </h1>
-
-          <!-- Animated Multi-Phrase Typewriter Role Line -->
-          <div class="font-display text-lg sm:text-2xl font-semibold text-[var(--text-primary)] flex items-center gap-2 pt-1 min-h-[2.25rem]">
-            <span class="text-[var(--accent-primary)] font-mono">&gt;</span>
-            <span id="hero-typewriter-text">
+      <!-- Oversized Editorial Poster Typography (Owner Name Prominent & Unmistakable) -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-end">
+        <div class="lg:col-span-8 space-y-4">
+          <div class="flex flex-wrap items-center gap-2.5">
+            <span class="px-3 py-1 rounded-full bg-[var(--accent-primary)] text-[var(--accent-ink)] font-mono text-[11px] font-extrabold uppercase tracking-wider shadow-2xs">
+              <span data-lang="id">HALO, SAYA</span>
+              <span data-lang="en">HI, I'M</span>
+            </span>
+            <span class="px-3.5 py-1 rounded-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] font-sans text-xs sm:text-sm font-bold text-[var(--text-primary)]">
               <span data-lang="id">{profile.role.id}</span>
               <span data-lang="en">{profile.role.en}</span>
             </span>
-            <span class="inline-block w-2.5 h-5 bg-[var(--accent-primary)] animate-cursor" aria-hidden="true"></span>
+          </div>
+
+          <!-- Giant Centerpiece Owner Name -->
+          <div class="space-y-2">
+            <h1 class="font-display text-5xl sm:text-7xl lg:text-[84px] font-extrabold tracking-tight leading-[0.96] text-[var(--text-primary)] flex flex-wrap items-baseline gap-x-4 gap-y-2">
+              <span
+                id="hero-name-heading"
+                data-original={profile.name}
+                class="text-gradient-calm cursor-pointer select-none"
+                title="Gus Adi"
+              >
+                {profile.name}
+              </span>
+              <span class="inline-flex items-center px-3 py-1 rounded-2xl bg-[var(--tint-mint)] border-2 border-[var(--accent-primary)] font-mono text-xs sm:text-sm font-extrabold text-teal-950 align-middle -translate-y-2 sm:-translate-y-4">
+                @GusAdiHub
+              </span>
+            </h1>
+
+            <p class="font-display text-xl sm:text-3xl lg:text-[32px] font-bold tracking-tight leading-[1.2] text-[var(--text-primary)] pt-1">
+              <span data-lang="id">
+                Merancang <span class="text-gradient-calm">aplikasi web</span>, sistem backend, &amp; eksperimen <span class="underline decoration-[var(--accent-primary)] decoration-wavy decoration-2 underline-offset-4">NLP interaktif</span>.
+              </span>
+              <span data-lang="en">
+                Crafting <span class="text-gradient-calm">web applications</span>, backend systems, &amp; interactive <span class="underline decoration-[var(--accent-primary)] decoration-wavy decoration-2 underline-offset-4">NLP experiments</span>.
+              </span>
+            </p>
           </div>
         </div>
 
-        <!-- Bio Headline -->
-        <p
-          class="reveal-on-scroll text-base sm:text-lg leading-relaxed text-[var(--text-secondary)] max-w-2xl font-sans"
-          style="--stagger: 2;"
-        >
-          <span data-lang="id">{profile.headline.id}</span>
-          <span data-lang="en">{profile.headline.en}</span>
-        </p>
+        <!-- Right 4 Cols inside Poster: Lead Bio + Direct Action Stack -->
+        <div class="lg:col-span-4 space-y-4 font-sans border-t lg:border-t-0 lg:border-l-2 border-[var(--border-subtle)] pt-4 lg:pt-0 lg:pl-6">
+          <p class="text-sm sm:text-base leading-relaxed text-[var(--text-secondary)]">
+            <span data-lang="id">{profile.headline.id}</span>
+            <span data-lang="en">{profile.headline.en}</span>
+          </p>
 
-        <!-- CTA Buttons (Magnetic + Kinetic) -->
-        <div
-          class="reveal-on-scroll flex flex-wrap items-center gap-4 pt-2 font-mono text-xs sm:text-sm"
-          style="--stagger: 3;"
-        >
-          <a
-            href="#projects"
-            class="magnetic-btn kinetic-btn bg-[var(--accent-primary)] text-[#05070b] font-bold px-6 py-3.5 shadow-[0_0_30px_var(--accent-glow)] hover:shadow-[0_0_40px_var(--accent-primary)] inline-flex items-center gap-2"
-          >
-            <span data-lang="id">🚀 Lihat Proyek Utama</span>
-            <span data-lang="en">🚀 Explore Projects</span>
-            <span>→</span>
-          </a>
-
-          <a
-            href="#contact"
-            class="magnetic-btn kinetic-btn border border-[var(--border-subtle)] bg-[var(--bg-surface)] hover:border-[var(--accent-secondary)] text-[var(--text-primary)] px-6 py-3.5 inline-flex items-center gap-2"
-          >
-            <span data-lang="id">✉ Hubungi Saya</span>
-            <span data-lang="en">✉ Get In Touch</span>
-          </a>
-
-          {profile.cvUrl.id || profile.cvUrl.en ? (
+          <div class="flex flex-wrap items-center gap-2.5">
             <a
-              href={profile.cvUrl.en || profile.cvUrl.id}
-              download
-              class="magnetic-btn kinetic-btn border border-[var(--border-subtle)] bg-[var(--bg-elevated)] hover:border-[var(--accent-primary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] px-5 py-3.5"
+              href="#projects"
+              class="pill-btn bg-[var(--accent-primary)] text-[var(--accent-ink)] font-bold text-xs sm:text-sm px-5 py-2.5 inline-flex items-center gap-2"
             >
-              <span data-lang="id">{translations.id.hero.downloadCv}</span>
-              <span data-lang="en">{translations.en.hero.downloadCv}</span>
+              <span data-lang="id">Buka App Stage</span>
+              <span data-lang="en">Open App Stage</span>
+              <ArrowRight class="w-4 h-4" />
             </a>
-          ) : (
-            <span
-              class="rounded-xl border border-[var(--border-subtle)] border-dashed bg-[var(--bg-surface)]/50 text-[var(--text-muted)] px-4 py-3.5 cursor-not-allowed select-none text-xs"
-              title="CV sedang dipersiapkan"
+
+            <button
+              type="button"
+              id="hero-open-arcade-btn"
+              class="pill-btn bg-[var(--tint-violet)] text-violet-950 border border-violet-500/20 font-bold text-xs sm:text-sm px-4 py-2.5 inline-flex items-center gap-1.5 cursor-pointer"
             >
-              <span data-lang="id">{translations.id.hero.cvUnavailable}</span>
-              <span data-lang="en">{translations.en.hero.cvUnavailable}</span>
-            </span>
-          )}
-        </div>
-
-        <!-- Quick Architecture Metrics Row -->
-        <div
-          class="reveal-on-scroll grid grid-cols-3 gap-3 sm:gap-4 pt-4 max-w-xl"
-          style="--stagger: 4;"
-        >
-          <div class="bento-card p-3.5">
-            <div class="font-display text-xl sm:text-2xl font-bold text-[var(--accent-primary)]">05</div>
-            <div class="font-mono text-[11px] text-[var(--text-secondary)] mt-0.5">
-              <span data-lang="id">Kategori Tech</span>
-              <span data-lang="en">Tech Domains</span>
-            </div>
-          </div>
-          <div class="bento-card p-3.5">
-            <div class="font-display text-xl sm:text-2xl font-bold text-[var(--accent-secondary)]">02</div>
-            <div class="font-mono text-[11px] text-[var(--text-secondary)] mt-0.5">
-              <span data-lang="id">Proyek Pilihan</span>
-              <span data-lang="en">Featured Systems</span>
-            </div>
-          </div>
-          <div class="bento-card p-3.5">
-            <div class="font-display text-xl sm:text-2xl font-bold text-[var(--accent-tertiary)]">ID/EN</div>
-            <div class="font-mono text-[11px] text-[var(--text-secondary)] mt-0.5">
-              <span data-lang="id">Bilingual UI</span>
-              <span data-lang="en">Bilingual UI</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Right Column: 3D Tilt Interactive Command & Telemetry Deck (5 cols) -->
-      <div class="lg:col-span-5 reveal-on-scroll" style="--stagger: 2;">
-        <div
-          data-tilt
-          class="bento-card animate-float border border-[var(--border-focus)] bg-[var(--bg-surface)]/95 shadow-2xl p-1"
-        >
-          <div class="rounded-xl bg-[var(--bg-base)]/90 border border-[var(--border-subtle)] overflow-hidden font-mono text-xs select-none">
-            <!-- Top Window Bar + Interactive Tabs -->
-            <div class="px-4 py-3 bg-[var(--bg-elevated)] border-b border-[var(--border-subtle)] flex items-center justify-between gap-2">
-              <div class="flex items-center gap-1.5">
-                <span class="w-2.5 h-2.5 rounded-full bg-[var(--status-ok)]"></span>
-                <span class="w-2.5 h-2.5 rounded-full bg-[var(--accent-secondary)]"></span>
-                <span class="w-2.5 h-2.5 rounded-full bg-[var(--accent-tertiary)]"></span>
-              </div>
-
-              <div class="flex items-center gap-1 bg-[var(--bg-base)] p-1 rounded-lg border border-[var(--border-subtle)]" role="tablist" aria-label="System terminal tabs">
-                <button
-                  type="button"
-                  role="tab"
-                  aria-selected="true"
-                  data-hero-tab="sys"
-                  class="hero-tab-btn px-2.5 py-1 rounded-md bg-[var(--accent-primary)] text-[#05070b] font-bold cursor-pointer transition-all text-[11px]"
-                >
-                  {translations.id.hero.tabSys}
-                </button>
-                <button
-                  type="button"
-                  role="tab"
-                  aria-selected="false"
-                  data-hero-tab="focus"
-                  class="hero-tab-btn px-2.5 py-1 rounded-md text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer transition-all text-[11px]"
-                >
-                  {translations.id.hero.tabFocus}
-                </button>
-                <button
-                  type="button"
-                  role="tab"
-                  aria-selected="false"
-                  data-hero-tab="ping"
-                  class="hero-tab-btn px-2.5 py-1 rounded-md text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer transition-all text-[11px]"
-                >
-                  {translations.id.hero.tabPing}
-                </button>
-                <button
-                  type="button"
-                  role="tab"
-                  aria-selected="false"
-                  data-hero-tab="shell"
-                  class="hero-tab-btn px-2.5 py-1 rounded-md text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer transition-all text-[11px]"
-                >
-                  4:shell
-                </button>
-              </div>
-            </div>
-
-            <!-- TAB 1: System Telemetry -->
-            <div id="hero-panel-sys" class="p-5 sm:p-6 space-y-4 min-h-[280px] flex flex-col justify-between">
-              <div class="flex items-center justify-between border-b border-[var(--border-subtle)] pb-3">
-                <div>
-                  <div class="text-[var(--accent-primary)] font-bold text-sm">{translations.id.hero.sysInfo.title}</div>
-                  <div class="text-[11px] text-[var(--text-muted)]">Astro v5 // Static Edge Runtime</div>
-                </div>
-                <!-- Rotating Geometric Core SVG -->
-                <div class="w-11 h-11 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] flex items-center justify-center">
-                  <svg class="w-6 h-6 text-[var(--accent-primary)] animate-spin-slow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
-                    <polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2"></polygon>
-                    <circle cx="12" cy="12" r="3"></circle>
-                  </svg>
-                </div>
-              </div>
-
-              <div class="space-y-2.5 text-xs">
-                <div class="animate-boot-line flex items-center justify-between py-1 border-b border-[var(--border-subtle)]/50" style="animation-delay: 50ms;">
-                  <span class="text-[var(--text-muted)]">runtime.os</span>
-                  <span class="text-[var(--text-primary)] font-medium">{translations.id.hero.sysInfo.os}</span>
-                </div>
-                <div class="animate-boot-line flex items-center justify-between py-1 border-b border-[var(--border-subtle)]/50" style="animation-delay: 110ms;">
-                  <span class="text-[var(--text-muted)]">eng.focus</span>
-                  <span class="text-[var(--accent-secondary)] font-medium">{translations.id.hero.sysInfo.focus}</span>
-                </div>
-                <div class="animate-boot-line flex items-center justify-between py-1 border-b border-[var(--border-subtle)]/50" style="animation-delay: 170ms;">
-                  <span class="text-[var(--text-muted)]">academic</span>
-                  <span class="text-[var(--text-primary)] font-medium">
-                    <span data-lang="id">{translations.id.hero.sysInfo.edu}</span>
-                    <span data-lang="en">{translations.en.hero.sysInfo.edu}</span>
-                  </span>
-                </div>
-                <div class="animate-boot-line flex items-center justify-between py-1 border-b border-[var(--border-subtle)]/50" style="animation-delay: 230ms;">
-                  <span class="text-[var(--text-muted)]">location</span>
-                  <span class="text-[var(--text-primary)] font-medium">{translations.id.hero.sysInfo.loc}</span>
-                </div>
-                <div class="animate-boot-line flex items-center justify-between py-1" style="animation-delay: 290ms;">
-                  <span class="text-[var(--text-muted)]">languages</span>
-                  <span class="text-[var(--accent-primary)] font-medium">{translations.id.hero.sysInfo.shell}</span>
-                </div>
-              </div>
-
-              <div class="pt-3 border-t border-[var(--border-subtle)] flex items-center justify-between text-[11px] text-[var(--text-muted)]">
-                <div class="flex items-center gap-2">
-                  <span class="w-2 h-2 rounded-full bg-[var(--status-ok)] animate-pulse"></span>
-                  <span>uptime: <strong id="hero-uptime-counter" class="text-[var(--text-primary)]">00:00:01</strong></span>
-                </div>
-                <span class="text-[var(--accent-primary)]">READY</span>
-              </div>
-            </div>
-
-            <!-- TAB 2: Focus Domain Meters -->
-            <div id="hero-panel-focus" class="hidden p-5 sm:p-6 space-y-4 min-h-[280px] flex flex-col justify-between">
-              <div class="space-y-4">
-                <div class="text-[var(--accent-secondary)] font-bold border-b border-[var(--border-subtle)] pb-2">
-                  $ telemetry --focus-domains
-                </div>
-
-                <div class="space-y-1.5">
-                  <div class="flex justify-between text-xs">
-                    <span class="text-[var(--text-primary)] font-medium">{translations.id.hero.focusAreas.arch}</span>
-                    <span class="text-[var(--accent-primary)]">[core]</span>
-                  </div>
-                  <div class="w-full h-2 rounded-full bg-[var(--bg-elevated)] overflow-hidden">
-                    <div class="h-full w-[90%] rounded-full bg-gradient-to-r from-[var(--accent-primary)] to-[var(--accent-secondary)]"></div>
-                  </div>
-                </div>
-
-                <div class="space-y-1.5">
-                  <div class="flex justify-between text-xs">
-                    <span class="text-[var(--text-primary)] font-medium">{translations.id.hero.focusAreas.backend}</span>
-                    <span class="text-[var(--accent-primary)]">[core]</span>
-                  </div>
-                  <div class="w-full h-2 rounded-full bg-[var(--bg-elevated)] overflow-hidden">
-                    <div class="h-full w-[84%] rounded-full bg-gradient-to-r from-[var(--accent-secondary)] to-[var(--accent-tertiary)]"></div>
-                  </div>
-                </div>
-
-                <div class="space-y-1.5">
-                  <div class="flex justify-between text-xs">
-                    <span class="text-[var(--text-primary)] font-medium">{translations.id.hero.focusAreas.textMining}</span>
-                    <span class="text-[var(--status-warn)]">[exploring]</span>
-                  </div>
-                  <div class="w-full h-2 rounded-full bg-[var(--bg-elevated)] overflow-hidden">
-                    <div class="h-full w-[76%] rounded-full bg-gradient-to-r from-[var(--accent-tertiary)] to-[var(--accent-primary)]"></div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="pt-3 border-t border-[var(--border-subtle)] text-[11px] text-[var(--text-muted)] flex justify-between">
-                <span>threads: 3 active</span>
-                <span class="text-[var(--status-ok)]">OPTIMAL</span>
-              </div>
-            </div>
-
-            <!-- TAB 3: Network Ping Diagnostic -->
-            <div id="hero-panel-ping" class="hidden p-5 sm:p-6 space-y-4 min-h-[280px] flex flex-col justify-between">
-              <div class="space-y-2.5 text-xs" id="hero-ping-log">
-                <div class="text-[var(--accent-primary)] font-bold pb-2 border-b border-[var(--border-subtle)] flex items-center justify-between">
-                  <span>$ ping -c 3 gusadi.workspace</span>
-                  <button
-                    type="button"
-                    id="hero-ping-rerun"
-                    class="px-2 py-0.5 rounded bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[10px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer"
-                  >
-                    <span data-lang="id">{translations.id.hero.runDiagnostic}</span>
-                    <span data-lang="en">{translations.en.hero.runDiagnostic}</span>
-                  </button>
-                </div>
-                <div class="ping-line text-[var(--text-secondary)]">64 bytes from edge-node-01: icmp_seq=1 time=3.4 ms</div>
-                <div class="ping-line text-[var(--text-secondary)]">64 bytes from edge-node-01: icmp_seq=2 time=3.1 ms</div>
-                <div class="ping-line text-[var(--text-secondary)]">64 bytes from edge-node-01: icmp_seq=3 time=3.2 ms</div>
-                <div class="ping-line text-[var(--status-ok)] font-semibold pt-2">
-                  ✓ <span data-lang="id">{translations.id.hero.pingStatus}</span><span data-lang="en">{translations.en.hero.pingStatus}</span>
-                </div>
-              </div>
-
-              <div class="pt-3 border-t border-[var(--border-subtle)] text-[11px] text-[var(--text-muted)] flex justify-between">
-                <span>rtt avg = 3.2 ms</span>
-                <span class="text-[var(--status-ok)]">ONLINE</span>
-              </div>
-            </div>
-
-            <!-- TAB 4: Interactive Mini CLI Shell -->
-            <div id="hero-panel-shell" class="hidden p-5 sm:p-6 space-y-3 min-h-[280px] flex flex-col justify-between">
-              <div class="space-y-2">
-                <div class="flex items-center justify-between border-b border-[var(--border-subtle)] pb-2">
-                  <span class="text-[var(--accent-secondary)] font-bold">gusadi@workspace:~$</span>
-                  <div class="flex flex-wrap gap-1">
-                    <button type="button" data-shell-cmd="whoami" class="shell-preset-btn px-2 py-0.5 rounded bg-[var(--bg-elevated)] border border-[var(--border-subtle)] hover:border-[var(--accent-primary)] text-[10px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer">whoami</button>
-                    <button type="button" data-shell-cmd="party" class="shell-preset-btn px-2 py-0.5 rounded bg-[var(--bg-elevated)] border border-[var(--border-subtle)] hover:border-[var(--accent-primary)] text-[10px] text-[var(--accent-primary)] cursor-pointer">party</button>
-                    <button type="button" data-shell-cmd="barrel" class="shell-preset-btn px-2 py-0.5 rounded bg-[var(--bg-elevated)] border border-[var(--border-subtle)] hover:border-[var(--accent-primary)] text-[10px] text-[var(--accent-secondary)] cursor-pointer">barrel</button>
-                    <button type="button" data-shell-cmd="matrix" class="shell-preset-btn px-2 py-0.5 rounded bg-[var(--bg-elevated)] border border-[var(--border-subtle)] hover:border-[var(--accent-primary)] text-[10px] text-[var(--accent-tertiary)] cursor-pointer">matrix</button>
-                    <button type="button" data-shell-cmd="serpent" class="shell-preset-btn px-2 py-0.5 rounded bg-[var(--bg-elevated)] border border-[var(--border-subtle)] hover:border-[var(--accent-primary)] text-[10px] text-[var(--accent-primary)] cursor-pointer">serpent</button>
-                    <button type="button" data-shell-cmd="clear" class="shell-preset-btn px-2 py-0.5 rounded bg-[var(--bg-elevated)] border border-[var(--border-subtle)] hover:border-[var(--accent-primary)] text-[10px] text-[var(--text-muted)] cursor-pointer">clear</button>
-                  </div>
-                </div>
-
-                <div id="hero-shell-output" class="space-y-1.5 text-[11px] max-h-[155px] overflow-y-auto pr-1">
-                  <div class="text-[var(--text-muted)]">// Interactive zsh session. Click a command above or type below:</div>
-                  <div class="text-[var(--status-ok)]">&gt; Ready. Try: help, whoami, stack, matrix, snake</div>
-                </div>
-              </div>
-
-              <form id="hero-shell-form" class="pt-2 border-t border-[var(--border-subtle)] flex items-center gap-2">
-                <span class="text-[var(--accent-primary)] font-bold">$</span>
-                <input
-                  id="hero-shell-input"
-                  type="text"
-                  placeholder="type command (help, stack, matrix)..."
-                  autocomplete="off"
-                  class="w-full bg-transparent text-xs text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none"
-                />
-              </form>
-            </div>
+              <Gamepad2 class="w-4 h-4 text-violet-700" />
+              <span>6 Game</span>
+            </button>
           </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- Full-Screen Infinite Scrolling Velocity Marquee Ribbon -->
-  <div class="w-full border-y border-[var(--border-subtle)] bg-[var(--bg-surface)]/80 backdrop-blur-md py-3.5 overflow-hidden select-none mt-6">
-    <div class="animate-marquee flex items-center gap-8 font-display text-xs sm:text-sm font-bold tracking-wider uppercase text-[var(--text-secondary)]">
-      <span class="flex items-center gap-3"><span class="text-[var(--accent-primary)]">✦</span> SOFTWARE ENGINEERING</span>
-      <span class="flex items-center gap-3"><span class="text-[var(--accent-secondary)]">✦</span> BACKEND ARCHITECTURE</span>
-      <span class="flex items-center gap-3"><span class="text-[var(--accent-tertiary)]">✦</span> TEXT PROCESSING &amp; NLP</span>
-      <span class="flex items-center gap-3"><span class="text-[var(--accent-primary)]">✦</span> ASTRO &amp; TYPESCRIPT</span>
-      <span class="flex items-center gap-3"><span class="text-[var(--accent-secondary)]">✦</span> APPLIED SYSTEMS</span>
-      <span class="flex items-center gap-3"><span class="text-[var(--accent-tertiary)]">✦</span> CLEAN ARCHITECTURE</span>
-      <!-- Duplicate for seamless infinite loop -->
-      <span class="flex items-center gap-3" aria-hidden="true"><span class="text-[var(--accent-primary)]">✦</span> SOFTWARE ENGINEERING</span>
-      <span class="flex items-center gap-3" aria-hidden="true"><span class="text-[var(--accent-secondary)]">✦</span> BACKEND ARCHITECTURE</span>
-      <span class="flex items-center gap-3" aria-hidden="true"><span class="text-[var(--accent-tertiary)]">✦</span> TEXT PROCESSING &amp; NLP</span>
-      <span class="flex items-center gap-3" aria-hidden="true"><span class="text-[var(--accent-primary)]">✦</span> ASTRO &amp; TYPESCRIPT</span>
-      <span class="flex items-center gap-3" aria-hidden="true"><span class="text-[var(--accent-secondary)]">✦</span> APPLIED SYSTEMS</span>
-      <span class="flex items-center gap-3" aria-hidden="true"><span class="text-[var(--accent-tertiary)]">✦</span> CLEAN ARCHITECTURE</span>
+    <!-- 2. Asymmetric 3-Pod Interactive Control Deck (Audio Synth + Theme Studio + Pocket Terminal) -->
+    <div class="grid grid-cols-1 md:grid-cols-12 gap-5 items-stretch">
+      <!-- POD A (5 Cols): MyInstants Live Soundboard (Plays real MP3s from myinstants.com + Indo Memes) -->
+      <div class="md:col-span-5 tactile-card p-5 flex flex-col justify-between gap-3 reveal-on-scroll font-sans" style="--stagger: 1;">
+        <div class="flex items-center justify-between gap-2">
+          <div class="inline-flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wider text-[var(--text-primary)]">
+            <Music class="w-4 h-4 text-[var(--accent-primary)]" />
+            <span>MyInstants Soundboard</span>
+          </div>
+          <div class="flex items-center gap-1">
+            {gbCategoryPads.length > 0 && (
+              <button
+                type="button"
+                id="sfx-pack-toggle-btn"
+                class="px-2 py-0.5 rounded-full bg-[var(--bg-elevated)] hover:border-[var(--accent-primary)] text-[10px] font-bold text-[var(--text-primary)] cursor-pointer"
+                title="Ganti antara Meme Pilihan & MyInstants GB Category"
+              >
+                🔄 Pack
+              </button>
+            )}
+            <button
+              type="button"
+              id="sfx-stop-btn"
+              class="px-2 py-0.5 rounded-full bg-rose-100 text-rose-900 font-sans text-[10px] font-extrabold hover:scale-105 cursor-pointer inline-flex items-center gap-1"
+              title="Hentikan suara"
+            >
+              <Square class="w-2.5 h-2.5 fill-current" />
+              <span>Stop</span>
+            </button>
+            <button
+              type="button"
+              id="sfx-random-btn"
+              class="px-2.5 py-0.5 rounded-full bg-[var(--accent-primary)] text-[var(--accent-ink)] font-sans text-[10px] font-extrabold hover:scale-105 active:scale-95 transition-transform cursor-pointer"
+              title="Putar suara acak!"
+            >
+              🎲 Acak
+            </button>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between text-[11px]">
+          <span id="synth-note-status" class="px-2.5 py-0.5 rounded-full bg-[var(--tint-mint)] text-teal-900 font-mono text-[10px] font-bold truncate max-w-[200px]">
+            Klik Tombol MyInstants ♪
+          </span>
+          <a
+            href="https://www.myinstants.com/en/categories/sound%20effects/gb/"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-[10px] font-bold text-[var(--accent-primary)] hover:underline"
+          >
+            myinstants.com ↗
+          </a>
+        </div>
+
+        <!-- Pack 1: Curated Indo Memes + Viral MyInstants MP3s -->
+        <div id="sfx-grid-pack-1" class="grid grid-cols-4 gap-2">
+          {memePads.map((pad) => (
+            <button
+              type="button"
+              data-sfx={pad.fallbackSfx}
+              data-mp3={pad.mp3Url}
+              data-sfx-label={pad.fullTitle}
+              class={`hero-sfx-pad rounded-2xl p-2.5 hover:scale-105 active:scale-90 border text-center transition-all cursor-pointer select-none ${pad.tint}`}
+            >
+              <div class="text-xl leading-none">{pad.emoji}</div>
+              <div class="text-[10px] font-extrabold mt-1 leading-tight truncate">{pad.shortTitle}</div>
+            </button>
+          ))}
+        </div>
+
+        <!-- Pack 2: Live Fetched from https://www.myinstants.com/en/categories/sound%20effects/gb/ -->
+        {gbCategoryPads.length > 0 && (
+          <div id="sfx-grid-pack-2" class="hidden grid grid-cols-4 gap-2">
+            {gbCategoryPads.map((pad) => (
+              <button
+                type="button"
+                data-sfx={pad.fallbackSfx}
+                data-mp3={pad.mp3Url}
+                data-sfx-label={pad.fullTitle}
+                class={`hero-sfx-pad rounded-2xl p-2.5 hover:scale-105 active:scale-90 border text-center transition-all cursor-pointer select-none ${pad.tint}`}
+              >
+                <div class="text-xl leading-none">{pad.emoji}</div>
+                <div class="text-[10px] font-extrabold mt-1 leading-tight truncate">{pad.shortTitle}</div>
+              </button>
+            ))}
+          </div>
+        )}
+
+        <!-- Normal-Font Direct Email Bar -->
+        <div class="pt-2 border-t border-[var(--border-subtle)] flex items-center justify-between gap-2 text-xs font-sans">
+          <span class="text-[var(--text-secondary)] truncate">
+            <strong class="text-[var(--text-primary)] font-bold font-sans">{profile.email}</strong>
+          </span>
+          <button
+            type="button"
+            id="hero-quick-copy-email"
+            data-email={profile.email}
+            class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[var(--bg-elevated)] hover:bg-[var(--accent-primary)] hover:text-white text-[var(--text-primary)] font-bold cursor-pointer transition-colors shrink-0"
+          >
+            <Copy class="w-3 h-3" />
+            <span data-lang="id">Salin</span>
+            <span data-lang="en">Copy</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- POD B (4 Cols): Live Palette & Canvas Toy Controller -->
+      <div class="md:col-span-4 tactile-card p-5 flex flex-col justify-between gap-4 reveal-on-scroll font-sans" style="--stagger: 2;">
+        <div class="flex items-center justify-between">
+          <div class="inline-flex items-center gap-2 text-xs font-extrabold uppercase tracking-wider text-[var(--text-primary)]">
+            <Palette class="w-4 h-4 text-[var(--accent-secondary)]" />
+            <span data-lang="id">🎨 Studio Customizer</span>
+            <span data-lang="en">🎨 Studio Customizer</span>
+          </div>
+          <span class="font-mono text-[11px] text-[var(--text-muted)]">Live Theme</span>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            data-hero-accent="emerald"
+            data-hero-accent-label="Mint Emerald"
+            class="hero-accent-btn flex items-center gap-2 p-2.5 rounded-xl bg-[var(--tint-mint)] border border-teal-600/20 text-xs font-extrabold text-teal-950 hover:scale-[1.02] transition-transform cursor-pointer"
+          >
+            <span class="w-3.5 h-3.5 rounded-full bg-[#0d9488] shrink-0"></span>
+            <span>Mint</span>
+          </button>
+          <button
+            type="button"
+            data-hero-accent="coral"
+            data-hero-accent-label="Sunset Coral"
+            class="hero-accent-btn flex items-center gap-2 p-2.5 rounded-xl bg-[var(--tint-amber)] border border-amber-600/20 text-xs font-extrabold text-amber-950 hover:scale-[1.02] transition-transform cursor-pointer"
+          >
+            <span class="w-3.5 h-3.5 rounded-full bg-[#ea580c] shrink-0"></span>
+            <span>Coral</span>
+          </button>
+          <button
+            type="button"
+            data-hero-accent="ocean"
+            data-hero-accent-label="Royal Ocean"
+            class="hero-accent-btn flex items-center gap-2 p-2.5 rounded-xl bg-[var(--tint-sky)] border border-blue-600/20 text-xs font-extrabold text-blue-950 hover:scale-[1.02] transition-transform cursor-pointer"
+          >
+            <span class="w-3.5 h-3.5 rounded-full bg-[#2563eb] shrink-0"></span>
+            <span>Ocean</span>
+          </button>
+          <button
+            type="button"
+            data-hero-accent="violet"
+            data-hero-accent-label="Electric Violet"
+            class="hero-accent-btn flex items-center gap-2 p-2.5 rounded-xl bg-[var(--tint-violet)] border border-violet-600/20 text-xs font-extrabold text-violet-950 hover:scale-[1.02] transition-transform cursor-pointer"
+          >
+            <span class="w-3.5 h-3.5 rounded-full bg-[#7c3aed] shrink-0"></span>
+            <span>Violet</span>
+          </button>
+        </div>
+
+        <div class="pt-3 border-t border-[var(--border-subtle)] flex flex-wrap items-center gap-1.5">
+          <button
+            type="button"
+            id="hero-fx-serpent"
+            class="px-2.5 py-1 rounded-full bg-[var(--bg-elevated)] hover:bg-[var(--accent-primary)] hover:text-white text-[11px] font-bold cursor-pointer transition-colors"
+          >
+            🐍 Ular Latar
+          </button>
+          <button
+            type="button"
+            id="hero-fx-matrix"
+            class="px-2.5 py-1 rounded-full bg-[var(--bg-elevated)] hover:bg-[var(--accent-primary)] hover:text-white text-[11px] font-bold cursor-pointer transition-colors"
+          >
+            🌧️ Matrix
+          </button>
+          <button
+            type="button"
+            id="hero-fx-barrel"
+            class="px-2.5 py-1 rounded-full bg-[var(--bg-elevated)] hover:bg-[var(--accent-primary)] hover:text-white text-[11px] font-bold cursor-pointer transition-colors"
+          >
+            🔄 360° Spin
+          </button>
+        </div>
+      </div>
+
+      <!-- POD C (3 Cols): Pocket Interactive Terminal -->
+      <div class="md:col-span-3 tactile-card p-5 flex flex-col justify-between gap-3 reveal-on-scroll font-mono text-xs" style="--stagger: 3;">
+        <div class="flex items-center justify-between">
+          <span class="inline-flex items-center gap-1.5 font-sans text-xs font-extrabold uppercase tracking-wider text-[var(--text-primary)]">
+            <Terminal class="w-4 h-4 text-[var(--accent-primary)]" />
+            <span>&gt;_ Pocket CLI</span>
+          </span>
+          <span id="hero-uptime-counter" class="text-[10px] text-[var(--text-muted)]">00:00:01</span>
+        </div>
+
+        <div class="flex flex-wrap gap-1 text-[10px]">
+          <button type="button" data-shell-cmd="whoami" class="shell-preset-btn px-2 py-0.5 rounded-full bg-[var(--bg-elevated)] hover:text-[var(--accent-primary)] cursor-pointer">whoami</button>
+          <button type="button" data-shell-cmd="stack" class="shell-preset-btn px-2 py-0.5 rounded-full bg-[var(--bg-elevated)] hover:text-[var(--accent-primary)] cursor-pointer">stack</button>
+          <button type="button" data-shell-cmd="ular" class="shell-preset-btn px-2 py-0.5 rounded-full bg-[var(--bg-elevated)] text-[var(--accent-primary)] cursor-pointer">ular</button>
+          <button type="button" data-shell-cmd="party" class="shell-preset-btn px-2 py-0.5 rounded-full bg-[var(--bg-elevated)] text-[var(--accent-secondary)] cursor-pointer">party</button>
+        </div>
+
+        <div id="hero-shell-output" class="space-y-1 text-[11px] h-[74px] overflow-y-auto p-2.5 rounded-xl bg-[var(--bg-elevated)]/70">
+          <div class="text-[var(--status-ok)]">&gt; Ready. Ketik help / klik chip.</div>
+        </div>
+
+        <form id="hero-shell-form" class="border-b-2 border-[var(--border-subtle)] focus-within:border-[var(--accent-primary)] pb-1 flex items-center gap-1.5">
+          <span class="text-[var(--accent-primary)] font-bold">$</span>
+          <input
+            id="hero-shell-input"
+            type="text"
+            placeholder="perintah..."
+            autocomplete="off"
+            class="w-full bg-transparent text-xs text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none"
+          />
+        </form>
+      </div>
     </div>
   </div>
 </section>
 
 <script>
-  // 1. Live Session Uptime Counter
+  // 1. Uptime Counter
   const uptimeEl = document.getElementById('hero-uptime-counter');
   let seconds = 1;
   setInterval(() => {
@@ -379,60 +515,352 @@ import { translations } from '../data/i18n';
     }
   }, 1000);
 
-  // 2. Hero Terminal Tabs Switching
-  const tabBtns = document.querySelectorAll<HTMLButtonElement>('.hero-tab-btn');
-  const panels: Record<string, HTMLElement | null> = {
-    sys: document.getElementById('hero-panel-sys'),
-    focus: document.getElementById('hero-panel-focus'),
-    ping: document.getElementById('hero-panel-ping'),
-    shell: document.getElementById('hero-panel-shell'),
-  };
+  // 2. Smooth Rotating Specialization Badge
+  const rotatingBadge = document.getElementById('hero-rotating-badge');
+  const rotatingTopics = [
+    'Web & Backend Engineering',
+    'Applied NLP & Text Mining',
+    'Clean TypeScript & Python',
+    'Interactive UI Architecture',
+  ];
+  let topicIdx = 0;
 
-  function runPingAnimation() {
-    const lines = document.querySelectorAll<HTMLElement>('#hero-ping-log .ping-line');
-    lines.forEach((line, i) => {
-      line.classList.remove('animate-boot-line');
-      void line.offsetWidth;
-      line.style.animationDelay = `${i * 110}ms`;
-      line.classList.add('animate-boot-line');
-    });
+  if (rotatingBadge && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    setInterval(() => {
+      topicIdx = (topicIdx + 1) % rotatingTopics.length;
+      rotatingBadge.classList.remove('animate-word-slide');
+      void rotatingBadge.offsetWidth;
+      rotatingBadge.textContent = rotatingTopics[topicIdx];
+      rotatingBadge.classList.add('animate-word-slide');
+    }, 3000);
   }
 
-  tabBtns.forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const target = btn.getAttribute('data-hero-tab');
-      if (!target) return;
+  // 3. Indonesian Viral Meme Soundboard (id-ID Voice SpeechSynthesis + WebAudio Meme Stingers)
+  let audioCtx: AudioContext | null = null;
+  const noteStatus = document.getElementById('synth-note-status');
 
-      tabBtns.forEach((b) => {
-        const isCurrent = b === btn;
-        b.setAttribute('aria-selected', isCurrent ? 'true' : 'false');
-        if (isCurrent) {
-          b.classList.add('bg-[var(--accent-primary)]', 'text-[#05070b]', 'font-bold');
-          b.classList.remove('text-[var(--text-secondary)]');
-        } else {
-          b.classList.remove('bg-[var(--accent-primary)]', 'text-[#05070b]', 'font-bold');
-          b.classList.add('text-[var(--text-secondary)]');
-        }
-      });
+  function getCtx(): AudioContext | null {
+    try {
+      const AudioContextClass =
+        window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      if (!audioCtx) audioCtx = new AudioContextClass();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      return audioCtx;
+    } catch (_) {
+      return null;
+    }
+  }
 
-      Object.entries(panels).forEach(([key, panel]) => {
-        if (!panel) return;
-        if (key === target) {
-          panel.classList.remove('hidden');
-          if (key === 'ping') runPingAnimation();
-          if (key === 'shell') {
-            document.getElementById('hero-shell-input')?.focus();
-          }
-        } else {
-          panel.classList.add('hidden');
-        }
+  function speakIndoMeme(text: string, pitch = 1.0, rate = 1.05) {
+    try {
+      if (!('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.lang = 'id-ID';
+      utter.pitch = pitch;
+      utter.rate = rate;
+      utter.volume = 1.0;
+
+      const voices = window.speechSynthesis.getVoices();
+      const indoVoice =
+        voices.find((v) => v.lang.toLowerCase().includes('id-id') || v.lang.toLowerCase().includes('id_id')) ||
+        voices.find((v) => v.lang.toLowerCase().startsWith('id')) ||
+        voices.find((v) => v.lang.toLowerCase().includes('ms'));
+      if (indoVoice) utter.voice = indoVoice;
+
+      window.speechSynthesis.speak(utter);
+    } catch (_) {}
+  }
+
+  // Preload voices in browser
+  if ('speechSynthesis' in window) {
+    window.speechSynthesis.getVoices();
+    window.speechSynthesis.onvoiceschanged = () => {
+      window.speechSynthesis.getVoices();
+    };
+  }
+
+  function playVineBoom(ctx: AudioContext, startAt = 0) {
+    const now = ctx.currentTime + startAt;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(135, now);
+    osc.frequency.exponentialRampToValueAtTime(32, now + 0.55);
+    gain.gain.setValueAtTime(0.28, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.62);
+  }
+
+  function playFunnySfx(type: string, label: string) {
+    const ctx = getCtx();
+    if (noteStatus) {
+      noteStatus.textContent = label;
+    }
+    window.dispatchEvent(new CustomEvent('portfolio:toast', { detail: { message: label } }));
+
+    if (!ctx) return;
+    const now = ctx.currentTime;
+
+    if (type === 'antek') {
+      // "HEY ANTEK-ANTEK ASING!!" + Dramatic Podium Horn + Vine Boom
+      speakIndoMeme('Hei! Antek antek asing! Jangan macam-macam!', 0.82, 1.08);
+      playVineBoom(ctx, 0);
+      [220, 277.18, 329.63].forEach((freq) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(freq, now);
+        gain.gain.setValueAtTime(0.05, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.46);
       });
+    } else if (type === 'gokgok') {
+      // "GOK GOK GOK GOK GOK!!" + Rapid Energetic Bark Synth
+      speakIndoMeme('Gok! Gok! Gok! Gok! Gok! Guk guk guk!', 1.35, 1.35);
+      [0, 0.14, 0.28, 0.42, 0.56].forEach((offset, idx) => {
+        const osc = ctx.createOscillator();
+        const filter = ctx.createBiquadFilter();
+        const gain = ctx.createGain();
+        osc.type = 'sawtooth';
+        const baseF = idx % 2 === 0 ? 320 : 390;
+        osc.frequency.setValueAtTime(baseF, now + offset);
+        osc.frequency.exponentialRampToValueAtTime(580, now + offset + 0.04);
+        osc.frequency.exponentialRampToValueAtTime(190, now + offset + 0.11);
+
+        filter.type = 'bandpass';
+        filter.frequency.setValueAtTime(950, now + offset);
+        filter.Q.setValueAtTime(3.5, now + offset);
+
+        gain.gain.setValueAtTime(0.14, now + offset);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + offset + 0.11);
+
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now + offset);
+        osc.stop(now + offset + 0.12);
+      });
+    } else if (type === 'basuri') {
+      // "Om Telolet Om!" + Iconic Basuri V3 Snaking Bus Horn Melody!
+      speakIndoMeme('Om, telolet om!', 1.2, 1.15);
+      const basuriNotes = [
+        { f: 523.25, t: 0.25, d: 0.11 }, // C5
+        { f: 659.25, t: 0.37, d: 0.11 }, // E5
+        { f: 783.99, t: 0.49, d: 0.11 }, // G5
+        { f: 1046.5, t: 0.61, d: 0.16 }, // C6
+        { f: 783.99, t: 0.78, d: 0.11 }, // G5
+        { f: 1046.5, t: 0.90, d: 0.14 }, // C6
+        { f: 987.77, t: 1.05, d: 0.11 }, // B5
+        { f: 880.00, t: 1.17, d: 0.11 }, // A5
+        { f: 783.99, t: 1.29, d: 0.11 }, // G5
+        { f: 659.25, t: 1.41, d: 0.11 }, // E5
+        { f: 783.99, t: 1.53, d: 0.28 }, // G5
+      ];
+      basuriNotes.forEach((n) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(n.f, now + n.t);
+        gain.gain.setValueAtTime(0.08, now + n.t);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + n.t + n.d);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now + n.t);
+        osc.stop(now + n.t + n.d + 0.01);
+      });
+    } else if (type === 'bercyanda') {
+      // "Bercyandaaa~ Bercyandaaa~" + Sparkle Chime
+      speakIndoMeme('Bercyandaaa! Bercyandaaa!', 1.55, 1.05);
+      [587.33, 880, 1174.66, 1567.98].forEach((f, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(f, now + i * 0.06);
+        gain.gain.setValueAtTime(0.08, now + i * 0.06);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.06 + 0.35);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now + i * 0.06);
+        osc.stop(now + i * 0.06 + 0.36);
+      });
+    } else if (type === 'chuaks') {
+      // "CHUAAAKS!!" + Heavy Vine Boom Drop
+      speakIndoMeme('Chuaaaks!', 1.25, 1.25);
+      playVineBoom(ctx, 0.12);
+      playVineBoom(ctx, 0.42);
+    } else if (type === 'slebew') {
+      // "SLEBEWWW!!" + Laser Drop + Confetti
+      speakIndoMeme('Slebewww!', 0.9, 1.1);
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(980, now);
+      osc.frequency.exponentialRampToValueAtTime(65, now + 0.45);
+      gain.gain.setValueAtTime(0.11, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.48);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.5);
+      window.dispatchEvent(new CustomEvent('portfolio:fireworks'));
+    } else if (type === 'kijang') {
+      // HT Walkie-Talkie Beep + "Kijang satu, kijang satu, ganti!"
+      [0, 0.07].forEach((offset) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(1850, now + offset);
+        gain.gain.setValueAtTime(0.06, now + offset);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + offset + 0.05);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now + offset);
+        osc.stop(now + offset + 0.055);
+      });
+      speakIndoMeme('Kijang satu, kijang satu, target terpantau aman, ganti!', 0.78, 1.15);
+    } else if (type === 'mental') {
+      // "Waduh, kena mental bos!" + Sad Trombone Womp Womp
+      speakIndoMeme('Waduh, kena mental bos!', 1.1, 1.12);
+      const notes = [
+        { f1: 293.66, f2: 285, t: 0.15, d: 0.2 },
+        { f1: 277.18, f2: 268, t: 0.38, d: 0.2 },
+        { f1: 261.63, f2: 252, t: 0.61, d: 0.2 },
+        { f1: 246.94, f2: 190, t: 0.84, d: 0.5 },
+      ];
+      notes.forEach((n) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(n.f1, now + n.t);
+        osc.frequency.linearRampToValueAtTime(n.f2, now + n.t + n.d);
+        gain.gain.setValueAtTime(0.06, now + n.t);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + n.t + n.d);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now + n.t);
+        osc.stop(now + n.t + n.d + 0.02);
+      });
+    }
+  }
+
+  let activeAudio: HTMLAudioElement | null = null;
+
+  function stopAllSfx() {
+    try {
+      if (activeAudio) {
+        activeAudio.pause();
+        activeAudio.currentTime = 0;
+        activeAudio = null;
+      }
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+      if (noteStatus) {
+        noteStatus.textContent = '⏹ Dihentikan';
+      }
+    } catch (_) {}
+  }
+
+  function playMyInstantOrFallback(mp3Url: string, fallbackSfx: string, label: string) {
+    stopAllSfx();
+    if (noteStatus) {
+      noteStatus.textContent = label;
+    }
+    window.dispatchEvent(new CustomEvent('portfolio:toast', { detail: { message: label } }));
+
+    if (mp3Url) {
+      try {
+        const audio = new Audio(mp3Url);
+        audio.volume = 0.9;
+        activeAudio = audio;
+        audio.play().catch(() => {
+          playFunnySfx(fallbackSfx, label);
+        });
+        return;
+      } catch (_) {
+        playFunnySfx(fallbackSfx, label);
+      }
+    } else {
+      playFunnySfx(fallbackSfx, label);
+    }
+  }
+
+  const sfxPads = document.querySelectorAll<HTMLButtonElement>('.hero-sfx-pad');
+  sfxPads.forEach((pad) => {
+    pad.addEventListener('click', () => {
+      const mp3Url = pad.getAttribute('data-mp3') || '';
+      const sfx = pad.getAttribute('data-sfx') || 'antek';
+      const label = pad.getAttribute('data-sfx-label') || 'MyInstants!';
+      playMyInstantOrFallback(mp3Url, sfx, label);
     });
   });
 
-  document.getElementById('hero-ping-rerun')?.addEventListener('click', runPingAnimation);
+  document.getElementById('sfx-stop-btn')?.addEventListener('click', stopAllSfx);
 
-  // 3. Interactive Mini CLI Shell
+  const pack1 = document.getElementById('sfx-grid-pack-1');
+  const pack2 = document.getElementById('sfx-grid-pack-2');
+  document.getElementById('sfx-pack-toggle-btn')?.addEventListener('click', () => {
+    if (!pack1 || !pack2) return;
+    pack1.classList.toggle('hidden');
+    pack2.classList.toggle('hidden');
+  });
+
+  document.getElementById('sfx-random-btn')?.addEventListener('click', () => {
+    if (!sfxPads.length) return;
+    const randomPad = sfxPads[Math.floor(Math.random() * sfxPads.length)];
+    randomPad.click();
+    randomPad.classList.add('scale-110');
+    setTimeout(() => randomPad.classList.remove('scale-110'), 220);
+  });
+
+  // 4. Celebrate Confetti, Arcade & Email Copy
+  document.getElementById('hero-celebrate-btn')?.addEventListener('click', () => {
+    window.dispatchEvent(new CustomEvent('portfolio:fireworks'));
+  });
+
+  document.getElementById('hero-open-arcade-btn')?.addEventListener('click', () => {
+    window.dispatchEvent(new CustomEvent('portfolio:open-arcade'));
+  });
+
+  document.getElementById('hero-quick-copy-email')?.addEventListener('click', async (e) => {
+    const btn = e.currentTarget as HTMLElement;
+    const email = btn.getAttribute('data-email');
+    if (!email) return;
+    try {
+      await navigator.clipboard.writeText(email);
+      window.dispatchEvent(
+        new CustomEvent('portfolio:toast', { detail: { message: `✓ Email tersalin: ${email}` } })
+      );
+    } catch (_) {}
+  });
+
+  // 5. Studio Theme Accent Buttons & Canvas FX
+  document.querySelectorAll<HTMLButtonElement>('.hero-accent-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const accent = btn.getAttribute('data-hero-accent') || 'emerald';
+      const label = btn.getAttribute('data-hero-accent-label') || accent;
+      window.dispatchEvent(new CustomEvent('portfolio:set-accent', { detail: { accent, label } }));
+    });
+  });
+
+  document.getElementById('hero-fx-serpent')?.addEventListener('click', () => {
+    window.dispatchEvent(new CustomEvent('portfolio:toggle-serpent'));
+  });
+  document.getElementById('hero-fx-matrix')?.addEventListener('click', () => {
+    window.dispatchEvent(new CustomEvent('portfolio:toggle-matrix'));
+  });
+  document.getElementById('hero-fx-barrel')?.addEventListener('click', () => {
+    window.dispatchEvent(new CustomEvent('portfolio:barrel-roll'));
+  });
+
+  // 6. Pocket CLI Shell
   const shellOutput = document.getElementById('hero-shell-output');
   const shellForm = document.getElementById('hero-shell-form') as HTMLFormElement | null;
   const shellInput = document.getElementById('hero-shell-input') as HTMLInputElement | null;
@@ -442,65 +870,34 @@ import { translations } from '../data/i18n';
     if (!cmd || !shellOutput) return;
 
     if (cmd === 'clear') {
-      shellOutput.innerHTML = '<div class="text-[var(--text-muted)]">// Console cleared.</div>';
+      shellOutput.innerHTML = '<div class="text-[var(--text-muted)]">// cleared</div>';
       return;
     }
 
     const promptLine = document.createElement('div');
-    promptLine.className = 'text-[var(--accent-primary)] font-semibold';
+    promptLine.className = 'text-[var(--accent-primary)] font-bold';
     promptLine.textContent = `$ ${cmd}`;
     shellOutput.appendChild(promptLine);
 
     const resLine = document.createElement('div');
-    resLine.className = 'text-[var(--text-secondary)] animate-boot-line pl-2';
+    resLine.className = 'text-[var(--text-secondary)] animate-boot-line pl-1.5';
 
     if (cmd === 'help') {
-      resLine.textContent = 'Commands: whoami, stack, projects, game, ular, serpent, snake, party, barrel, glitch, matrix, joke, clear';
-    } else if (cmd === 'game' || cmd === 'arcade') {
-      window.dispatchEvent(new CustomEvent('portfolio:open-arcade'));
-      resLine.className = 'text-[var(--accent-primary)] font-bold animate-boot-line pl-2';
-      resLine.textContent = '🕹️ Launching Cyber Mini-Game Arcade...';
-    } else if (cmd === 'ular' || cmd === 'cyber-snake') {
+      resLine.textContent = 'whoami, stack, projects, ular, party, clear';
+    } else if (cmd === 'game' || cmd === 'arcade' || cmd === 'ular') {
       window.dispatchEvent(new CustomEvent('portfolio:open-arcade', { detail: { tab: 'snake' } }));
-      resLine.className = 'text-[var(--accent-primary)] font-bold animate-boot-line pl-2';
-      resLine.textContent = '🐍 Launching Playable Cyber Snake in Arcade...';
-    } else if (cmd === 'serpent') {
-      window.dispatchEvent(new CustomEvent('portfolio:toggle-serpent'));
-      resLine.className = 'text-[var(--accent-primary)] font-bold animate-boot-line pl-2';
-      resLine.textContent = '🐍 Background Neon Cyber-Serpents toggled!';
+      resLine.textContent = 'Membuka Arcade...';
     } else if (cmd === 'whoami') {
-      resLine.textContent = 'Gus Adi — Informatics Student & Software Developer (Web, Backend, NLP)';
+      resLine.textContent = 'Gus Adi — Software Developer (Bali, Indonesia)';
     } else if (cmd === 'stack') {
-      resLine.textContent = 'Core: TypeScript, JS, Python, Astro, Tailwind, Node.js, PostgreSQL, Git';
+      resLine.textContent = 'TS, JS, Python, Astro, Tailwind, Node, SQL';
     } else if (cmd === 'projects') {
-      resLine.textContent = '01: Document Similarity Detection System | 02: Web & Backend Apps';
-    } else if (cmd === 'party' || cmd.startsWith('sudo hire')) {
+      resLine.textContent = '01: Plagiarism Checker | 02: SakuKu Web App';
+    } else if (cmd === 'party') {
       window.dispatchEvent(new CustomEvent('portfolio:fireworks'));
-      resLine.className = 'text-[var(--status-ok)] font-bold animate-boot-line pl-2';
-      resLine.textContent = '🎉 Fireworks launched! Ready to build awesome software together!';
-    } else if (cmd === 'barrel') {
-      window.dispatchEvent(new CustomEvent('portfolio:barrel-roll'));
-      resLine.className = 'text-[var(--accent-secondary)] font-bold animate-boot-line pl-2';
-      resLine.textContent = '🌀 Executing 360° Cyber Barrel Roll...';
-    } else if (cmd === 'glitch') {
-      window.dispatchEvent(new CustomEvent('portfolio:glitch'));
-      resLine.textContent = '⚡ RGB Chromatic Glitch triggered!';
-    } else if (cmd === 'joke') {
-      const jokes = [
-        'Why do programmers prefer dark mode? Because light attracts bugs.',
-        'There are 10 types of people: those who understand binary, and those who do not.',
-        'git push --force: turning team projects into solo projects since 2005.',
-      ];
-      resLine.textContent = jokes[Math.floor(Math.random() * jokes.length)];
-    } else if (cmd === 'matrix') {
-      window.dispatchEvent(new CustomEvent('portfolio:toggle-matrix'));
-      resLine.className = 'text-[var(--accent-tertiary)] font-bold animate-boot-line pl-2';
-      resLine.textContent = '⚡ Matrix Cyber Rain toggled on background canvas!';
-    } else if (cmd === 'snake') {
-      document.getElementById('github')?.scrollIntoView({ behavior: 'smooth' });
-      resLine.textContent = '🐍 Jumping to GitHub Contribution Snake Matrix...';
+      resLine.textContent = '🎉 Konfeti diluncurkan!';
     } else {
-      resLine.textContent = `zsh: command not found: ${cmd}. Type "help".`;
+      resLine.textContent = `Perintah "${cmd}" tidak dikenal.`;
     }
 
     shellOutput.appendChild(resLine);
@@ -519,92 +916,5 @@ import { translations } from '../data/i18n';
       const cmd = btn.getAttribute('data-shell-cmd');
       if (cmd) execShellCommand(cmd);
     });
-  });
-
-  // 4. Multi-Phrase Typewriter & Backspace Loop on Role Line
-  const typewriterEl = document.getElementById('hero-typewriter-text');
-  const phrasesId = [
-    'Mahasiswa Informatika & Pengembang Perangkat Lunak',
-    'Rekayasa Sistem Web & Arsitektur Backend',
-    'Eksplorasi Pemrosesan Teks & Kemiripan Dokumen',
-  ];
-  const phrasesEn = [
-    'Informatics Student & Software Developer',
-    'Web Systems & Backend Architecture Builder',
-    'Text Processing & Document Similarity Explorer',
-  ];
-
-  if (typewriterEl && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    let phraseIdx = 0;
-    let charIdx = 0;
-    let isDeleting = false;
-
-    function tickTypewriter() {
-      if (!typewriterEl) return;
-      const isEn = document.documentElement.getAttribute('lang') === 'en';
-      const list = isEn ? phrasesEn : phrasesId;
-      const fullText = list[phraseIdx % list.length];
-
-      if (!isDeleting) {
-        charIdx++;
-        typewriterEl.textContent = fullText.slice(0, charIdx);
-        if (charIdx >= fullText.length) {
-          isDeleting = true;
-          setTimeout(tickTypewriter, 2200);
-          return;
-        }
-        setTimeout(tickTypewriter, 45);
-      } else {
-        charIdx--;
-        typewriterEl.textContent = fullText.slice(0, charIdx);
-        if (charIdx <= 0) {
-          isDeleting = false;
-          phraseIdx = (phraseIdx + 1) % list.length;
-          setTimeout(tickTypewriter, 320);
-          return;
-        }
-        setTimeout(tickTypewriter, 24);
-      }
-    }
-
-    setTimeout(() => {
-      const isEn = document.documentElement.getAttribute('lang') === 'en';
-      charIdx = (isEn ? phrasesEn[0] : phrasesId[0]).length;
-      isDeleting = true;
-      tickTypewriter();
-    }, 2800);
-  }
-
-  // 3. Text Scramble on Hero Name Hover
-  const nameHeading = document.getElementById('hero-name-heading');
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_/#';
-  let scrambleTimer: number | null = null;
-
-  function scrambleText(el: HTMLElement) {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    const original = el.getAttribute('data-original') || 'Gus Adi';
-    let iteration = 0;
-    if (scrambleTimer) clearInterval(scrambleTimer);
-
-    scrambleTimer = window.setInterval(() => {
-      el.textContent = original
-        .split('')
-        .map((letter, index) => {
-          if (letter === ' ') return ' ';
-          if (index < iteration) return original[index];
-          return chars[Math.floor(Math.random() * chars.length)];
-        })
-        .join('');
-
-      if (iteration >= original.length) {
-        if (scrambleTimer) clearInterval(scrambleTimer);
-        el.textContent = original;
-      }
-      iteration += 1 / 2;
-    }, 30);
-  }
-
-  nameHeading?.addEventListener('mouseenter', () => {
-    if (nameHeading) scrambleText(nameHeading);
   });
 </script>

@@ -1,166 +1,127 @@
 ---
-import SectionHeader from './SectionHeader.astro';
 import { profile } from '../data/profile';
 import { translations } from '../data/i18n';
+import { Copy, Send, ExternalLink, Mail } from 'lucide-astro';
 ---
 
-<section id="contact" class="w-full py-16 sm:py-24 border-b border-[var(--border-subtle)]">
-  <div class="w-full max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-14 space-y-8">
-    <SectionHeader
-      index="06"
-      title={{ id: 'HUBUNGI SAYA', en: 'GET IN TOUCH' }}
-      path={translations.id.contact.filePath}
-    />
-
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-      <!-- Left CTA Banner Card (5 cols) -->
-      <div
-        data-tilt
-        class="lg:col-span-5 reveal-on-scroll bento-card p-6 sm:p-8 flex flex-col justify-between bg-gradient-to-br from-[var(--bg-surface)] to-[var(--bg-elevated)]"
-        style="--stagger: 0;"
-      >
-        <div class="space-y-4">
-          <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--bg-base)] border border-[var(--border-focus)] font-mono text-xs text-[var(--accent-primary)]">
-            <span class="w-2 h-2 rounded-full bg-[var(--status-ok)] animate-pulse"></span>
-            <span data-lang="id">Siap Berkolaborasi</span>
-            <span data-lang="en">Open for Collaboration</span>
-          </span>
-
-          <h3 class="font-display text-2xl sm:text-3xl font-bold text-[var(--text-primary)] leading-tight">
-            <span data-lang="id">Mari Bangun Sesuatu yang Bermanfaat Bersama.</span>
-            <span data-lang="en">Let's Engineer Impactful Systems Together.</span>
-          </h3>
-
-          <p class="text-sm sm:text-base text-[var(--text-secondary)] leading-relaxed">
-            <span data-lang="id">{translations.id.contact.intro}</span>
-            <span data-lang="en">{translations.en.contact.intro}</span>
-          </p>
+<section id="contact" class="w-full py-8 sm:py-14 font-sans">
+  <div class="w-full max-w-6xl mx-auto px-4 sm:px-8">
+    <!-- Direct Dispatch Postcard Container (100% Normal Sans-Serif Plus Jakarta Sans — No Template Header) -->
+    <div class="tactile-card overflow-hidden reveal-on-scroll font-sans">
+      <!-- Postcard Top Ribbon -->
+      <div class="bg-[var(--tint-mint)] border-b-2 border-[var(--border-subtle)] px-6 sm:px-8 py-4 flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-2.5">
+          <Mail class="w-4 h-4 text-teal-800" />
+          <h2 class="font-sans text-lg sm:text-xl font-extrabold text-teal-950">
+            <span data-lang="id">{translations.id.contact.header}</span>
+            <span data-lang="en">{translations.en.contact.header}</span>
+          </h2>
         </div>
-
-        <div class="pt-6 mt-6 border-t border-[var(--border-subtle)]">
-          <a
-            href={`mailto:${profile.email}`}
-            class="magnetic-btn kinetic-btn w-full justify-center bg-[var(--accent-primary)] text-[#05070b] font-mono font-bold text-xs sm:text-sm px-5 py-3.5 inline-flex items-center gap-2 shadow-[0_0_25px_var(--accent-glow)]"
-          >
-            <span>✉ {profile.email}</span>
-            <span>↗</span>
-          </a>
-        </div>
+        <span class="font-sans text-xs font-bold text-teal-900 bg-white/85 px-3 py-1 rounded-full">
+          Bali, Indonesia · Direct Dispatch
+        </span>
       </div>
 
-      <!-- Right Channels Bento Grid (7 cols) -->
-      <div class="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-4 font-mono text-xs">
-        <!-- 01: Email with Copy Button -->
-        <div
-          data-tilt
-          class="reveal-on-scroll bento-card p-6 flex flex-col justify-between gap-4"
-          style="--stagger: 1;"
-        >
-          <div class="flex items-center justify-between">
-            <span class="text-[var(--accent-primary)] font-bold">01 // {translations.id.contact.emailLabel}</span>
+      <div class="p-6 sm:p-8 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start font-sans">
+      <!-- Left 5 Cols: Readable Intro, Large Normal Email Link & Channels -->
+      <div class="lg:col-span-5 space-y-6">
+        <p class="text-base sm:text-[17px] leading-relaxed text-[var(--text-secondary)] font-normal">
+          <span data-lang="id">{translations.id.contact.intro}</span>
+          <span data-lang="en">{translations.en.contact.intro}</span>
+        </p>
+
+        <!-- Direct Email (Normal Sans-Serif, Large & Easy to Read) -->
+        <div class="space-y-3 border-l-2 border-[var(--accent-primary)] pl-4">
+          <div class="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">
+            <span data-lang="id">{translations.id.contact.emailLabel}</span>
+            <span data-lang="en">{translations.en.contact.emailLabel}</span>
+          </div>
+
+          <a
+            href={`mailto:${profile.email}`}
+            class="block font-sans text-xl sm:text-2xl font-bold text-[var(--text-primary)] hover:text-[var(--accent-primary)] tracking-normal leading-snug break-all select-all transition-colors"
+          >
+            {profile.email}
+          </a>
+
+          <div class="flex flex-wrap items-center gap-2.5 pt-2">
             <button
               type="button"
               id="copy-email-btn"
               data-email={profile.email}
-              class="rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-elevated)] hover:border-[var(--accent-primary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] px-2.5 py-1 cursor-pointer transition-all"
+              class="pill-btn inline-flex items-center gap-2 border border-[var(--border-strong)] hover:border-[var(--accent-primary)] text-[var(--text-primary)] font-sans text-sm font-medium px-4 py-2 cursor-pointer"
               aria-label="Copy email address"
             >
+              <Copy class="w-4 h-4 text-[var(--accent-primary)]" />
               <span id="copy-label-default">
                 <span data-lang="id">{translations.id.contact.copyBtn}</span>
                 <span data-lang="en">{translations.en.contact.copyBtn}</span>
               </span>
-              <span id="copy-label-done" class="hidden text-[var(--status-ok)] font-bold">
+              <span id="copy-label-done" class="hidden text-[var(--status-ok)] font-semibold">
                 <span data-lang="id">{translations.id.contact.copiedBtn}</span>
                 <span data-lang="en">{translations.en.contact.copiedBtn}</span>
               </span>
             </button>
-          </div>
-          <div>
-            <div class="text-[var(--text-muted)] text-[11px] mb-1">Direct Inbox</div>
+
             <a
               href={`mailto:${profile.email}`}
-              class="font-display text-sm sm:text-base font-bold text-[var(--text-primary)] hover:text-[var(--accent-primary)] truncate block transition-colors"
+              class="pill-btn inline-flex items-center gap-2 bg-[var(--accent-primary)] text-[var(--accent-ink)] font-sans text-sm font-semibold px-4 py-2"
             >
-              {profile.email} ↗
+              <Send class="w-4 h-4" />
+              <span data-lang="id">Kirim Email</span>
+              <span data-lang="en">Send Email</span>
             </a>
           </div>
         </div>
 
-        <!-- 02: GitHub -->
-        <div
-          data-tilt
-          class="reveal-on-scroll bento-card p-6 flex flex-col justify-between gap-4"
-          style="--stagger: 2;"
-        >
-          <div class="flex items-center justify-between">
-            <span class="text-[var(--accent-secondary)] font-bold">02 // {translations.id.contact.githubLabel}</span>
-            <span class="px-2 py-0.5 rounded-full bg-[var(--bg-elevated)] text-[10px] text-[var(--status-ok)]">● active</span>
-          </div>
-          <div>
-            <div class="text-[var(--text-muted)] text-[11px] mb-1">Code &amp; Repositories</div>
+        <!-- Open Hairline Contact Directory (No Box Border) -->
+        <div class="divide-y divide-[var(--border-subtle)] text-sm font-sans">
+          <div class="py-3.5 flex items-baseline justify-between gap-4">
+            <span class="text-[var(--text-muted)]">{translations.id.contact.githubLabel}</span>
             <a
+              id="contact-github-link"
               href={`https://github.com/${profile.githubUsername}`}
               target="_blank"
               rel="noopener noreferrer"
-              class="font-display text-sm sm:text-base font-bold text-[var(--text-primary)] hover:text-[var(--accent-secondary)] truncate block transition-colors"
+              class="inline-flex items-center gap-1.5 font-sans font-semibold text-[var(--text-primary)] hover:text-[var(--accent-primary)] transition-colors"
             >
-              github.com/{profile.githubUsername} ↗
+              <span id="contact-github-text">github.com/{profile.githubUsername}</span>
+              <ExternalLink class="w-3.5 h-3.5 text-[var(--accent-primary)]" />
             </a>
           </div>
-        </div>
 
-        <!-- 03: LinkedIn -->
-        <div
-          data-tilt
-          class="reveal-on-scroll bento-card p-6 flex flex-col justify-between gap-4"
-          style="--stagger: 3;"
-        >
-          <div class="flex items-center justify-between">
-            <span class="text-[var(--accent-tertiary)] font-bold">03 // {translations.id.contact.linkedinLabel}</span>
-            <span class="text-[10px] text-[var(--text-muted)]">network</span>
-          </div>
-          <div>
-            <div class="text-[var(--text-muted)] text-[11px] mb-1">Professional Profile</div>
+          <div class="py-3.5 flex items-baseline justify-between gap-4">
+            <span class="text-[var(--text-muted)]">{translations.id.contact.linkedinLabel}</span>
             {profile.linkedinUrl ? (
               <a
                 href={profile.linkedinUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                class="font-display text-sm sm:text-base font-bold text-[var(--text-primary)] hover:text-[var(--accent-tertiary)] truncate block"
+                class="inline-flex items-center gap-1.5 font-sans font-semibold text-[var(--text-primary)] hover:text-[var(--accent-primary)]"
               >
-                linkedin.com/in/... ↗
+                <span>LinkedIn</span>
+                <ExternalLink class="w-3.5 h-3.5 text-[var(--accent-primary)]" />
               </a>
             ) : (
-              <span class="text-[var(--text-muted)] select-none text-xs">
+              <span class="text-[var(--text-muted)] font-normal">
                 <span data-lang="id">{translations.id.contact.unlinked}</span>
                 <span data-lang="en">{translations.en.contact.unlinked}</span>
               </span>
             )}
           </div>
-        </div>
 
-        <!-- 04: CV / Resume -->
-        <div
-          data-tilt
-          class="reveal-on-scroll bento-card p-6 flex flex-col justify-between gap-4"
-          style="--stagger: 4;"
-        >
-          <div class="flex items-center justify-between">
-            <span class="text-[var(--accent-primary)] font-bold">04 // {translations.id.contact.cvLabel}</span>
-            <span class="text-[10px] text-[var(--text-muted)]">PDF</span>
-          </div>
-          <div>
-            <div class="text-[var(--text-muted)] text-[11px] mb-1">Curriculum Vitae</div>
+          <div class="py-3.5 flex items-baseline justify-between gap-4">
+            <span class="text-[var(--text-muted)]">{translations.id.contact.cvLabel}</span>
             {profile.cvUrl.id || profile.cvUrl.en ? (
               <a
                 href={profile.cvUrl.en || profile.cvUrl.id}
                 download
-                class="font-display text-sm sm:text-base font-bold text-[var(--accent-primary)] hover:underline"
+                class="inline-flex items-center gap-1.5 font-sans font-semibold text-[var(--accent-primary)] hover:underline"
               >
-                download_cv.pdf ↗
+                <span>Download PDF</span>
               </a>
             ) : (
-              <span class="text-[var(--text-muted)] select-none text-xs">
+              <span class="text-[var(--text-muted)] font-normal">
                 <span data-lang="id">{translations.id.contact.cvPending}</span>
                 <span data-lang="en">{translations.en.contact.cvPending}</span>
               </span>
@@ -168,103 +129,115 @@ import { translations } from '../data/i18n';
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- Interactive Quick Message Builder (Zero-Backend mailto: Composer) -->
-    <div class="reveal-on-scroll bento-card p-6 sm:p-8 space-y-5" style="--stagger: 3;">
-      <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border-subtle)] pb-4">
-        <div>
-          <h3 class="font-display text-lg sm:text-xl font-bold text-[var(--text-primary)] flex items-center gap-2">
-            <span class="text-[var(--accent-primary)]">✦</span>
+      <!-- Right 7 Cols: Quick Message Form (Normal Sans-Serif) -->
+      <div class="lg:col-span-7 p-6 sm:p-7 rounded-2xl bg-[var(--bg-elevated)]/45 border border-[var(--border-subtle)] space-y-6 font-sans">
+        <div class="space-y-1">
+          <h3 class="text-xl sm:text-2xl font-bold text-[var(--text-primary)] tracking-tight">
             <span data-lang="id">{translations.id.contact.composerTitle}</span>
-            <span data-lang="en">{translations.en.contact.composerTitle}</span>
+            <span data-lang="en">{translations.id.contact.composerTitle}</span>
           </h3>
-          <p class="text-xs text-[var(--text-secondary)] mt-0.5">
+          <p class="text-sm text-[var(--text-secondary)] leading-relaxed">
             <span data-lang="id">{translations.id.contact.composerSub}</span>
             <span data-lang="en">{translations.en.contact.composerSub}</span>
           </p>
         </div>
 
-        <!-- Topic Selector Pills -->
-        <div class="flex flex-wrap items-center gap-2 font-mono text-xs" role="group" aria-label="Select inquiry topic">
-          <button
-            type="button"
-            data-msg-topic="Internship / Role Opportunity"
-            class="msg-topic-btn rounded-xl px-3 py-1.5 bg-[var(--accent-primary)] text-[#05070b] font-bold cursor-pointer transition-all"
-          >
-            <span data-lang="id">{translations.id.contact.topicIntern}</span>
-            <span data-lang="en">{translations.en.contact.topicIntern}</span>
-          </button>
-          <button
-            type="button"
-            data-msg-topic="Project Collaboration"
-            class="msg-topic-btn rounded-xl px-3 py-1.5 bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer transition-all"
-          >
-            <span data-lang="id">{translations.id.contact.topicCollab}</span>
-            <span data-lang="en">{translations.en.contact.topicCollab}</span>
-          </button>
-          <button
-            type="button"
-            data-msg-topic="Tech Discussion"
-            class="msg-topic-btn rounded-xl px-3 py-1.5 bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer transition-all"
-          >
-            <span data-lang="id">{translations.id.contact.topicChat}</span>
-            <span data-lang="en">{translations.en.contact.topicChat}</span>
-          </button>
-        </div>
-      </div>
-
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch font-mono text-xs">
-        <div class="lg:col-span-7 space-y-3">
-          <input
-            id="composer-name"
-            type="text"
-            placeholder="Your Name / Organization"
-            class="w-full rounded-xl border border-[var(--border-subtle)] focus:border-[var(--accent-primary)] bg-[var(--bg-base)] px-4 py-3 text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none transition-colors"
-          />
-          <textarea
-            id="composer-body"
-            rows="3"
-            placeholder="Hi Gus Adi, I saw your portfolio and would like to connect regarding..."
-            class="w-full rounded-xl border border-[var(--border-subtle)] focus:border-[var(--accent-primary)] bg-[var(--bg-base)] px-4 py-3 text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none transition-colors resize-none"
-          ></textarea>
+        <!-- Clean Rounded Topic Pills -->
+        <div class="space-y-2">
+          <div class="text-xs font-semibold text-[var(--text-secondary)]">
+            <span data-lang="id">Topik Pesan</span>
+            <span data-lang="en">Inquiry Topic</span>
+          </div>
+          <div class="flex flex-wrap items-center gap-2" role="group" aria-label="Select inquiry topic">
+            <button
+              type="button"
+              data-msg-topic="Internship / Role Opportunity"
+              class="msg-topic-btn rounded-full px-4 py-1.5 bg-[var(--accent-primary)] text-[var(--accent-ink)] text-xs sm:text-sm font-semibold cursor-pointer transition-colors"
+            >
+              <span data-lang="id">{translations.id.contact.topicIntern}</span>
+              <span data-lang="en">{translations.en.contact.topicIntern}</span>
+            </button>
+            <button
+              type="button"
+              data-msg-topic="Project Collaboration"
+              class="msg-topic-btn rounded-full px-4 py-1.5 border border-[var(--border-strong)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] text-xs sm:text-sm font-medium cursor-pointer transition-colors"
+            >
+              <span data-lang="id">{translations.id.contact.topicCollab}</span>
+              <span data-lang="en">{translations.en.contact.topicCollab}</span>
+            </button>
+            <button
+              type="button"
+              data-msg-topic="Tech Discussion"
+              class="msg-topic-btn rounded-full px-4 py-1.5 border border-[var(--border-strong)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] text-xs sm:text-sm font-medium cursor-pointer transition-colors"
+            >
+              <span data-lang="id">{translations.id.contact.topicChat}</span>
+              <span data-lang="en">{translations.en.contact.topicChat}</span>
+            </button>
+          </div>
         </div>
 
-        <!-- Live Payload Preview + Actions -->
-        <div class="lg:col-span-5 rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-base)] p-4 flex flex-col justify-between gap-4">
-          <div class="space-y-1.5 text-[11px]">
-            <div class="text-[var(--text-muted)] flex justify-between border-b border-[var(--border-subtle)] pb-1.5">
-              <span>payload.preview</span>
-              <span class="text-[var(--status-ok)]">ready</span>
-            </div>
-            <div class="text-[var(--accent-secondary)] truncate">
-              Subject: <span id="composer-preview-subject" class="text-[var(--text-primary)]">[Portfolio] Internship / Role Opportunity</span>
-            </div>
-            <div id="composer-preview-body" class="text-[var(--text-secondary)] line-clamp-2 leading-relaxed">
-              Hi Gus Adi, let's connect!
-            </div>
+        <!-- Clean Underlined Normal Sans-Serif Inputs -->
+        <div class="space-y-5">
+          <div class="space-y-1">
+            <label for="composer-name" class="block text-xs font-semibold text-[var(--text-secondary)]">
+              <span data-lang="id">Nama / Instansi</span>
+              <span data-lang="en">Your Name / Organization</span>
+            </label>
+            <input
+              id="composer-name"
+              type="text"
+              placeholder="Contoh: Budi — PT Contoh Teknologi"
+              class="w-full border-b border-[var(--border-strong)] focus:border-[var(--accent-primary)] bg-transparent py-2.5 font-sans text-base text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none transition-colors"
+            />
           </div>
 
-          <div class="flex flex-wrap items-center gap-2 pt-2 border-t border-[var(--border-subtle)]">
+          <div class="space-y-1">
+            <label for="composer-body" class="block text-xs font-semibold text-[var(--text-secondary)]">
+              <span data-lang="id">Isi Pesan</span>
+              <span data-lang="en">Message</span>
+            </label>
+            <textarea
+              id="composer-body"
+              rows="3"
+              placeholder="Halo Gus Adi, saya tertarik untuk berdiskusi mengenai..."
+              class="w-full border-b border-[var(--border-strong)] focus:border-[var(--accent-primary)] bg-transparent py-2.5 font-sans text-base text-[var(--text-primary)] placeholder:text-[var(--text-muted)] leading-relaxed focus:outline-none transition-colors resize-none"
+            ></textarea>
+          </div>
+        </div>
+
+        <!-- Open Subject Preview & Action Pills -->
+        <div class="pt-2 space-y-4">
+          <div class="text-xs text-[var(--text-muted)] truncate">
+            <span class="font-semibold text-[var(--text-secondary)]">Subjek:</span>{' '}
+            <span id="composer-preview-subject">[Portfolio] Internship / Role Opportunity</span>
+          </div>
+          <span id="composer-preview-body" class="hidden"></span>
+
+          <div class="flex flex-wrap items-center gap-3">
             <a
               id="composer-mailto-link"
               href={`mailto:${profile.email}?subject=%5BPortfolio%5D%20Internship%20%2F%20Role%20Opportunity`}
               data-to={profile.email}
-              class="kinetic-btn flex-1 text-center bg-[var(--accent-primary)] text-[#05070b] font-bold px-4 py-2.5"
+              class="pill-btn inline-flex items-center justify-center gap-2 bg-[var(--accent-primary)] text-[var(--accent-ink)] font-sans text-sm font-semibold px-6 py-3"
             >
+              <Send class="w-4 h-4" />
               <span data-lang="id">{translations.id.contact.sendMailBtn}</span>
               <span data-lang="en">{translations.en.contact.sendMailBtn}</span>
             </a>
+
             <button
               type="button"
               id="composer-copy-btn"
-              class="kinetic-btn border border-[var(--border-subtle)] bg-[var(--bg-elevated)] hover:border-[var(--accent-secondary)] text-[var(--text-primary)] px-3.5 py-2.5 cursor-pointer"
+              class="pill-btn inline-flex items-center justify-center gap-2 border border-[var(--border-strong)] hover:border-[var(--accent-primary)] text-[var(--text-primary)] font-sans text-sm font-medium px-5 py-3 cursor-pointer"
             >
+              <Copy class="w-4 h-4 text-[var(--text-secondary)]" />
               <span data-lang="id">{translations.id.contact.copyDraftBtn}</span>
               <span data-lang="en">{translations.en.contact.copyDraftBtn}</span>
             </button>
           </div>
         </div>
+      </div>
       </div>
     </div>
   </div>
@@ -283,7 +256,7 @@ import { translations } from '../data/i18n';
       defaultLabel?.classList.add('hidden');
       doneLabel?.classList.remove('hidden');
       window.dispatchEvent(
-        new CustomEvent('portfolio:toast', { detail: { message: `✓ Copied ${email}` } })
+        new CustomEvent('portfolio:toast', { detail: { message: `✓ Email tersalin: ${email}` } })
       );
       setTimeout(() => {
         doneLabel?.classList.add('hidden');
@@ -292,7 +265,6 @@ import { translations } from '../data/i18n';
     } catch (_) {}
   });
 
-  // Quick Message Builder Logic
   const topicBtns = document.querySelectorAll<HTMLButtonElement>('.msg-topic-btn');
   const nameInput = document.getElementById('composer-name') as HTMLInputElement | null;
   const bodyInput = document.getElementById('composer-body') as HTMLTextAreaElement | null;
@@ -305,9 +277,9 @@ import { translations } from '../data/i18n';
 
   function syncComposer() {
     const sender = nameInput?.value.trim() || '';
-    const msg = bodyInput?.value.trim() || 'Hi Gus Adi, I visited your portfolio and would love to connect.';
+    const msg = bodyInput?.value.trim() || 'Halo Gus Adi, saya mengunjungi portofolio Anda dan tertarik untuk terhubung.';
     const subject = `[Portfolio] ${activeTopic}${sender ? ` — ${sender}` : ''}`;
-    const fullBody = sender ? `${msg}\n\nBest regards,\n${sender}` : msg;
+    const fullBody = sender ? `${msg}\n\nSalam,\n${sender}` : msg;
 
     if (previewSubj) previewSubj.textContent = subject;
     if (previewBody) previewBody.textContent = msg;
@@ -323,11 +295,11 @@ import { translations } from '../data/i18n';
       activeTopic = btn.getAttribute('data-msg-topic') || 'Collaboration';
       topicBtns.forEach((b) => {
         if (b === btn) {
-          b.classList.add('bg-[var(--accent-primary)]', 'text-[#05070b]', 'font-bold');
-          b.classList.remove('bg-[var(--bg-elevated)]', 'border', 'border-[var(--border-subtle)]', 'text-[var(--text-secondary)]');
+          b.classList.add('bg-[var(--accent-primary)]', 'text-[var(--accent-ink)]', 'font-semibold');
+          b.classList.remove('border', 'border-[var(--border-strong)]', 'text-[var(--text-secondary)]', 'font-medium');
         } else {
-          b.classList.remove('bg-[var(--accent-primary)]', 'text-[#05070b]', 'font-bold');
-          b.classList.add('bg-[var(--bg-elevated)]', 'border', 'border-[var(--border-subtle)]', 'text-[var(--text-secondary)]');
+          b.classList.remove('bg-[var(--accent-primary)]', 'text-[var(--accent-ink)]', 'font-semibold');
+          b.classList.add('border', 'border-[var(--border-strong)]', 'text-[var(--text-secondary)]', 'font-medium');
         }
       });
       syncComposer();
@@ -340,12 +312,12 @@ import { translations } from '../data/i18n';
   copyDraftBtn?.addEventListener('click', async () => {
     const subj = previewSubj?.textContent || '';
     const sender = nameInput?.value.trim() || '';
-    const msg = bodyInput?.value.trim() || 'Hi Gus Adi, I visited your portfolio and would love to connect.';
+    const msg = bodyInput?.value.trim() || 'Halo Gus Adi, saya mengunjungi portofolio Anda dan tertarik untuk terhubung.';
     const draft = `Subject: ${subj}\n\n${msg}${sender ? `\n\n— ${sender}` : ''}`;
     try {
       await navigator.clipboard.writeText(draft);
       window.dispatchEvent(
-        new CustomEvent('portfolio:toast', { detail: { message: '📋 Message draft copied to clipboard!' } })
+        new CustomEvent('portfolio:toast', { detail: { message: '📋 Teks pesan berhasil disalin!' } })
       );
     } catch (_) {}
   });

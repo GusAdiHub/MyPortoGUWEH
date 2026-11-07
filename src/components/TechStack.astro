@@ -1,152 +1,204 @@
 ---
-import SectionHeader from './SectionHeader.astro';
 import { techCategories } from '../data/profile';
 import { translations } from '../data/i18n';
-import { Code2, Layout, Server, Database, Wrench, Terminal } from 'lucide-astro';
+import { Cpu, CheckCircle2 } from 'lucide-astro';
 
-const categoryIcons = {
-  languages: Code2,
-  frontend: Layout,
-  backend: Server,
-  database: Database,
-  tools: Wrench,
-};
+const allTechItems = techCategories.flatMap((cat) =>
+  cat.items.map((item) => ({
+    ...item,
+    catId: cat.title.id,
+    catEn: cat.title.en,
+  }))
+);
 ---
 
-<section id="stack" class="w-full py-16 sm:py-24 border-b border-[var(--border-subtle)]">
-  <div class="w-full max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-14 space-y-8">
-    <SectionHeader
-      index="02"
-      title={{ id: 'ARSENAL TEKNOLOGI', en: 'TECH STACK ARSENAL' }}
-      path={translations.id.stack.filePath}
-    />
-
-    <!-- Interactive Filter Toolbar -->
-    <div class="reveal-on-scroll flex flex-col sm:flex-row sm:items-center justify-between gap-4 bento-card p-4 font-mono text-xs select-none">
-      <div class="flex items-center gap-2 text-[var(--text-secondary)]">
-        <span class="w-2 h-2 rounded-full bg-[var(--accent-primary)]"></span>
-        <span data-lang="id">Filter berdasarkan tingkat penggunaan teknologi:</span>
-        <span data-lang="en">Filter by technology usage level:</span>
+<section id="stack" class="w-full py-8 sm:py-12">
+  <div class="w-full max-w-6xl mx-auto px-4 sm:px-8 space-y-6">
+    <!-- 1. Kinetic Tech Marquee Conveyor + Integrated Studio Header (No Template SectionHeader) -->
+    <div class="reveal-on-scroll tactile-card p-5 sm:p-6 space-y-4 overflow-hidden marquee-wrap" style="--stagger: 0;">
+      <div class="flex flex-wrap items-center justify-between gap-2 font-sans">
+        <div class="flex items-center gap-3">
+          <span class="px-3 py-1 rounded-full bg-[var(--tint-sky)] text-blue-950 font-mono text-xs font-extrabold">
+            SKILL MATRIX
+          </span>
+          <h2 class="font-display text-xl sm:text-2xl font-extrabold text-[var(--text-primary)]">
+            <span data-lang="id">{translations.id.stack.header}</span>
+            <span data-lang="en">{translations.en.stack.header}</span>
+          </h2>
+        </div>
+        <span class="text-xs font-bold text-[var(--text-secondary)]">
+          <span data-lang="id">⚡ Klik chip teknologi untuk inspeksi peran &amp; proyek</span>
+          <span data-lang="en">⚡ Click any tech chip to inspect role &amp; project context</span>
+        </span>
       </div>
 
-      <div class="flex flex-wrap items-center gap-2" role="group" aria-label="Filter technologies by proficiency level">
-        <button
-          type="button"
-          id="stack-wave-btn"
-          class="rounded-xl px-3.5 py-2 bg-[var(--bg-base)] border border-[var(--border-focus)] text-[var(--accent-secondary)] hover:bg-[var(--accent-secondary)] hover:text-[#05070b] font-bold cursor-pointer transition-all"
-        >
-          ⚡ Wave Pulse
-        </button>
-        <button
-          type="button"
-          data-stack-filter="all"
-          class="stack-filter-btn rounded-xl px-4 py-2 bg-[var(--accent-primary)] text-[#05070b] font-bold cursor-pointer transition-all"
-        >
-          <span data-lang="id">{translations.id.stack.filterAll}</span>
-          <span data-lang="en">{translations.en.stack.filterAll}</span>
-        </button>
-        <button
-          type="button"
-          data-stack-filter="core"
-          class="stack-filter-btn rounded-xl px-4 py-2 bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer transition-all"
-        >
-          <span data-lang="id">{translations.id.stack.filterCore}</span>
-          <span data-lang="en">{translations.en.stack.filterCore}</span>
-        </button>
-        <button
-          type="button"
-          data-stack-filter="exploring"
-          class="stack-filter-btn rounded-xl px-4 py-2 bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] cursor-pointer transition-all"
-        >
-          <span data-lang="id">{translations.id.stack.filterExploring}</span>
-          <span data-lang="en">{translations.en.stack.filterExploring}</span>
-        </button>
+      <!-- Belt 1: Leftward -->
+      <div class="overflow-hidden py-1">
+        <div class="marquee-track-left flex items-center gap-3">
+          {[...allTechItems, ...allTechItems].map((t) => (
+            <button
+              type="button"
+              data-inspect-name={t.name}
+              data-inspect-level={t.level}
+              data-inspect-cat={t.catId}
+              class="tech-inspect-trigger inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[var(--bg-elevated)] hover:bg-[var(--accent-primary)] hover:text-white border border-[var(--border-subtle)] font-display text-xs sm:text-sm font-bold text-[var(--text-primary)] transition-colors cursor-pointer shrink-0"
+            >
+              <span
+                class:list={[
+                  'w-2 h-2 rounded-full',
+                  t.level === 'core' ? 'bg-[var(--status-ok)]' : 'bg-[var(--status-warn)]',
+                ]}
+              ></span>
+              <span>{t.name}</span>
+            </button>
+          ))}
+        </div>
       </div>
     </div>
 
-    <!-- Widescreen Bento Grid for Tech Categories -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {techCategories.map((category, idx) => {
-        const IconComponent = categoryIcons[category.key] || Terminal;
-        return (
-          <div
-            data-tilt
-            class="reveal-on-scroll bento-card p-6 flex flex-col justify-between group"
-            style={`--stagger: ${idx};`}
-          >
-            <div>
-              <!-- Category Header -->
-              <div class="flex items-center justify-between pb-4 mb-5 border-b border-[var(--border-subtle)]">
-                <div class="flex items-center gap-3">
-                  <div class="w-10 h-10 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] group-hover:border-[var(--accent-primary)] flex items-center justify-center text-[var(--accent-primary)] transition-transform group-hover:scale-110">
-                    <IconComponent size={18} />
-                  </div>
-                  <div>
-                    <h3 class="font-display text-base sm:text-lg font-bold text-[var(--text-primary)]">
-                      <span data-lang="id">{category.title.id}</span>
-                      <span data-lang="en">{category.title.en}</span>
-                    </h3>
-                    <span class="font-mono text-[10px] text-[var(--text-muted)] uppercase tracking-wider">
-                      module.0{idx + 1}
-                    </span>
-                  </div>
-                </div>
-                <span class="font-mono text-xs font-bold text-[var(--accent-secondary)] bg-[var(--bg-elevated)] border border-[var(--border-subtle)] rounded-lg px-2.5 py-1">
-                  {category.items.length}
-                </span>
-              </div>
+    <!-- 2. Interactive Skill Explorer + Live Inspector Studio (7 Cols + 5 Cols) -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      <!-- Left 7 Cols: Filterable Category Cards -->
+      <div class="lg:col-span-7 space-y-4 reveal-on-scroll" style="--stagger: 1;">
+        <!-- Filter Bar -->
+        <div class="flex flex-wrap items-center justify-between gap-3 px-4 py-3 rounded-2xl bg-[var(--bg-surface)] border-2 border-[var(--border-subtle)]">
+          <span class="font-sans text-xs font-extrabold uppercase tracking-wider text-[var(--text-muted)]">
+            <span data-lang="id">Filter Tingkat Keahlian</span>
+            <span data-lang="en">Filter Skill Tier</span>
+          </span>
 
-              <!-- Tech Chips -->
-              <div class="flex flex-wrap gap-2.5">
-                {category.items.map((item) => (
-                  <div
-                    data-tech-level={item.level}
-                    class="tech-chip rounded-xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)]/90 hover:border-[var(--accent-primary)] px-3.5 py-2 font-mono text-xs sm:text-[13px] flex items-center gap-2 select-none transition-all hover:-translate-y-1 hover:shadow-[0_6px_20px_var(--accent-glow)]"
-                  >
-                    <span
-                      class:list={[
-                        "w-2 h-2 rounded-full shrink-0",
-                        item.level === 'core' ? "bg-[var(--status-ok)] shadow-[0_0_8px_var(--status-ok)]" : "bg-[var(--status-warn)]"
-                      ]}
-                      aria-hidden="true"
-                    ></span>
-                    <span class="text-[var(--text-primary)] font-medium">{item.name}</span>
-                    <span
-                      class:list={[
-                        "text-[10px] px-1.5 py-0.5 rounded bg-[var(--bg-surface)]",
-                        item.level === 'core' ? "text-[var(--status-ok)]" : "text-[var(--status-warn)]"
-                      ]}
-                    >
-                      {item.level}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
+          <div class="flex flex-wrap items-center gap-1.5 font-sans text-xs" role="group" aria-label="Filter technologies">
+            <button
+              type="button"
+              data-stack-filter="all"
+              class="stack-filter-btn px-3.5 py-1.5 rounded-full bg-[var(--accent-primary)] text-[var(--accent-ink)] font-bold cursor-pointer transition-all"
+            >
+              <span data-lang="id">{translations.id.stack.filterAll}</span>
+              <span data-lang="en">{translations.en.stack.filterAll}</span>
+            </button>
+            <button
+              type="button"
+              data-stack-filter="core"
+              class="stack-filter-btn px-3.5 py-1.5 rounded-full bg-[var(--bg-elevated)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] font-semibold cursor-pointer transition-all"
+            >
+              <span data-lang="id">{translations.id.stack.filterCore}</span>
+              <span data-lang="en">{translations.en.stack.filterCore}</span>
+            </button>
+            <button
+              type="button"
+              data-stack-filter="exploring"
+              class="stack-filter-btn px-3.5 py-1.5 rounded-full bg-[var(--bg-elevated)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] font-semibold cursor-pointer transition-all"
+            >
+              <span data-lang="id">{translations.id.stack.filterExploring}</span>
+              <span data-lang="en">{translations.en.stack.filterExploring}</span>
+            </button>
           </div>
-        );
-      })}
-    </div>
+        </div>
 
-    <!-- Legend -->
-    <div class="reveal-on-scroll font-mono text-xs text-[var(--text-muted)] flex flex-wrap items-center gap-6 pt-2">
-      <div class="flex items-center gap-2">
-        <span class="inline-block w-2.5 h-2.5 rounded-full bg-[var(--status-ok)]"></span>
-        <span class="text-[var(--status-ok)] font-bold">core</span>
-        <span data-lang="id">= teknologi utama yang rutin digunakan</span>
-        <span data-lang="en">= primary technology actively used</span>
+        <!-- Category Bento Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {techCategories.map((category, idx) => {
+            const pastelHeaders = [
+              'bg-[var(--tint-mint)] text-teal-950',
+              'bg-[var(--tint-sky)] text-blue-950',
+              'bg-[var(--tint-amber)] text-amber-950',
+              'bg-[var(--tint-violet)] text-violet-950',
+              'bg-[var(--tint-rose)] text-rose-950',
+            ];
+            const headerTone = pastelHeaders[idx % pastelHeaders.length];
+            return (
+              <div class="tactile-card hover-lift overflow-hidden">
+                <div class={`px-4 py-2.5 border-b border-[var(--border-subtle)] flex items-center justify-between ${headerTone}`}>
+                  <h3 class="font-display text-sm sm:text-base font-extrabold">
+                    <span data-lang="id">{category.title.id}</span>
+                    <span data-lang="en">{category.title.en}</span>
+                  </h3>
+                  <span class="font-mono text-xs font-bold opacity-75">0{idx + 1}</span>
+                </div>
+
+                <div class="p-4 flex flex-wrap gap-2">
+                  {category.items.map((item) => (
+                    <button
+                      type="button"
+                      data-tech-level={item.level}
+                      data-inspect-name={item.name}
+                      data-inspect-level={item.level}
+                      data-inspect-cat={category.title.id}
+                      class="tech-chip tech-inspect-trigger inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--bg-elevated)] hover:bg-[var(--accent-primary)] hover:text-white font-sans text-xs font-bold text-[var(--text-primary)] transition-all duration-200 cursor-pointer"
+                    >
+                      <span
+                        class:list={[
+                          'w-2 h-2 rounded-full shrink-0',
+                          item.level === 'core' ? 'bg-[var(--status-ok)]' : 'bg-[var(--status-warn)]',
+                        ]}
+                        aria-hidden="true"
+                      ></span>
+                      <span>{item.name}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
-      <div class="flex items-center gap-2">
-        <span class="inline-block w-2.5 h-2.5 rounded-full bg-[var(--status-warn)]"></span>
-        <span class="text-[var(--status-warn)] font-bold">exploring</span>
-        <span data-lang="id">= sedang dipelajari / dieksplorasi</span>
-        <span data-lang="en">= actively learning / exploring</span>
+
+      <!-- Right 5 Cols: Interactive Skill Inspector Studio Panel -->
+      <div class="lg:col-span-5 tactile-card spotlight-surface p-6 sm:p-7 space-y-5 reveal-on-scroll font-sans sticky top-24" style="--stagger: 2;">
+        <div class="flex items-center justify-between pb-3.5 border-b border-[var(--border-subtle)]">
+          <div class="inline-flex items-center gap-2 text-xs font-extrabold uppercase tracking-wider text-[var(--accent-primary)]">
+            <Cpu class="w-4 h-4" />
+            <span>Skill Inspector Studio</span>
+          </div>
+          <span id="inspector-badge" class="px-2.5 py-0.5 rounded-full bg-[var(--tint-mint)] text-teal-900 font-mono text-[11px] font-bold">
+            CORE STACK
+          </span>
+        </div>
+
+        <div class="space-y-2">
+          <div id="inspector-cat" class="text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider">
+            Bahasa Pemrograman
+          </div>
+          <h3 id="inspector-title" class="font-display text-3xl font-extrabold text-[var(--text-primary)]">
+            TypeScript
+          </h3>
+          <p id="inspector-desc" class="text-sm text-[var(--text-secondary)] leading-relaxed">
+            Digunakan untuk membangun antarmuka web modern yang aman secara tipe data (type-safe), kontrak komponen Astro, serta pemodelan data proyek dan i18n.
+          </p>
+        </div>
+
+        <div class="p-4 rounded-2xl bg-[var(--bg-elevated)]/70 border border-[var(--border-subtle)] space-y-2.5">
+          <div class="flex justify-between text-xs font-bold">
+            <span class="text-[var(--text-secondary)]">Tingkat Implementasi Praktis</span>
+            <span id="inspector-pct" class="font-mono text-[var(--accent-primary)]">92%</span>
+          </div>
+          <div class="w-full h-2.5 rounded-full bg-[var(--bg-surface)] overflow-hidden">
+            <div
+              id="inspector-bar"
+              class="h-full rounded-full bg-gradient-to-r from-[var(--accent-primary)] to-[var(--accent-secondary)] transition-all duration-500"
+              style="width: 92%;"
+            ></div>
+          </div>
+        </div>
+
+        <div class="space-y-2 pt-1">
+          <div class="text-xs font-bold text-[var(--text-primary)] flex items-center gap-1.5">
+            <CheckCircle2 class="w-3.5 h-3.5 text-[var(--status-ok)]" />
+            <span data-lang="id">Konteks Penggunaan Nyata:</span>
+            <span data-lang="en">Real-World Usage Context:</span>
+          </div>
+          <div id="inspector-projects" class="flex flex-wrap gap-2 text-xs font-bold">
+            <span class="px-3 py-1 rounded-full bg-[var(--tint-mint)] text-teal-900">Portfolio Studio v7</span>
+            <span class="px-3 py-1 rounded-full bg-[var(--tint-sky)] text-blue-900">Strict Data Modeling</span>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </section>
 
 <script>
+  // 1. Filter Core vs Exploring
   const filterBtns = document.querySelectorAll<HTMLButtonElement>('.stack-filter-btn');
   const chips = document.querySelectorAll<HTMLElement>('.tech-chip');
 
@@ -156,11 +208,11 @@ const categoryIcons = {
 
       filterBtns.forEach((b) => {
         if (b === btn) {
-          b.classList.add('bg-[var(--accent-primary)]', 'text-[#05070b]', 'font-bold');
-          b.classList.remove('bg-[var(--bg-elevated)]', 'border', 'border-[var(--border-subtle)]', 'text-[var(--text-secondary)]');
+          b.classList.add('bg-[var(--accent-primary)]', 'text-[var(--accent-ink)]', 'font-bold');
+          b.classList.remove('bg-[var(--bg-elevated)]', 'text-[var(--text-secondary)]', 'font-semibold');
         } else {
-          b.classList.remove('bg-[var(--accent-primary)]', 'text-[#05070b]', 'font-bold');
-          b.classList.add('bg-[var(--bg-elevated)]', 'border', 'border-[var(--border-subtle)]', 'text-[var(--text-secondary)]');
+          b.classList.remove('bg-[var(--accent-primary)]', 'text-[var(--accent-ink)]', 'font-bold');
+          b.classList.add('bg-[var(--bg-elevated)]', 'text-[var(--text-secondary)]', 'font-semibold');
         }
       });
 
@@ -169,26 +221,118 @@ const categoryIcons = {
         if (filter === 'all' || level === filter) {
           chip.style.opacity = '1';
           chip.style.transform = 'scale(1)';
-          chip.style.pointerEvents = 'auto';
         } else {
-          chip.style.opacity = '0.2';
-          chip.style.transform = 'scale(0.94)';
-          chip.style.pointerEvents = 'none';
+          chip.style.opacity = '0.22';
+          chip.style.transform = 'scale(0.95)';
         }
       });
     });
   });
 
-  function triggerTechWave() {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    chips.forEach((chip, i) => {
-      chip.classList.remove('is-scanning');
-      setTimeout(() => {
-        chip.classList.add('is-scanning');
-        setTimeout(() => chip.classList.remove('is-scanning'), 560);
-      }, i * 55);
-    });
-  }
+  // 2. Live Click-to-Inspect Skill Explorer
+  const SKILL_DETAILS: Record<string, { desc: string; pct: number; tags: string[] }> = {
+    TypeScript: {
+      desc: 'Digunakan untuk membangun arsitektur frontend & backend yang type-safe, skema data proyek, dan integrasi API bebas bug.',
+      pct: 92,
+      tags: ['Portfolio Studio v7', 'Type-Safe Models', 'Web Architecture'],
+    },
+    'JavaScript (ES6+)': {
+      desc: 'Fondasi utama interaktivitas DOM, WebAudio synthesizer, algoritma NLP di browser, dan simulasi visual kanvas.',
+      pct: 94,
+      tags: ['SakuKu Web App', 'Live NLP Lab', 'Interactive Arcade'],
+    },
+    Python: {
+      desc: 'Bahasa utama untuk pemrosesan teks (NLP), tokenisasi, stopword filtering, pembobotan TF-IDF, dan logika backend.',
+      pct: 88,
+      tags: ['Plagiarism Checker', 'Text Mining & NLP', 'Backend Logic'],
+    },
+    SQL: {
+      desc: 'Perancangan skema relasional, query pencatatan transaksi, agregasi laporan, dan normalisasi basis data.',
+      pct: 85,
+      tags: ['SakuKu Financial DB', 'Relational Schema', 'Data Integrity'],
+    },
+    'HTML5 / CSS3': {
+      desc: 'Struktur semantik aksesibel, custom CSS properties, animasi keyframe halus, dan tata letak responsif.',
+      pct: 95,
+      tags: ['Daylight Studio UI', 'Semantic HTML', 'Responsive Grid'],
+    },
+    Astro: {
+      desc: 'Framework static-first berkinerja tinggi dengan zero JS overhead yang tidak perlu dan arsitektur pulau komponen.',
+      pct: 90,
+      tags: ['Personal Portfolio', 'Static-First SSR', 'Fast Performance'],
+    },
+    'Tailwind CSS': {
+      desc: 'Sistem desain berbasis utility token untuk membangun antarmuka yang konsisten di tema terang maupun gelap.',
+      pct: 92,
+      tags: ['Design System v7', 'Tactile Studio Cards', 'Responsive UI'],
+    },
+    'Node.js': {
+      desc: 'Runtime eksekusi layanan web, REST API modular, dan automasi build peralatan pengembang.',
+      pct: 84,
+      tags: ['Backend Services', 'REST API', 'Full-Stack Web'],
+    },
+    'REST API Design': {
+      desc: 'Perancangan endpoint terstruktur, validasi input, penanganan status error, dan caching respons.',
+      pct: 86,
+      tags: ['GitHub API Sync', 'Backend Endpoints', 'JSON Contracts'],
+    },
+    'PostgreSQL / MySQL': {
+      desc: 'Manajemen penyimpanan data relasional untuk aplikasi pencatatan keuangan dan sistem informasi.',
+      pct: 82,
+      tags: ['SakuKu Database', 'CRUD Persistence', 'Relational Queries'],
+    },
+    'Text Preprocessing': {
+      desc: 'Tahapan case folding, tokenisasi, dan pembersihan dokumen sebelum penghitungan kemiripan vektor.',
+      pct: 85,
+      tags: ['Plagiarism Checker', 'NLP Pipeline', 'Tokenization'],
+    },
+    'Similarity Algorithms': {
+      desc: 'Implementasi Cosine Similarity, Jaccard Index, dan pembobotan kata untuk deteksi kemiripan dokumen.',
+      pct: 80,
+      tags: ['Document Similarity System', 'Vector Scoring'],
+    },
+  };
 
-  document.getElementById('stack-wave-btn')?.addEventListener('click', triggerTechWave);
+  const titleEl = document.getElementById('inspector-title');
+  const catEl = document.getElementById('inspector-cat');
+  const descEl = document.getElementById('inspector-desc');
+  const badgeEl = document.getElementById('inspector-badge');
+  const pctEl = document.getElementById('inspector-pct');
+  const barEl = document.getElementById('inspector-bar');
+  const projContainer = document.getElementById('inspector-projects');
+
+  document.querySelectorAll<HTMLElement>('.tech-inspect-trigger').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const name = btn.getAttribute('data-inspect-name') || 'TypeScript';
+      const level = btn.getAttribute('data-inspect-level') || 'core';
+      const cat = btn.getAttribute('data-inspect-cat') || 'Teknologi';
+      const info = SKILL_DETAILS[name] || {
+        desc: `Digunakan secara aktif dalam alur kerja pengembangan perangkat lunak dan eksperimen sistem pada kategori ${cat}.`,
+        pct: level === 'core' ? 88 : 74,
+        tags: [cat, level === 'core' ? 'Core Workflow' : 'Active R&D'],
+      };
+
+      if (titleEl) titleEl.textContent = name;
+      if (catEl) catEl.textContent = cat;
+      if (descEl) descEl.textContent = info.desc;
+      if (badgeEl) {
+        badgeEl.textContent = level === 'core' ? 'CORE STACK' : 'EXPLORING / R&D';
+      }
+      if (pctEl) pctEl.textContent = `${info.pct}%`;
+      if (barEl) barEl.style.width = `${info.pct}%`;
+
+      if (projContainer) {
+        projContainer.innerHTML = '';
+        info.tags.forEach((t, i) => {
+          const span = document.createElement('span');
+          span.className =
+            i % 2 === 0
+              ? 'px-3 py-1 rounded-full bg-[var(--tint-mint)] text-teal-900'
+              : 'px-3 py-1 rounded-full bg-[var(--tint-sky)] text-blue-900';
+          span.textContent = t;
+          projContainer.appendChild(span);
+        });
+      }
+    });
+  });
 </script>

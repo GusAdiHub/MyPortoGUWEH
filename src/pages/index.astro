@@ -2,29 +2,28 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Navbar from '../components/Navbar.astro';
 import Hero from '../components/Hero.astro';
-import About from '../components/About.astro';
-import TechStack from '../components/TechStack.astro';
 import Projects from '../components/Projects.astro';
-import Experience from '../components/Experience.astro';
+import TechStack from '../components/TechStack.astro';
+import About from '../components/About.astro';
 import GitHubActivity from '../components/GitHubActivity.astro';
 import Contact from '../components/Contact.astro';
 import Footer from '../components/Footer.astro';
-import { experiences } from '../data/profile';
 ---
 
 <BaseLayout
-  title="Gus Adi — Informatics Student & Software Developer"
+  title="Gus Adi — Software Developer & Informatics Student"
   description="Personal developer portfolio of Gus Adi. Informatics student and software developer building web, backend, and applied systems."
 >
   <Navbar />
-  <main class="flex-1 flex flex-col">
+
+  <main class="flex-1 w-full">
     <Hero />
-    <About />
-    <TechStack />
     <Projects />
-    {experiences.length > 0 && <Experience />}
+    <TechStack />
+    <About />
     <GitHubActivity />
     <Contact />
   </main>
+
   <Footer />
 </BaseLayout>

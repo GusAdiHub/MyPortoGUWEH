@@ -1,129 +1,244 @@
 ---
-import SectionHeader from './SectionHeader.astro';
-import { profile } from '../data/profile';
+import { profile, experiences } from '../data/profile';
 import { translations } from '../data/i18n';
+import { Code2, Sparkles, Compass, MapPin, GraduationCap, RotateCw, BadgeCheck } from 'lucide-astro';
 ---
 
-<section id="about" class="w-full py-16 sm:py-24 border-b border-[var(--border-subtle)]">
-  <div class="w-full max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-14">
-    <SectionHeader
-      index="01"
-      title={{ id: 'TENTANG & FOKUS', en: 'ABOUT & FOCUS' }}
-      path={translations.id.about.filePath}
-    />
-
+<section id="about" class="w-full py-8 sm:py-12">
+  <div class="w-full max-w-6xl mx-auto px-4 sm:px-8">
+    <!-- Non-Template Spatial Bento Collage: 3D Flippable Developer ID Card (5 Cols) + Narrative & Academic Mosaic (7 Cols) -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-      <!-- Left Bento Card: Bio & Engineering Philosophy (7 cols) -->
-      <div
-        data-tilt
-        class="lg:col-span-7 reveal-on-scroll bento-card p-6 sm:p-8 flex flex-col justify-between"
-        style="--stagger: 0;"
-      >
-        <div class="space-y-5">
-          <div class="flex items-center justify-between border-b border-[var(--border-subtle)] pb-3 font-mono text-xs select-none">
-            <span class="text-[var(--accent-primary)] font-semibold flex items-center gap-2">
-              <span class="w-2 h-2 rounded-full bg-[var(--accent-primary)]"></span>
-              <span>$ cat about_me.md</span>
+      <!-- LEFT 5 COLS: Interactive 3D Flippable Developer ID Pass (Click to Flip 180°) -->
+      <div class="lg:col-span-5 flex flex-col justify-between gap-4 reveal-on-scroll" style="--stagger: 0;">
+        <div class="flip-perspective h-full min-h-[420px]">
+          <div id="dev-id-flip-inner" class="flip-card-inner h-full min-h-[420px]">
+            <!-- FRONT SIDE: Studio Developer ID Pass -->
+            <div class="flip-card-front tactile-card h-full flex flex-col justify-between overflow-hidden font-sans">
+              <!-- Lanyard Slot Header -->
+              <div class="bg-[var(--tint-mint)] border-b-2 border-[var(--border-subtle)] px-6 py-4 flex items-center justify-between">
+                <div class="inline-flex items-center gap-2 text-xs font-extrabold uppercase tracking-wider text-teal-950">
+                  <BadgeCheck class="w-4 h-4 text-teal-700" />
+                  <span>DEVELOPER PASS · #GA-2026</span>
+                </div>
+                <div class="w-10 h-2.5 rounded-full bg-teal-900/20 border border-teal-900/30" aria-hidden="true"></div>
+              </div>
+
+              <!-- Pass Body -->
+              <div class="p-6 space-y-5 flex-1 flex flex-col justify-between">
+                <div class="flex items-start justify-between gap-4">
+                  <div class="space-y-1">
+                    <div class="font-mono text-[11px] font-bold uppercase text-[var(--accent-primary)]">
+                      VERIFIED BUILDER
+                    </div>
+                    <h2 class="font-display text-3xl sm:text-4xl font-extrabold tracking-tight text-[var(--text-primary)]">
+                      {profile.name}
+                    </h2>
+                    <p class="text-sm font-bold text-[var(--text-secondary)]">
+                      <span data-lang="id">{profile.role.id}</span>
+                      <span data-lang="en">{profile.role.en}</span>
+                    </p>
+                  </div>
+
+                  <!-- Monogram Stamp -->
+                  <div class="w-14 h-14 rounded-2xl bg-[var(--tint-mint)] border-2 border-[var(--accent-primary)] flex items-center justify-center font-display text-xl font-extrabold text-teal-950 shrink-0 shadow-sm">
+                    GA.
+                  </div>
+                </div>
+
+                <!-- Clean Identity Fields (Location strictly "Bali, Indonesia") -->
+                <div class="grid grid-cols-2 gap-3 text-xs">
+                  <div class="p-3.5 rounded-2xl bg-[var(--bg-elevated)]/65 border border-[var(--border-subtle)]">
+                    <div class="text-[10px] font-bold uppercase text-[var(--text-muted)]">
+                      <span data-lang="id">Lokasi</span>
+                      <span data-lang="en">Location</span>
+                    </div>
+                    <div class="font-bold text-sm text-[var(--text-primary)] mt-1 inline-flex items-center gap-1.5">
+                      <MapPin class="w-3.5 h-3.5 text-[var(--accent-primary)] shrink-0" />
+                      <span>Bali, Indonesia</span>
+                    </div>
+                  </div>
+
+                  <div class="p-3.5 rounded-2xl bg-[var(--bg-elevated)]/65 border border-[var(--border-subtle)]">
+                    <div class="text-[10px] font-bold uppercase text-[var(--text-muted)]">
+                      <span data-lang="id">Zona Waktu</span>
+                      <span data-lang="en">Timezone</span>
+                    </div>
+                    <div id="about-local-clock" class="font-mono font-bold text-sm text-[var(--accent-primary)] mt-1">
+                      --:--:-- WITA
+                    </div>
+                  </div>
+
+                  <div class="p-3.5 rounded-2xl bg-[var(--bg-elevated)]/65 border border-[var(--border-subtle)] col-span-2 flex items-center justify-between">
+                    <div>
+                      <div class="text-[10px] font-bold uppercase text-[var(--text-muted)]">
+                        <span data-lang="id">Status Kolaborasi</span>
+                        <span data-lang="en">Availability</span>
+                      </div>
+                      <div class="font-bold text-sm text-[var(--status-ok)] mt-0.5">
+                        ● <span data-lang="id">{profile.availabilityStatus.id}</span>
+                        <span data-lang="en">{profile.availabilityStatus.en}</span>
+                      </div>
+                    </div>
+                    <span class="font-mono text-[11px] font-bold text-[var(--text-muted)]">@GusAdiHub</span>
+                  </div>
+                </div>
+
+                <!-- Flip Trigger Button -->
+                <button
+                  type="button"
+                  class="flip-id-btn w-full py-2.5 px-4 rounded-2xl bg-[var(--text-primary)] text-[var(--bg-surface)] font-sans text-xs font-extrabold inline-flex items-center justify-center gap-2 hover:opacity-90 transition-opacity cursor-pointer"
+                >
+                  <RotateCw class="w-3.5 h-3.5" />
+                  <span data-lang="id">Klik untuk Balik Kartu ID (3D Flip)</span>
+                  <span data-lang="en">Click to Flip ID Card (3D Flip)</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- BACK SIDE: Engineering Philosophy & Principles -->
+            <div class="flip-card-back tactile-card h-full flex flex-col justify-between overflow-hidden font-sans bg-[var(--bg-surface)]">
+              <div class="bg-[var(--tint-violet)] border-b-2 border-[var(--border-subtle)] px-6 py-4 flex items-center justify-between">
+                <span class="text-xs font-extrabold uppercase tracking-wider text-violet-950">
+                  ★ PRINSIP REKAYasa · BACK OF PASS
+                </span>
+                <span class="font-mono text-xs font-bold text-violet-900">180°</span>
+              </div>
+
+              <div class="p-6 space-y-3.5 flex-1 flex flex-col justify-between">
+                <div class="space-y-2.5">
+                  <div class="p-3.5 rounded-2xl bg-[var(--tint-mint)] space-y-1">
+                    <div class="inline-flex items-center gap-1.5 font-display font-extrabold text-xs text-teal-950">
+                      <Code2 class="w-4 h-4 text-teal-700" />
+                      <span data-lang="id">1. Kode Terukur &amp; Type-Safe</span>
+                      <span data-lang="en">1. Typed &amp; Maintainable Code</span>
+                    </div>
+                    <p class="text-xs text-teal-900/85 leading-relaxed">
+                      <span data-lang="id">Struktur TypeScript ketat &amp; pemisahan data yang bersih dari antarmuka.</span>
+                      <span data-lang="en">Strict TypeScript contracts &amp; clean separation of data from UI.</span>
+                    </p>
+                  </div>
+
+                  <div class="p-3.5 rounded-2xl bg-[var(--tint-sky)] space-y-1">
+                    <div class="inline-flex items-center gap-1.5 font-display font-extrabold text-xs text-blue-950">
+                      <Sparkles class="w-4 h-4 text-blue-700" />
+                      <span data-lang="id">2. Antarmuka Ramah Mata</span>
+                      <span data-lang="en">2. Eye-Friendly Interface</span>
+                    </div>
+                    <p class="text-xs text-blue-900/85 leading-relaxed">
+                      <span data-lang="id">Tipografi jelas, kontras lembut, &amp; interaksi responsif tanpa beban.</span>
+                      <span data-lang="en">High legibility, soft contrast, &amp; responsive interactions.</span>
+                    </p>
+                  </div>
+
+                  <div class="p-3.5 rounded-2xl bg-[var(--tint-amber)] space-y-1">
+                    <div class="inline-flex items-center gap-1.5 font-display font-extrabold text-xs text-amber-950">
+                      <Compass class="w-4 h-4 text-amber-700" />
+                      <span data-lang="id">3. Pemrosesan NLP Terapan</span>
+                      <span data-lang="en">3. Applied NLP Pipelines</span>
+                    </div>
+                    <p class="text-xs text-amber-900/85 leading-relaxed">
+                      <span data-lang="id">Tokenisasi, penghapusan stopword, &amp; skor kemiripan dokumen.</span>
+                      <span data-lang="en">Tokenization, stopword filtering, &amp; document similarity scoring.</span>
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  class="flip-id-btn w-full py-2.5 px-4 rounded-2xl bg-[var(--accent-primary)] text-[var(--accent-ink)] font-sans text-xs font-extrabold inline-flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <RotateCw class="w-3.5 h-3.5" />
+                  <span data-lang="id">Kembali ke Sisi Depan Kartu</span>
+                  <span data-lang="en">Flip Back to Front Pass</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT 7 COLS: Bio Collage + Academic Track (#experience) + R&D Exploration -->
+      <div class="lg:col-span-7 flex flex-col justify-between gap-5 reveal-on-scroll" style="--stagger: 1;">
+        <!-- Top Card: Narrative Story -->
+        <div class="tactile-card spotlight-surface p-6 sm:p-7 space-y-4 font-sans">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--tint-sky)] text-blue-900 text-xs font-extrabold">
+              <Sparkles class="w-3.5 h-3.5" />
+              <span data-lang="id">{translations.id.about.header}</span>
+              <span data-lang="en">{translations.en.about.header}</span>
             </span>
-            <span class="text-[var(--text-muted)]">{translations.id.about.bufferInfo}</span>
+            <span class="font-mono text-xs font-bold text-[var(--text-muted)]">Bali, Indonesia</span>
           </div>
 
-          <h3 class="font-display text-xl sm:text-2xl font-bold text-[var(--text-primary)]">
-            <span data-lang="id">Membangun Perangkat Lunak yang Terstruktur, Cepat, dan Pragmatis.</span>
-            <span data-lang="en">Engineering Structured, Performant, and Pragmatic Software.</span>
-          </h3>
-
-          <!-- ID Bio -->
-          <div data-lang="id" class="space-y-4 text-sm sm:text-base leading-relaxed text-[var(--text-secondary)]">
+          <div data-lang="id" class="space-y-3 text-sm sm:text-base leading-relaxed text-[var(--text-secondary)]">
             {profile.bio.id.map((paragraph) => (
               <p>{paragraph}</p>
             ))}
           </div>
 
-          <!-- EN Bio -->
-          <div data-lang="en" class="space-y-4 text-sm sm:text-base leading-relaxed text-[var(--text-secondary)]">
+          <div data-lang="en" class="space-y-3 text-sm sm:text-base leading-relaxed text-[var(--text-secondary)]">
             {profile.bio.en.map((paragraph) => (
               <p>{paragraph}</p>
             ))}
           </div>
         </div>
 
-        <!-- Engineering Pillars -->
-        <div class="pt-6 mt-6 border-t border-[var(--border-subtle)] flex flex-wrap gap-2.5 font-mono text-xs select-none">
-          <span class="px-3 py-1.5 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--accent-primary)]">
-            ✦ Clean Architecture
-          </span>
-          <span class="px-3 py-1.5 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--accent-secondary)]">
-            ✦ Backend &amp; APIs
-          </span>
-          <span class="px-3 py-1.5 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--accent-tertiary)]">
-            ✦ Applied Text Mining
-          </span>
-        </div>
-      </div>
-
-      <!-- Right Bento Card: Currently Exploring Interactive Tree (5 cols) -->
-      <div
-        data-tilt
-        class="lg:col-span-5 reveal-on-scroll bento-card p-6 sm:p-8 flex flex-col justify-between font-mono text-xs select-none"
-        style="--stagger: 1;"
-      >
-        <div>
-          <div class="flex items-center justify-between border-b border-[var(--border-subtle)] pb-3 mb-5">
-            <div class="flex items-center gap-3">
-              <!-- Live Rotating R&D Radar -->
-              <div class="relative w-8 h-8 rounded-full border border-[var(--border-focus)] bg-[var(--bg-base)] overflow-hidden flex items-center justify-center shrink-0">
-                <div class="radar-sweep absolute inset-0 rounded-full"></div>
-                <span class="w-1.5 h-1.5 rounded-full bg-[var(--accent-primary)] relative z-10 shadow-[0_0_6px_var(--accent-primary)]"></span>
-              </div>
-              <span class="text-[var(--accent-secondary)] font-semibold">
-                ~/workspace/{translations.id.about.treeTitle}
+        <!-- Bottom Split Row: Academic Track (#experience) + R&D Lab -->
+        <div id="experience" class="grid grid-cols-1 sm:grid-cols-12 gap-5 items-stretch">
+          <div class="sm:col-span-7 tactile-card hover-lift p-5 sm:p-6 space-y-3 font-sans">
+            <div class="flex items-center justify-between">
+              <span class="inline-flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wider text-[var(--accent-secondary)]">
+                <GraduationCap class="w-4 h-4" />
+                <span data-lang="id">{translations.id.experience.header}</span>
+                <span data-lang="en">{translations.en.experience.header}</span>
               </span>
             </div>
-            <span class="px-2 py-0.5 rounded-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--status-ok)] text-[10px]">
-              ● ACTIVE_R&amp;D
-            </span>
-          </div>
 
-          <!-- ID Exploring Cards -->
-          <div data-lang="id" class="space-y-3">
-            {profile.currentlyExploring.id.map((item, idx) => (
-              <div class="group p-3.5 rounded-xl bg-[var(--bg-elevated)]/70 border border-[var(--border-subtle)] hover:border-[var(--accent-primary)] transition-all hover:translate-x-1 flex items-center justify-between gap-3">
-                <div class="flex items-center gap-3">
-                  <span class="w-6 h-6 rounded-lg bg-[var(--bg-surface)] border border-[var(--border-subtle)] group-hover:border-[var(--accent-primary)] flex items-center justify-center text-[var(--accent-primary)] font-bold text-[11px]">
-                    0{idx + 1}
-                  </span>
-                  <span class="text-[var(--text-primary)] font-medium text-xs sm:text-[13px]">{item}</span>
-                </div>
-                <span class="text-[10px] text-[var(--status-ok)] px-2 py-0.5 rounded bg-[var(--bg-surface)] border border-[var(--border-subtle)] shrink-0">
-                  {translations.id.about.activeTag}
-                </span>
+            {experiences.map((exp) => (
+              <div class="space-y-1.5">
+                <div class="font-mono text-xs font-bold text-[var(--accent-primary)]">{exp.period}</div>
+                <h3 class="font-display text-lg font-extrabold text-[var(--text-primary)] leading-snug">
+                  <span data-lang="id">{exp.role.id}</span>
+                  <span data-lang="en">{exp.role.en}</span>
+                </h3>
+                <div class="text-xs font-bold text-[var(--text-secondary)]">{exp.institution}</div>
+                <p class="text-xs text-[var(--text-secondary)] leading-relaxed pt-1">
+                  <span data-lang="id">{exp.description.id}</span>
+                  <span data-lang="en">{exp.description.en}</span>
+                </p>
               </div>
             ))}
           </div>
 
-          <!-- EN Exploring Cards -->
-          <div data-lang="en" class="space-y-3">
-            {profile.currentlyExploring.en.map((item, idx) => (
-              <div class="group p-3.5 rounded-xl bg-[var(--bg-elevated)]/70 border border-[var(--border-subtle)] hover:border-[var(--accent-primary)] transition-all hover:translate-x-1 flex items-center justify-between gap-3">
-                <div class="flex items-center gap-3">
-                  <span class="w-6 h-6 rounded-lg bg-[var(--bg-surface)] border border-[var(--border-subtle)] group-hover:border-[var(--accent-primary)] flex items-center justify-center text-[var(--accent-primary)] font-bold text-[11px]">
-                    0{idx + 1}
-                  </span>
-                  <span class="text-[var(--text-primary)] font-medium text-xs sm:text-[13px]">{item}</span>
-                </div>
-                <span class="text-[10px] text-[var(--status-ok)] px-2 py-0.5 rounded bg-[var(--bg-surface)] border border-[var(--border-subtle)] shrink-0">
-                  {translations.en.about.activeTag}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
+          <div class="sm:col-span-5 tactile-card hover-lift p-5 sm:p-6 space-y-3 font-sans">
+            <div class="inline-flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wider text-[var(--accent-primary)]">
+              <Compass class="w-4 h-4" />
+              <span data-lang="id">Eksplorasi R&amp;D</span>
+              <span data-lang="en">Active R&amp;D</span>
+            </div>
 
-        <!-- Bottom Live Clock & Location Strip -->
-        <div class="mt-6 pt-4 border-t border-[var(--border-subtle)] flex items-center justify-between text-[11px] text-[var(--text-muted)]">
-          <span>LOC: INDONESIA</span>
-          <span id="about-local-clock" class="text-[var(--accent-primary)] font-semibold">UTC+8 // LIVE</span>
+            <div data-lang="id" class="space-y-2">
+              {profile.currentlyExploring.id.map((item, idx) => (
+                <div class="flex items-center gap-2.5 p-2.5 rounded-xl bg-[var(--bg-elevated)]/70 text-xs font-bold text-[var(--text-primary)]">
+                  <span class="w-5 h-5 rounded-lg bg-[var(--tint-mint)] text-teal-900 font-mono text-[10px] font-extrabold inline-flex items-center justify-center shrink-0">
+                    {idx + 1}
+                  </span>
+                  <span class="capitalize">{item}</span>
+                </div>
+              ))}
+            </div>
+
+            <div data-lang="en" class="space-y-2">
+              {profile.currentlyExploring.en.map((item, idx) => (
+                <div class="flex items-center gap-2.5 p-2.5 rounded-xl bg-[var(--bg-elevated)]/70 text-xs font-bold text-[var(--text-primary)]">
+                  <span class="w-5 h-5 rounded-lg bg-[var(--tint-mint)] text-teal-900 font-mono text-[10px] font-extrabold inline-flex items-center justify-center shrink-0">
+                    {idx + 1}
+                  </span>
+                  <span class="capitalize">{item}</span>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -131,12 +246,29 @@ import { translations } from '../data/i18n';
 </section>
 
 <script>
+  // 3D ID Card Flip Handler
+  const flipInner = document.getElementById('dev-id-flip-inner');
+  document.querySelectorAll('.flip-id-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      flipInner?.classList.toggle('is-flipped');
+    });
+  });
+
+  // Live WITA Clock
   const clockEl = document.getElementById('about-local-clock');
   function updateLocalClock() {
     if (!clockEl) return;
-    const now = new Date();
-    const timeStr = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-    clockEl.textContent = `LOCAL // ${timeStr}`;
+    try {
+      const now = new Date();
+      const t = new Intl.DateTimeFormat('id-ID', {
+        timeZone: 'Asia/Makassar',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false,
+      }).format(now);
+      clockEl.textContent = `${t} WITA`;
+    } catch (_) {}
   }
   updateLocalClock();
   setInterval(updateLocalClock, 1000);
