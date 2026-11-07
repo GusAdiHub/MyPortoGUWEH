@@ -1,7 +1,7 @@
 ---
 import { profile } from '../data/profile';
 import { translations } from '../data/i18n';
-import { ArrowRight, Sparkles, Gamepad2, Copy, Music, Palette, Terminal, Square } from 'lucide-astro';
+import { ArrowRight, Sparkles, Gamepad2, Copy, Music, Palette, Terminal, Square, Volume2, VolumeX, Headphones, Play, Pause, SkipBack, SkipForward, CloudRain } from 'lucide-astro';
 
 interface MyInstantItem {
   id: string;
@@ -282,6 +282,66 @@ try {
           </div>
         </div>
       </div>
+
+      <!-- Interactive Background Ambience Switcher Bar -->
+      <div class="mt-6 pt-4 border-t-2 border-[var(--border-subtle)] flex flex-wrap items-center justify-between gap-2.5 font-sans">
+        <div class="inline-flex items-center gap-2 text-xs font-extrabold text-[var(--text-secondary)]">
+          <Sparkles class="w-3.5 h-3.5 text-[var(--accent-primary)]" />
+          <span data-lang="id">Tema Background &amp; Ambience:</span>
+          <span data-lang="en">Background Ambience:</span>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-1.5" role="group" aria-label="Pilih tema background">
+          <button
+            type="button"
+            data-bg-scene="studio"
+            data-bg-label="Studio Ivory (Default)"
+            class="hero-bg-scene-btn px-3 py-1 rounded-full bg-[var(--accent-primary)] text-[var(--accent-ink)] text-xs font-extrabold cursor-pointer transition-all hover:scale-105"
+          >
+            ☀️ Studio
+          </button>
+          <button
+            type="button"
+            data-bg-scene="space"
+            data-bg-label="Luar Angkasa (Bintang & Meteor)"
+            class="hero-bg-scene-btn px-3 py-1 rounded-full bg-[var(--bg-elevated)] text-[var(--text-primary)] hover:border-[var(--accent-primary)] border border-transparent text-xs font-bold cursor-pointer transition-all hover:scale-105"
+          >
+            🌌 Luar Angkasa
+          </button>
+          <button
+            type="button"
+            data-bg-scene="sakura"
+            data-bg-label="Taman Sakura (Kelopak Bunga)"
+            class="hero-bg-scene-btn px-3 py-1 rounded-full bg-[var(--bg-elevated)] text-[var(--text-primary)] hover:border-[var(--accent-primary)] border border-transparent text-xs font-bold cursor-pointer transition-all hover:scale-105"
+          >
+            🌸 Sakura
+          </button>
+          <button
+            type="button"
+            data-bg-scene="fireflies"
+            data-bg-label="Hutan Kunang-Kunang"
+            class="hero-bg-scene-btn px-3 py-1 rounded-full bg-[var(--bg-elevated)] text-[var(--text-primary)] hover:border-[var(--accent-primary)] border border-transparent text-xs font-bold cursor-pointer transition-all hover:scale-105"
+          >
+            ✨ Kunang-Kunang
+          </button>
+          <button
+            type="button"
+            data-bg-scene="ocean"
+            data-bg-label="Dasar Samudra (Gelembung Air)"
+            class="hero-bg-scene-btn px-3 py-1 rounded-full bg-[var(--bg-elevated)] text-[var(--text-primary)] hover:border-[var(--accent-primary)] border border-transparent text-xs font-bold cursor-pointer transition-all hover:scale-105"
+          >
+            🌊 Samudra
+          </button>
+          <button
+            type="button"
+            data-bg-scene="sunset"
+            data-bg-label="Sunset Lo-Fi Dusk"
+            class="hero-bg-scene-btn px-3 py-1 rounded-full bg-[var(--bg-elevated)] text-[var(--text-primary)] hover:border-[var(--accent-primary)] border border-transparent text-xs font-bold cursor-pointer transition-all hover:scale-105"
+          >
+            🌆 Sunset Lo-Fi
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- 2. Asymmetric 3-Pod Interactive Control Deck (Audio Synth + Theme Studio + Pocket Terminal) -->
@@ -338,6 +398,37 @@ try {
           </a>
         </div>
 
+        <!-- Dedicated Soundboard Volume Control Bar -->
+        <div class="flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-[var(--bg-elevated)]/80 border border-[var(--border-subtle)]">
+          <button
+            type="button"
+            id="sfx-mute-btn"
+            class="text-[var(--text-primary)] hover:text-[var(--accent-primary)] transition-colors cursor-pointer shrink-0"
+            aria-label="Mute or unmute soundboard"
+            title="Mute / Unmute Soundboard"
+          >
+            <Volume2 id="sfx-vol-icon-on" class="w-4 h-4 text-[var(--accent-primary)]" />
+            <VolumeX id="sfx-vol-icon-off" class="w-4 h-4 text-rose-600 hidden" />
+          </button>
+
+          <label for="sfx-volume-slider" class="sr-only">Volume Soundboard</label>
+          <input
+            id="sfx-volume-slider"
+            type="range"
+            min="0"
+            max="100"
+            value="75"
+            class="w-full h-1.5 rounded-lg appearance-none bg-[var(--border-strong)] accent-[var(--accent-primary)] cursor-pointer"
+          />
+
+          <span
+            id="sfx-volume-label"
+            class="font-mono text-[10px] font-extrabold text-[var(--text-primary)] min-w-[34px] text-right"
+          >
+            75%
+          </span>
+        </div>
+
         <!-- Pack 1: Curated Indo Memes + Viral MyInstants MP3s -->
         <div id="sfx-grid-pack-1" class="grid grid-cols-4 gap-2">
           {memePads.map((pad) => (
@@ -390,78 +481,150 @@ try {
         </div>
       </div>
 
-      <!-- POD B (4 Cols): Live Palette & Canvas Toy Controller -->
-      <div class="md:col-span-4 tactile-card p-5 flex flex-col justify-between gap-4 reveal-on-scroll font-sans" style="--stagger: 2;">
-        <div class="flex items-center justify-between">
-          <div class="inline-flex items-center gap-2 text-xs font-extrabold uppercase tracking-wider text-[var(--text-primary)]">
-            <Palette class="w-4 h-4 text-[var(--accent-secondary)]" />
-            <span data-lang="id">🎨 Studio Customizer</span>
-            <span data-lang="en">🎨 Studio Customizer</span>
+      <!-- POD B (4 Cols): Multi-Station Lo-Fi Chill Beats Player + Studio Customizer -->
+      <div class="md:col-span-4 tactile-card p-5 flex flex-col justify-between gap-3 reveal-on-scroll font-sans" style="--stagger: 2;">
+        <!-- Header: Lo-Fi Chill Radio + Animated Equalizer -->
+        <div class="flex items-center justify-between gap-2">
+          <div class="inline-flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wider text-[var(--text-primary)]">
+            <Headphones class="w-4 h-4 text-[var(--accent-primary)]" />
+            <span>Lo-Fi Chill Beats</span>
           </div>
-          <span class="font-mono text-[11px] text-[var(--text-muted)]">Live Theme</span>
+          <div class="inline-flex items-center gap-2">
+            <div id="lofi-eq-bars" class="flex items-end gap-0.5 h-3 opacity-35 transition-opacity" aria-hidden="true">
+              <span class="w-1 h-1.5 bg-[var(--accent-primary)] rounded-full transition-all duration-150"></span>
+              <span class="w-1 h-3 bg-[var(--accent-secondary)] rounded-full transition-all duration-150"></span>
+              <span class="w-1 h-2 bg-[var(--accent-primary)] rounded-full transition-all duration-150"></span>
+              <span class="w-1 h-2.5 bg-[var(--accent-secondary)] rounded-full transition-all duration-150"></span>
+            </div>
+            <span id="lofi-status-badge" class="px-2 py-0.5 rounded-full bg-[var(--bg-elevated)] font-mono text-[10px] font-bold text-[var(--text-muted)]">
+              STANDBY
+            </span>
+          </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-2">
+        <!-- Now Playing Display + Transport Controls -->
+        <div class="p-3 rounded-2xl bg-[var(--tint-violet)] border border-violet-600/20 flex items-center justify-between gap-2">
+          <div class="min-w-0">
+            <div id="lofi-track-title" class="font-display text-xs sm:text-sm font-extrabold text-violet-950 truncate">
+              ☕ Midnight Study Beats
+            </div>
+            <div id="lofi-track-sub" class="font-mono text-[10px] font-bold text-violet-900/80 truncate">
+              74 BPM · Rhodes Jazz 9th + Vinyl
+            </div>
+          </div>
+
+          <div class="flex items-center gap-1 shrink-0">
+            <button
+              type="button"
+              id="lofi-prev-btn"
+              class="p-1.5 rounded-xl bg-white/80 hover:bg-white text-violet-950 cursor-pointer transition-transform active:scale-90"
+              title="Lagu Lo-Fi Sebelumnya"
+              aria-label="Previous Lo-Fi track"
+            >
+              <SkipBack class="w-3.5 h-3.5" />
+            </button>
+            <button
+              type="button"
+              id="lofi-play-btn"
+              class="px-3 py-1.5 rounded-xl bg-[var(--accent-primary)] text-[var(--accent-ink)] font-sans text-xs font-extrabold inline-flex items-center gap-1 cursor-pointer shadow-2xs hover:scale-105 active:scale-95 transition-transform"
+              title="Putar / Jeda Lagu Lo-Fi"
+              aria-label="Play or pause Lo-Fi music"
+            >
+              <Play id="lofi-icon-play" class="w-3.5 h-3.5 fill-current" />
+              <Pause id="lofi-icon-pause" class="w-3.5 h-3.5 fill-current hidden" />
+              <span id="lofi-play-label">Play</span>
+            </button>
+            <button
+              type="button"
+              id="lofi-next-btn"
+              class="p-1.5 rounded-xl bg-white/80 hover:bg-white text-violet-950 cursor-pointer transition-transform active:scale-90"
+              title="Lagu Lo-Fi Berikutnya"
+              aria-label="Next Lo-Fi track"
+            >
+              <SkipForward class="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+
+        <!-- 5 Selectable Lo-Fi Station Pills -->
+        <div class="flex flex-wrap gap-1.5" role="group" aria-label="Pilih lagu Lo-Fi">
           <button
             type="button"
-            data-hero-accent="emerald"
-            data-hero-accent-label="Mint Emerald"
-            class="hero-accent-btn flex items-center gap-2 p-2.5 rounded-xl bg-[var(--tint-mint)] border border-teal-600/20 text-xs font-extrabold text-teal-950 hover:scale-[1.02] transition-transform cursor-pointer"
+            data-lofi-idx="0"
+            class="lofi-station-btn px-2.5 py-1 rounded-xl bg-[var(--accent-primary)] text-[var(--accent-ink)] text-[10px] font-extrabold cursor-pointer transition-all"
           >
-            <span class="w-3.5 h-3.5 rounded-full bg-[#0d9488] shrink-0"></span>
-            <span>Mint</span>
+            ☕ Study Beats
           </button>
           <button
             type="button"
-            data-hero-accent="coral"
-            data-hero-accent-label="Sunset Coral"
-            class="hero-accent-btn flex items-center gap-2 p-2.5 rounded-xl bg-[var(--tint-amber)] border border-amber-600/20 text-xs font-extrabold text-amber-950 hover:scale-[1.02] transition-transform cursor-pointer"
+            data-lofi-idx="1"
+            class="lofi-station-btn px-2.5 py-1 rounded-xl bg-[var(--bg-elevated)] text-[var(--text-primary)] hover:border-[var(--accent-primary)] text-[10px] font-bold cursor-pointer transition-all"
           >
-            <span class="w-3.5 h-3.5 rounded-full bg-[#ea580c] shrink-0"></span>
-            <span>Coral</span>
+            🌧️ Bali Rain
           </button>
           <button
             type="button"
-            data-hero-accent="ocean"
-            data-hero-accent-label="Royal Ocean"
-            class="hero-accent-btn flex items-center gap-2 p-2.5 rounded-xl bg-[var(--tint-sky)] border border-blue-600/20 text-xs font-extrabold text-blue-950 hover:scale-[1.02] transition-transform cursor-pointer"
+            data-lofi-idx="2"
+            class="lofi-station-btn px-2.5 py-1 rounded-xl bg-[var(--bg-elevated)] text-[var(--text-primary)] hover:border-[var(--accent-primary)] text-[10px] font-bold cursor-pointer transition-all"
           >
-            <span class="w-3.5 h-3.5 rounded-full bg-[#2563eb] shrink-0"></span>
-            <span>Ocean</span>
+            🌙 Night Drive
           </button>
           <button
             type="button"
-            data-hero-accent="violet"
-            data-hero-accent-label="Electric Violet"
-            class="hero-accent-btn flex items-center gap-2 p-2.5 rounded-xl bg-[var(--tint-violet)] border border-violet-600/20 text-xs font-extrabold text-violet-950 hover:scale-[1.02] transition-transform cursor-pointer"
+            data-lofi-idx="3"
+            class="lofi-station-btn px-2.5 py-1 rounded-xl bg-[var(--bg-elevated)] text-[var(--text-primary)] hover:border-[var(--accent-primary)] text-[10px] font-bold cursor-pointer transition-all"
           >
-            <span class="w-3.5 h-3.5 rounded-full bg-[#7c3aed] shrink-0"></span>
-            <span>Violet</span>
+            🍃 Ubud Breeze
+          </button>
+          <button
+            type="button"
+            data-lofi-idx="4"
+            class="lofi-station-btn px-2.5 py-1 rounded-xl bg-[var(--bg-elevated)] text-[var(--text-primary)] hover:border-[var(--accent-primary)] text-[10px] font-bold cursor-pointer transition-all"
+          >
+            👾 8-Bit Chill
           </button>
         </div>
 
-        <div class="pt-3 border-t border-[var(--border-subtle)] flex flex-wrap items-center gap-1.5">
+        <!-- Lo-Fi Volume Slider + Rain/Vinyl Ambience Toggle -->
+        <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[var(--bg-elevated)]/80 border border-[var(--border-subtle)]">
+          <Volume2 class="w-3.5 h-3.5 text-[var(--accent-primary)] shrink-0" />
+          <label for="lofi-volume-slider" class="sr-only">Volume Lo-Fi</label>
+          <input
+            id="lofi-volume-slider"
+            type="range"
+            min="0"
+            max="100"
+            value="65"
+            class="w-full h-1.5 rounded-lg appearance-none bg-[var(--border-strong)] accent-[var(--accent-primary)] cursor-pointer"
+          />
+          <span id="lofi-volume-label" class="font-mono text-[10px] font-extrabold text-[var(--text-primary)] min-w-[30px] text-right">
+            65%
+          </span>
           <button
             type="button"
-            id="hero-fx-serpent"
-            class="px-2.5 py-1 rounded-full bg-[var(--bg-elevated)] hover:bg-[var(--accent-primary)] hover:text-white text-[11px] font-bold cursor-pointer transition-colors"
+            id="lofi-rain-btn"
+            class="px-2 py-0.5 rounded-lg bg-[var(--tint-sky)] text-blue-950 font-sans text-[10px] font-extrabold inline-flex items-center gap-1 cursor-pointer shrink-0"
+            title="Toggle efek derau piringan hitam / hujan"
           >
-            🐍 Ular Latar
+            <CloudRain class="w-3 h-3 text-blue-700" />
+            <span>Vinyl</span>
           </button>
-          <button
-            type="button"
-            id="hero-fx-matrix"
-            class="px-2.5 py-1 rounded-full bg-[var(--bg-elevated)] hover:bg-[var(--accent-primary)] hover:text-white text-[11px] font-bold cursor-pointer transition-colors"
-          >
-            🌧️ Matrix
-          </button>
-          <button
-            type="button"
-            id="hero-fx-barrel"
-            class="px-2.5 py-1 rounded-full bg-[var(--bg-elevated)] hover:bg-[var(--accent-primary)] hover:text-white text-[11px] font-bold cursor-pointer transition-colors"
-          >
-            🔄 360° Spin
-          </button>
+        </div>
+
+        <!-- Compact Studio Theme & Canvas FX Footer -->
+        <div class="pt-2 border-t border-[var(--border-subtle)] flex items-center justify-between gap-1.5">
+          <div class="flex items-center gap-1.5" role="group" aria-label="Pilih warna aksen">
+            <Palette class="w-3.5 h-3.5 text-[var(--text-muted)] mr-0.5" />
+            <button type="button" data-hero-accent="emerald" data-hero-accent-label="Mint Emerald" class="hero-accent-btn w-4 h-4 rounded-full bg-[#0d9488] hover:scale-125 transition-transform cursor-pointer" title="Mint Emerald"></button>
+            <button type="button" data-hero-accent="coral" data-hero-accent-label="Sunset Coral" class="hero-accent-btn w-4 h-4 rounded-full bg-[#ea580c] hover:scale-125 transition-transform cursor-pointer" title="Sunset Coral"></button>
+            <button type="button" data-hero-accent="ocean" data-hero-accent-label="Royal Ocean" class="hero-accent-btn w-4 h-4 rounded-full bg-[#2563eb] hover:scale-125 transition-transform cursor-pointer" title="Royal Ocean"></button>
+            <button type="button" data-hero-accent="violet" data-hero-accent-label="Electric Violet" class="hero-accent-btn w-4 h-4 rounded-full bg-[#7c3aed] hover:scale-125 transition-transform cursor-pointer" title="Electric Violet"></button>
+          </div>
+          <div class="flex items-center gap-1">
+            <button type="button" id="hero-fx-serpent" class="px-2 py-0.5 rounded-full bg-[var(--bg-elevated)] hover:bg-[var(--accent-primary)] hover:text-white text-[10px] font-bold cursor-pointer transition-colors" title="Animasi Ular Latar">🐍</button>
+            <button type="button" id="hero-fx-matrix" class="px-2 py-0.5 rounded-full bg-[var(--bg-elevated)] hover:bg-[var(--accent-primary)] hover:text-white text-[10px] font-bold cursor-pointer transition-colors" title="Efek Matrix">🌧️</button>
+            <button type="button" id="hero-fx-barrel" class="px-2 py-0.5 rounded-full bg-[var(--bg-elevated)] hover:bg-[var(--accent-primary)] hover:text-white text-[10px] font-bold cursor-pointer transition-colors" title="360 Spin">🔄</button>
+          </div>
         </div>
       </div>
 
@@ -535,17 +698,70 @@ try {
     }, 3000);
   }
 
-  // 3. Indonesian Viral Meme Soundboard (id-ID Voice SpeechSynthesis + WebAudio Meme Stingers)
+  // 3. Indonesian Viral Meme Soundboard (id-ID Voice SpeechSynthesis + WebAudio Meme Stingers + Volume Control)
   let audioCtx: AudioContext | null = null;
+  let masterGain: GainNode | null = null;
   const noteStatus = document.getElementById('synth-note-status');
+  const volSlider = document.getElementById('sfx-volume-slider') as HTMLInputElement | null;
+  const volLabel = document.getElementById('sfx-volume-label');
+  const muteBtn = document.getElementById('sfx-mute-btn');
+  const volIconOn = document.getElementById('sfx-vol-icon-on');
+  const volIconOff = document.getElementById('sfx-vol-icon-off');
 
-  function getCtx(): AudioContext | null {
+  let sfxVolume = 0.75;
+  let isSfxMuted = false;
+
+  // Restore saved volume safely
+  try {
+    const savedVol = localStorage.getItem('portfolio-sfx-volume');
+    if (savedVol !== null) {
+      const parsed = Number(savedVol);
+      if (!Number.isNaN(parsed) && parsed >= 0 && parsed <= 100) {
+        sfxVolume = parsed / 100;
+        if (volSlider) volSlider.value = String(parsed);
+      }
+    }
+  } catch (_) {}
+
+  function getEffectiveVolume(): number {
+    return isSfxMuted ? 0 : sfxVolume;
+  }
+
+  function syncVolumeUI() {
+    const effective = getEffectiveVolume();
+    const pct = Math.round(effective * 100);
+    if (volLabel) {
+      volLabel.textContent = isSfxMuted || pct === 0 ? 'MUTE' : `${pct}%`;
+    }
+    if (volIconOn && volIconOff) {
+      if (isSfxMuted || pct === 0) {
+        volIconOn.classList.add('hidden');
+        volIconOff.classList.remove('hidden');
+      } else {
+        volIconOn.classList.remove('hidden');
+        volIconOff.classList.add('hidden');
+      }
+    }
+    if (activeAudio) {
+      activeAudio.volume = effective;
+    }
+    if (masterGain && audioCtx) {
+      masterGain.gain.setValueAtTime(effective, audioCtx.currentTime);
+    }
+  }
+
+  function getCtx(): { ctx: AudioContext; out: AudioNode } | null {
     try {
       const AudioContextClass =
         window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-      if (!audioCtx) audioCtx = new AudioContextClass();
+      if (!audioCtx) {
+        audioCtx = new AudioContextClass();
+        masterGain = audioCtx.createGain();
+        masterGain.gain.setValueAtTime(getEffectiveVolume(), audioCtx.currentTime);
+        masterGain.connect(audioCtx.destination);
+      }
       if (audioCtx.state === 'suspended') audioCtx.resume();
-      return audioCtx;
+      return { ctx: audioCtx, out: masterGain || audioCtx.destination };
     } catch (_) {
       return null;
     }
@@ -553,13 +769,14 @@ try {
 
   function speakIndoMeme(text: string, pitch = 1.0, rate = 1.05) {
     try {
-      if (!('speechSynthesis' in window)) return;
+      const vol = getEffectiveVolume();
+      if (vol <= 0 || !('speechSynthesis' in window)) return;
       window.speechSynthesis.cancel();
       const utter = new SpeechSynthesisUtterance(text);
       utter.lang = 'id-ID';
       utter.pitch = pitch;
       utter.rate = rate;
-      utter.volume = 1.0;
+      utter.volume = vol;
 
       const voices = window.speechSynthesis.getVoices();
       const indoVoice =
@@ -580,7 +797,7 @@ try {
     };
   }
 
-  function playVineBoom(ctx: AudioContext, startAt = 0) {
+  function playVineBoom(ctx: AudioContext, out: AudioNode, startAt = 0) {
     const now = ctx.currentTime + startAt;
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
@@ -590,25 +807,26 @@ try {
     gain.gain.setValueAtTime(0.28, now);
     gain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
     osc.connect(gain);
-    gain.connect(ctx.destination);
+    gain.connect(out);
     osc.start(now);
     osc.stop(now + 0.62);
   }
 
   function playFunnySfx(type: string, label: string) {
-    const ctx = getCtx();
+    const audioEnv = getCtx();
     if (noteStatus) {
       noteStatus.textContent = label;
     }
     window.dispatchEvent(new CustomEvent('portfolio:toast', { detail: { message: label } }));
 
-    if (!ctx) return;
+    if (!audioEnv || getEffectiveVolume() <= 0) return;
+    const { ctx, out } = audioEnv;
     const now = ctx.currentTime;
 
     if (type === 'antek') {
       // "HEY ANTEK-ANTEK ASING!!" + Dramatic Podium Horn + Vine Boom
       speakIndoMeme('Hei! Antek antek asing! Jangan macam-macam!', 0.82, 1.08);
-      playVineBoom(ctx, 0);
+      playVineBoom(ctx, out, 0);
       [220, 277.18, 329.63].forEach((freq) => {
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
@@ -617,7 +835,7 @@ try {
         gain.gain.setValueAtTime(0.05, now);
         gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
         osc.connect(gain);
-        gain.connect(ctx.destination);
+        gain.connect(out);
         osc.start(now);
         osc.stop(now + 0.46);
       });
@@ -643,7 +861,7 @@ try {
 
         osc.connect(filter);
         filter.connect(gain);
-        gain.connect(ctx.destination);
+        gain.connect(out);
         osc.start(now + offset);
         osc.stop(now + offset + 0.12);
       });
@@ -671,7 +889,7 @@ try {
         gain.gain.setValueAtTime(0.08, now + n.t);
         gain.gain.exponentialRampToValueAtTime(0.001, now + n.t + n.d);
         osc.connect(gain);
-        gain.connect(ctx.destination);
+        gain.connect(out);
         osc.start(now + n.t);
         osc.stop(now + n.t + n.d + 0.01);
       });
@@ -686,15 +904,15 @@ try {
         gain.gain.setValueAtTime(0.08, now + i * 0.06);
         gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.06 + 0.35);
         osc.connect(gain);
-        gain.connect(ctx.destination);
+        gain.connect(out);
         osc.start(now + i * 0.06);
         osc.stop(now + i * 0.06 + 0.36);
       });
     } else if (type === 'chuaks') {
       // "CHUAAAKS!!" + Heavy Vine Boom Drop
       speakIndoMeme('Chuaaaks!', 1.25, 1.25);
-      playVineBoom(ctx, 0.12);
-      playVineBoom(ctx, 0.42);
+      playVineBoom(ctx, out, 0.12);
+      playVineBoom(ctx, out, 0.42);
     } else if (type === 'slebew') {
       // "SLEBEWWW!!" + Laser Drop + Confetti
       speakIndoMeme('Slebewww!', 0.9, 1.1);
@@ -706,7 +924,7 @@ try {
       gain.gain.setValueAtTime(0.11, now);
       gain.gain.exponentialRampToValueAtTime(0.001, now + 0.48);
       osc.connect(gain);
-      gain.connect(ctx.destination);
+      gain.connect(out);
       osc.start(now);
       osc.stop(now + 0.5);
       window.dispatchEvent(new CustomEvent('portfolio:fireworks'));
@@ -720,7 +938,7 @@ try {
         gain.gain.setValueAtTime(0.06, now + offset);
         gain.gain.exponentialRampToValueAtTime(0.001, now + offset + 0.05);
         osc.connect(gain);
-        gain.connect(ctx.destination);
+        gain.connect(out);
         osc.start(now + offset);
         osc.stop(now + offset + 0.055);
       });
@@ -743,7 +961,7 @@ try {
         gain.gain.setValueAtTime(0.06, now + n.t);
         gain.gain.exponentialRampToValueAtTime(0.001, now + n.t + n.d);
         osc.connect(gain);
-        gain.connect(ctx.destination);
+        gain.connect(out);
         osc.start(now + n.t);
         osc.stop(now + n.t + n.d + 0.02);
       });
@@ -751,6 +969,28 @@ try {
   }
 
   let activeAudio: HTMLAudioElement | null = null;
+
+  syncVolumeUI();
+
+  volSlider?.addEventListener('input', () => {
+    const val = Number(volSlider.value);
+    sfxVolume = Math.max(0, Math.min(100, val)) / 100;
+    if (sfxVolume > 0 && isSfxMuted) {
+      isSfxMuted = false;
+    }
+    try {
+      localStorage.setItem('portfolio-sfx-volume', String(Math.round(sfxVolume * 100)));
+    } catch (_) {}
+    syncVolumeUI();
+  });
+
+  muteBtn?.addEventListener('click', () => {
+    isSfxMuted = !isSfxMuted;
+    if (isSfxMuted) {
+      stopAllSfx();
+    }
+    syncVolumeUI();
+  });
 
   function stopAllSfx() {
     try {
@@ -770,15 +1010,18 @@ try {
 
   function playMyInstantOrFallback(mp3Url: string, fallbackSfx: string, label: string) {
     stopAllSfx();
+    const vol = getEffectiveVolume();
     if (noteStatus) {
-      noteStatus.textContent = label;
+      noteStatus.textContent = vol <= 0 ? `🔇 (Muted) ${label}` : label;
     }
     window.dispatchEvent(new CustomEvent('portfolio:toast', { detail: { message: label } }));
+
+    if (vol <= 0) return;
 
     if (mp3Url) {
       try {
         const audio = new Audio(mp3Url);
-        audio.volume = 0.9;
+        audio.volume = vol;
         activeAudio = audio;
         audio.play().catch(() => {
           playFunnySfx(fallbackSfx, label);
@@ -841,7 +1084,599 @@ try {
     } catch (_) {}
   });
 
-  // 5. Studio Theme Accent Buttons & Canvas FX
+  // 5. Multi-Station Lo-Fi Chill Beats Synthesizer & Radio Deck
+  interface LofiStation {
+    title: string;
+    sub: string;
+    bpm: number;
+    wave: OscillatorType;
+    melodyWave: OscillatorType;
+    cutoff: number;
+    chords: number[][];
+    bass: number[];
+    melody: number[];
+    style: 'boombap' | 'rain' | 'drive' | 'breeze' | 'chip';
+  }
+
+  const LOFI_STATIONS: LofiStation[] = [
+    {
+      title: '☕ Midnight Study Beats',
+      sub: '74 BPM · Rhodes Jazz 9th + Boom-Bap',
+      bpm: 74,
+      wave: 'triangle',
+      melodyWave: 'sine',
+      cutoff: 1050,
+      // Dm9 -> G13 -> Cmaj9 -> A7b13
+      chords: [
+        [293.66, 349.23, 440.0, 523.25, 659.25],
+        [196.0, 349.23, 440.0, 493.88, 659.25],
+        [261.63, 329.63, 392.0, 493.88, 587.33],
+        [220.0, 329.63, 392.0, 440.0, 554.37],
+      ],
+      bass: [73.42, 98.0, 65.41, 110.0],
+      melody: [523.25, 587.33, 659.25, 783.99, 880.0, 1046.5],
+      style: 'boombap',
+    },
+    {
+      title: '🌧️ Rainy Bali Cafe',
+      sub: '68 BPM · Dreamy Lo-Fi Keys + Soft Rain',
+      bpm: 68,
+      wave: 'sine',
+      melodyWave: 'triangle',
+      cutoff: 880,
+      // Fmaj9 -> Em7 -> Dm9 -> Cmaj9
+      chords: [
+        [174.61, 261.63, 329.63, 440.0, 523.25],
+        [164.81, 246.94, 293.66, 392.0, 493.88],
+        [146.83, 220.0, 293.66, 349.23, 440.0],
+        [130.81, 261.63, 329.63, 392.0, 493.88],
+      ],
+      bass: [87.31, 82.41, 73.42, 65.41],
+      melody: [523.25, 659.25, 783.99, 880.0, 1046.5, 1174.66],
+      style: 'rain',
+    },
+    {
+      title: '🌙 Tokyo Night Drive',
+      sub: '84 BPM · Nocturnal Chillhop Groove',
+      bpm: 84,
+      wave: 'sawtooth',
+      melodyWave: 'triangle',
+      cutoff: 760,
+      // Am9 -> Fmaj7 -> Dm9 -> E7#9
+      chords: [
+        [220.0, 261.63, 329.63, 392.0, 493.88],
+        [174.61, 261.63, 329.63, 440.0, 523.25],
+        [293.66, 349.23, 440.0, 523.25, 659.25],
+        [164.81, 246.94, 329.63, 392.0, 466.16],
+      ],
+      bass: [110.0, 87.31, 73.42, 82.41],
+      melody: [440.0, 523.25, 659.25, 783.99, 880.0, 987.77],
+      style: 'drive',
+    },
+    {
+      title: '🍃 Ubud Morning Breeze',
+      sub: '72 BPM · Kalimba Plucks & Warm Pad',
+      bpm: 72,
+      wave: 'triangle',
+      melodyWave: 'sine',
+      cutoff: 1150,
+      // Gmaj9 -> Bm7 -> Em9 -> Cmaj9
+      chords: [
+        [196.0, 246.94, 293.66, 369.99, 440.0],
+        [246.94, 293.66, 369.99, 440.0, 587.33],
+        [164.81, 246.94, 293.66, 369.99, 493.88],
+        [261.63, 329.63, 392.0, 493.88, 587.33],
+      ],
+      bass: [98.0, 123.47, 82.41, 65.41],
+      melody: [587.33, 659.25, 783.99, 880.0, 987.77, 1174.66],
+      style: 'breeze',
+    },
+    {
+      title: '👾 8-Bit Arcade Chill',
+      sub: '78 BPM · Cozy Chiptune Lo-Fi Beats',
+      bpm: 78,
+      wave: 'square',
+      melodyWave: 'square',
+      cutoff: 680,
+      // Cmaj7 -> A7 -> Dm7 -> G13
+      chords: [
+        [261.63, 329.63, 392.0, 493.88],
+        [220.0, 277.18, 329.63, 392.0],
+        [293.66, 349.23, 440.0, 523.25],
+        [196.0, 246.94, 349.23, 440.0],
+      ],
+      bass: [65.41, 110.0, 73.42, 98.0],
+      melody: [523.25, 659.25, 783.99, 1046.5, 880.0, 659.25],
+      style: 'chip',
+    },
+  ];
+
+  const lofiTitleEl = document.getElementById('lofi-track-title');
+  const lofiSubEl = document.getElementById('lofi-track-sub');
+  const lofiStatusEl = document.getElementById('lofi-status-badge');
+  const lofiPlayBtn = document.getElementById('lofi-play-btn');
+  const lofiPlayLabel = document.getElementById('lofi-play-label');
+  const lofiIconPlay = document.getElementById('lofi-icon-play');
+  const lofiIconPause = document.getElementById('lofi-icon-pause');
+  const lofiPrevBtn = document.getElementById('lofi-prev-btn');
+  const lofiNextBtn = document.getElementById('lofi-next-btn');
+  const lofiVolSlider = document.getElementById('lofi-volume-slider') as HTMLInputElement | null;
+  const lofiVolLabel = document.getElementById('lofi-volume-label');
+  const lofiRainBtn = document.getElementById('lofi-rain-btn');
+  const lofiEqBars = document.getElementById('lofi-eq-bars');
+  const lofiStationBtns = document.querySelectorAll<HTMLButtonElement>('.lofi-station-btn');
+
+  let lofiIdx = 0;
+  let lofiPlaying = false;
+  let lofiVolume = 0.65;
+  let lofiVinylOn = true;
+  let lofiStep = 0;
+  let lofiTimer: number | null = null;
+  let lofiMasterGain: GainNode | null = null;
+  let lofiVinylSource: AudioBufferSourceNode | null = null;
+  let lofiVinylGain: GainNode | null = null;
+
+  // Restore saved Lo-Fi volume
+  try {
+    const savedLofiVol = localStorage.getItem('portfolio-lofi-volume');
+    if (savedLofiVol !== null) {
+      const parsed = Number(savedLofiVol);
+      if (!Number.isNaN(parsed) && parsed >= 0 && parsed <= 100) {
+        lofiVolume = parsed / 100;
+        if (lofiVolSlider) lofiVolSlider.value = String(parsed);
+        if (lofiVolLabel) lofiVolLabel.textContent = `${parsed}%`;
+      }
+    }
+  } catch (_) {}
+
+  function ensureLofiBus(): { ctx: AudioContext; out: GainNode } | null {
+    const env = getCtx();
+    if (!env) return null;
+    const { ctx } = env;
+    if (!lofiMasterGain) {
+      lofiMasterGain = ctx.createGain();
+      lofiMasterGain.gain.setValueAtTime(lofiVolume, ctx.currentTime);
+      lofiMasterGain.connect(ctx.destination);
+    }
+    return { ctx, out: lofiMasterGain };
+  }
+
+  function startVinylTexture() {
+    const bus = ensureLofiBus();
+    if (!bus) return;
+    stopVinylTexture();
+    if (!lofiVinylOn) return;
+
+    const { ctx, out } = bus;
+    const bufLen = ctx.sampleRate * 3;
+    const buffer = ctx.createBuffer(1, bufLen, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    let b0 = 0;
+    let b1 = 0;
+    let b2 = 0;
+    for (let i = 0; i < bufLen; i++) {
+      const white = Math.random() * 2 - 1;
+      b0 = 0.997 * b0 + white * 0.029;
+      b1 = 0.985 * b1 + white * 0.032;
+      b2 = 0.95 * b2 + white * 0.045;
+      // Subtle vinyl dust pops
+      const pop = Math.random() > 0.9985 ? (Math.random() * 2 - 1) * 0.35 : 0;
+      data[i] = (b0 + b1 + b2) * 0.14 + pop;
+    }
+
+    const src = ctx.createBufferSource();
+    src.buffer = buffer;
+    src.loop = true;
+
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.setValueAtTime(1100, ctx.currentTime);
+    filter.Q.setValueAtTime(0.7, ctx.currentTime);
+
+    const vGain = ctx.createGain();
+    const isRainTrack = LOFI_STATIONS[lofiIdx].style === 'rain';
+    vGain.gain.setValueAtTime(isRainTrack ? 0.18 : 0.09, ctx.currentTime);
+
+    src.connect(filter);
+    filter.connect(vGain);
+    vGain.connect(out);
+    src.start();
+
+    lofiVinylSource = src;
+    lofiVinylGain = vGain;
+  }
+
+  function stopVinylTexture() {
+    try {
+      if (lofiVinylSource) {
+        lofiVinylSource.stop();
+        lofiVinylSource.disconnect();
+        lofiVinylSource = null;
+      }
+      if (lofiVinylGain) {
+        lofiVinylGain.disconnect();
+        lofiVinylGain = null;
+      }
+    } catch (_) {}
+  }
+
+  function playLofiKick(ctx: AudioContext, out: AudioNode, time: number, punch = 0.26) {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(118, time);
+    osc.frequency.exponentialRampToValueAtTime(36, time + 0.14);
+    gain.gain.setValueAtTime(punch, time);
+    gain.gain.exponentialRampToValueAtTime(0.001, time + 0.22);
+    osc.connect(gain);
+    gain.connect(out);
+    osc.start(time);
+    osc.stop(time + 0.24);
+  }
+
+  function playLofiSnare(ctx: AudioContext, out: AudioNode, time: number, level = 0.12) {
+    // Warm rimshot body + filtered noise snap
+    const osc = ctx.createOscillator();
+    const oscGain = ctx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(210, time);
+    osc.frequency.exponentialRampToValueAtTime(95, time + 0.07);
+    oscGain.gain.setValueAtTime(level, time);
+    oscGain.gain.exponentialRampToValueAtTime(0.001, time + 0.09);
+    osc.connect(oscGain);
+    oscGain.connect(out);
+    osc.start(time);
+    osc.stop(time + 0.1);
+
+    const len = Math.floor(ctx.sampleRate * 0.11);
+    const nBuf = ctx.createBuffer(1, len, ctx.sampleRate);
+    const ch = nBuf.getChannelData(0);
+    for (let i = 0; i < len; i++) {
+      ch[i] = (Math.random() * 2 - 1) * Math.exp(-i / (ctx.sampleRate * 0.035));
+    }
+    const nSrc = ctx.createBufferSource();
+    nSrc.buffer = nBuf;
+    const filt = ctx.createBiquadFilter();
+    filt.type = 'bandpass';
+    filt.frequency.setValueAtTime(1650, time);
+    const nGain = ctx.createGain();
+    nGain.gain.setValueAtTime(level * 0.85, time);
+    nGain.gain.exponentialRampToValueAtTime(0.001, time + 0.1);
+    nSrc.connect(filt);
+    filt.connect(nGain);
+    nGain.connect(out);
+    nSrc.start(time);
+  }
+
+  function playLofiHat(ctx: AudioContext, out: AudioNode, time: number, open = false) {
+    const dur = open ? 0.14 : 0.045;
+    const len = Math.floor(ctx.sampleRate * dur);
+    const nBuf = ctx.createBuffer(1, len, ctx.sampleRate);
+    const ch = nBuf.getChannelData(0);
+    for (let i = 0; i < len; i++) {
+      ch[i] = (Math.random() * 2 - 1) * Math.exp(-i / (ctx.sampleRate * (open ? 0.05 : 0.014)));
+    }
+    const nSrc = ctx.createBufferSource();
+    nSrc.buffer = nBuf;
+    const filt = ctx.createBiquadFilter();
+    filt.type = 'highpass';
+    filt.frequency.setValueAtTime(5200, time);
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(open ? 0.05 : 0.035, time);
+    gain.gain.exponentialRampToValueAtTime(0.001, time + dur);
+    nSrc.connect(filt);
+    filt.connect(gain);
+    gain.connect(out);
+    nSrc.start(time);
+  }
+
+  function playLofiChord(
+    ctx: AudioContext,
+    out: AudioNode,
+    freqs: number[],
+    station: LofiStation,
+    durSec: number
+  ) {
+    const now = ctx.currentTime;
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(station.cutoff, now);
+    filter.Q.setValueAtTime(1.2, now);
+    filter.connect(out);
+
+    freqs.forEach((f, idx) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = station.wave;
+      // Gentle analog tape detune
+      const detune = (idx % 2 === 0 ? 1 : -1) * 4.5;
+      osc.detune.setValueAtTime(detune, now);
+      osc.frequency.setValueAtTime(f, now);
+
+      const strumDelay = idx * 0.022;
+      const noteStart = now + strumDelay;
+      const peakGain = station.wave === 'sawtooth' || station.wave === 'square' ? 0.032 : 0.055;
+
+      gain.gain.setValueAtTime(0.0001, noteStart);
+      gain.gain.linearRampToValueAtTime(peakGain, noteStart + 0.08);
+      gain.gain.exponentialRampToValueAtTime(0.0008, noteStart + durSec);
+
+      osc.connect(gain);
+      gain.connect(filter);
+      osc.start(noteStart);
+      osc.stop(noteStart + durSec + 0.04);
+    });
+  }
+
+  function playLofiBassNote(ctx: AudioContext, out: AudioNode, freq: number, durSec: number) {
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(freq, now);
+    gain.gain.setValueAtTime(0.001, now);
+    gain.gain.linearRampToValueAtTime(0.16, now + 0.03);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + durSec);
+    osc.connect(gain);
+    gain.connect(out);
+    osc.start(now);
+    osc.stop(now + durSec + 0.02);
+  }
+
+  function playLofiMelodyPluck(ctx: AudioContext, out: AudioNode, freq: number, station: LofiStation) {
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const filt = ctx.createBiquadFilter();
+    const gain = ctx.createGain();
+
+    osc.type = station.melodyWave;
+    osc.frequency.setValueAtTime(freq, now);
+
+    filt.type = 'lowpass';
+    filt.frequency.setValueAtTime(station.cutoff * 1.6, now);
+
+    const peak = station.melodyWave === 'square' ? 0.035 : 0.065;
+    gain.gain.setValueAtTime(0.001, now);
+    gain.gain.linearRampToValueAtTime(peak, now + 0.015);
+    gain.gain.exponentialRampToValueAtTime(0.0008, now + 0.52);
+
+    osc.connect(filt);
+    filt.connect(gain);
+    gain.connect(out);
+    osc.start(now);
+    osc.stop(now + 0.55);
+  }
+
+  function animateEqualizer() {
+    if (!lofiEqBars) return;
+    const spans = lofiEqBars.querySelectorAll<HTMLElement>('span');
+    spans.forEach((bar) => {
+      if (!lofiPlaying) {
+        bar.style.height = '4px';
+      } else {
+        const h = 4 + Math.floor(Math.random() * 10);
+        bar.style.height = `${h}px`;
+      }
+    });
+  }
+
+  function runLofiStep() {
+    if (!lofiPlaying) return;
+    const bus = ensureLofiBus();
+    if (!bus) return;
+
+    const { ctx, out } = bus;
+    const station = LOFI_STATIONS[lofiIdx];
+    const stepDurSec = 60 / station.bpm / 4; // 16th note duration
+    const barStep = lofiStep % 16;
+    const chordIdx = Math.floor(lofiStep / 16) % station.chords.length;
+    // Slight MPC lo-fi swing on odd 16th steps
+    const swingOffset = barStep % 2 === 1 ? stepDurSec * 0.18 : 0;
+    const hitTime = ctx.currentTime + swingOffset;
+
+    // 1. Trigger lush warm chord on beat 1 (barStep === 0) and gentle re-strum on beat 3 (barStep === 8)
+    if (barStep === 0) {
+      playLofiChord(ctx, out, station.chords[chordIdx], station, stepDurSec * 15.5);
+      playLofiBassNote(ctx, out, station.bass[chordIdx], stepDurSec * 7.5);
+    } else if (barStep === 8) {
+      playLofiBassNote(ctx, out, station.bass[chordIdx], stepDurSec * 5.5);
+    } else if (barStep === 14 && station.style === 'drive') {
+      playLofiBassNote(ctx, out, station.bass[chordIdx] * 1.5, stepDurSec * 1.8);
+    }
+
+    // 2. Drum groove per station style
+    if (station.style === 'boombap' || station.style === 'chip') {
+      if (barStep === 0 || barStep === 7 || barStep === 10) playLofiKick(ctx, out, hitTime, 0.24);
+      if (barStep === 4 || barStep === 12) playLofiSnare(ctx, out, hitTime, 0.11);
+      if (barStep % 2 === 0) playLofiHat(ctx, out, hitTime, barStep === 14);
+    } else if (station.style === 'rain') {
+      if (barStep === 0 || barStep === 10) playLofiKick(ctx, out, hitTime, 0.18);
+      if (barStep === 4 || barStep === 12) playLofiSnare(ctx, out, hitTime, 0.07);
+      if (barStep % 4 === 0) playLofiHat(ctx, out, hitTime, false);
+    } else if (station.style === 'drive') {
+      if (barStep === 0 || barStep === 6 || barStep === 10) playLofiKick(ctx, out, hitTime, 0.27);
+      if (barStep === 4 || barStep === 12) playLofiSnare(ctx, out, hitTime, 0.13);
+      if (barStep % 2 === 0 || barStep === 15) playLofiHat(ctx, out, hitTime, barStep === 6);
+    } else if (station.style === 'breeze') {
+      if (barStep === 0 || barStep === 9) playLofiKick(ctx, out, hitTime, 0.2);
+      if (barStep === 4 || barStep === 12) playLofiSnare(ctx, out, hitTime, 0.085);
+      if (barStep % 2 === 0) playLofiHat(ctx, out, hitTime, false);
+    }
+
+    // 3. Improvised gentle Lo-Fi melody plucks
+    const melodyTriggerSteps = [2, 6, 9, 11, 14];
+    if (melodyTriggerSteps.includes(barStep) && Math.random() > 0.32) {
+      const noteFreq = station.melody[(lofiStep + chordIdx * 2) % station.melody.length];
+      playLofiMelodyPluck(ctx, out, noteFreq, station);
+    }
+
+    animateEqualizer();
+    lofiStep++;
+  }
+
+  function syncLofiUI() {
+    const station = LOFI_STATIONS[lofiIdx];
+    if (lofiTitleEl) lofiTitleEl.textContent = station.title;
+    if (lofiSubEl) lofiSubEl.textContent = station.sub;
+
+    if (lofiStatusEl) {
+      lofiStatusEl.textContent = lofiPlaying ? `LIVE · ${station.bpm} BPM` : 'STANDBY';
+      lofiStatusEl.className = lofiPlaying
+        ? 'px-2 py-0.5 rounded-full bg-[var(--tint-mint)] font-mono text-[10px] font-extrabold text-teal-950'
+        : 'px-2 py-0.5 rounded-full bg-[var(--bg-elevated)] font-mono text-[10px] font-bold text-[var(--text-muted)]';
+    }
+
+    if (lofiPlayLabel) lofiPlayLabel.textContent = lofiPlaying ? 'Pause' : 'Play';
+    if (lofiIconPlay && lofiIconPause) {
+      if (lofiPlaying) {
+        lofiIconPlay.classList.add('hidden');
+        lofiIconPause.classList.remove('hidden');
+      } else {
+        lofiIconPlay.classList.remove('hidden');
+        lofiIconPause.classList.add('hidden');
+      }
+    }
+
+    if (lofiEqBars) {
+      lofiEqBars.style.opacity = lofiPlaying ? '1' : '0.35';
+    }
+
+    lofiStationBtns.forEach((btn, i) => {
+      if (i === lofiIdx) {
+        btn.className =
+          'lofi-station-btn px-2.5 py-1 rounded-xl bg-[var(--accent-primary)] text-[var(--accent-ink)] text-[10px] font-extrabold cursor-pointer transition-all shadow-2xs';
+      } else {
+        btn.className =
+          'lofi-station-btn px-2.5 py-1 rounded-xl bg-[var(--bg-elevated)] text-[var(--text-primary)] hover:border-[var(--accent-primary)] text-[10px] font-bold cursor-pointer transition-all';
+      }
+    });
+
+    if (lofiRainBtn) {
+      lofiRainBtn.className = lofiVinylOn
+        ? 'px-2 py-0.5 rounded-lg bg-[var(--tint-sky)] text-blue-950 font-sans text-[10px] font-extrabold inline-flex items-center gap-1 cursor-pointer shrink-0'
+        : 'px-2 py-0.5 rounded-lg bg-[var(--bg-surface)] text-[var(--text-muted)] font-sans text-[10px] font-bold inline-flex items-center gap-1 cursor-pointer shrink-0 opacity-60';
+    }
+  }
+
+  function startLofiPlayback() {
+    const bus = ensureLofiBus();
+    if (!bus) return;
+    if (lofiTimer) window.clearInterval(lofiTimer);
+
+    lofiPlaying = true;
+    const station = LOFI_STATIONS[lofiIdx];
+    const stepMs = (60 / station.bpm / 4) * 1000;
+
+    startVinylTexture();
+    runLofiStep();
+    lofiTimer = window.setInterval(runLofiStep, stepMs);
+    syncLofiUI();
+
+    window.dispatchEvent(
+      new CustomEvent('portfolio:toast', {
+        detail: { message: `🎧 Memutar Lo-Fi: ${station.title}` },
+      })
+    );
+  }
+
+  function stopLofiPlayback() {
+    lofiPlaying = false;
+    if (lofiTimer) {
+      window.clearInterval(lofiTimer);
+      lofiTimer = null;
+    }
+    stopVinylTexture();
+    animateEqualizer();
+    syncLofiUI();
+  }
+
+  function selectLofiStation(newIdx: number, autoPlay = true) {
+    lofiIdx = (newIdx + LOFI_STATIONS.length) % LOFI_STATIONS.length;
+    lofiStep = 0;
+    if (autoPlay || lofiPlaying) {
+      startLofiPlayback();
+    } else {
+      syncLofiUI();
+    }
+  }
+
+  lofiPlayBtn?.addEventListener('click', () => {
+    if (lofiPlaying) {
+      stopLofiPlayback();
+    } else {
+      startLofiPlayback();
+    }
+  });
+
+  lofiPrevBtn?.addEventListener('click', () => {
+    selectLofiStation(lofiIdx - 1, true);
+  });
+
+  lofiNextBtn?.addEventListener('click', () => {
+    selectLofiStation(lofiIdx + 1, true);
+  });
+
+  lofiStationBtns.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const idx = Number(btn.getAttribute('data-lofi-idx') || '0');
+      if (idx === lofiIdx && lofiPlaying) {
+        stopLofiPlayback();
+      } else {
+        selectLofiStation(idx, true);
+      }
+    });
+  });
+
+  lofiVolSlider?.addEventListener('input', () => {
+    const val = Math.max(0, Math.min(100, Number(lofiVolSlider.value)));
+    lofiVolume = val / 100;
+    if (lofiVolLabel) lofiVolLabel.textContent = `${val}%`;
+    if (lofiMasterGain && audioCtx) {
+      lofiMasterGain.gain.setValueAtTime(lofiVolume, audioCtx.currentTime);
+    }
+    try {
+      localStorage.setItem('portfolio-lofi-volume', String(val));
+    } catch (_) {}
+  });
+
+  lofiRainBtn?.addEventListener('click', () => {
+    lofiVinylOn = !lofiVinylOn;
+    if (lofiPlaying) {
+      if (lofiVinylOn) startVinylTexture();
+      else stopVinylTexture();
+    }
+    syncLofiUI();
+  });
+
+  syncLofiUI();
+
+  // 6. Studio Theme Accent Buttons, Background Ambience Worlds & Canvas FX
+  const bgSceneBtns = document.querySelectorAll<HTMLButtonElement>('.hero-bg-scene-btn');
+
+  function syncBgSceneButtons(activeScene: string) {
+    bgSceneBtns.forEach((btn) => {
+      const s = btn.getAttribute('data-bg-scene') || 'studio';
+      if (s === activeScene) {
+        btn.className =
+          'hero-bg-scene-btn px-3 py-1 rounded-full bg-[var(--accent-primary)] text-[var(--accent-ink)] text-xs font-extrabold cursor-pointer transition-all hover:scale-105 shadow-2xs';
+      } else {
+        btn.className =
+          'hero-bg-scene-btn px-3 py-1 rounded-full bg-[var(--bg-elevated)] text-[var(--text-primary)] hover:border-[var(--accent-primary)] border border-transparent text-xs font-bold cursor-pointer transition-all hover:scale-105';
+      }
+    });
+  }
+
+  syncBgSceneButtons(document.documentElement.getAttribute('data-bg-scene') || 'studio');
+
+  bgSceneBtns.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const scene = btn.getAttribute('data-bg-scene') || 'studio';
+      const label = btn.getAttribute('data-bg-label') || scene;
+      syncBgSceneButtons(scene);
+      window.dispatchEvent(new CustomEvent('portfolio:set-bg-scene', { detail: { scene, label } }));
+    });
+  });
+
   document.querySelectorAll<HTMLButtonElement>('.hero-accent-btn').forEach((btn) => {
     btn.addEventListener('click', () => {
       const accent = btn.getAttribute('data-hero-accent') || 'emerald';
@@ -883,7 +1718,15 @@ try {
     resLine.className = 'text-[var(--text-secondary)] animate-boot-line pl-1.5';
 
     if (cmd === 'help') {
-      resLine.textContent = 'whoami, stack, projects, ular, party, clear';
+      resLine.textContent = 'whoami, lofi, stack, projects, ular, party, clear';
+    } else if (cmd === 'lofi') {
+      if (lofiPlaying) {
+        stopLofiPlayback();
+        resLine.textContent = '⏸ Radio Lo-Fi dijeda.';
+      } else {
+        startLofiPlayback();
+        resLine.textContent = `🎧 Memutar ${LOFI_STATIONS[lofiIdx].title}`;
+      }
     } else if (cmd === 'game' || cmd === 'arcade' || cmd === 'ular') {
       window.dispatchEvent(new CustomEvent('portfolio:open-arcade', { detail: { tab: 'snake' } }));
       resLine.textContent = 'Membuka Arcade...';
