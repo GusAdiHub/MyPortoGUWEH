@@ -1,6 +1,22 @@
 ---
-// Web Audio Synth + Konami Code + Fireworks + Tab Title Easter Egg
+// Custom Interactive Cursor + Card Hover Audio + Celebrate Visit Fanfare + Konami Code + Fireworks
 ---
+
+<!-- Custom Cyber HUD Viewfinder Precision Cursor (Fine Pointer Desktop Only) -->
+<div id="custom-cursor-hud" class="custom-cursor-hud" aria-hidden="true">
+  <div class="hud-corner hud-tl"></div>
+  <div class="hud-corner hud-tr"></div>
+  <div class="hud-corner hud-bl"></div>
+  <div class="hud-corner hud-br"></div>
+  <span id="custom-cursor-label" class="hud-label font-mono"></span>
+</div>
+<div id="custom-cursor-dot" class="custom-cursor-dot" aria-hidden="true">
+  <div class="custom-cursor-core"></div>
+</div>
+<!-- 3 Micro Celestial Comet Sparks -->
+<div id="cursor-spark-1" class="cursor-ghost-spark w-[5px] h-[5px]" aria-hidden="true"></div>
+<div id="cursor-spark-2" class="cursor-ghost-spark w-[3.5px] h-[3.5px]" aria-hidden="true"></div>
+<div id="cursor-spark-3" class="cursor-ghost-spark w-[2.5px] h-[2.5px]" aria-hidden="true"></div>
 
 <!-- Confetti / Fireworks Overlay Canvas -->
 <canvas
@@ -24,13 +40,112 @@
 
 <script>
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const hasFinePointer = window.matchMedia('(pointer: fine)').matches;
 
-  let sfxEnabled = false;
+  // 1. Custom Cyber HUD Viewfinder Precision Cursor (Diamond Core + 4-Corner Reticle + 3 Comet Sparks)
+  const cursorDot = document.getElementById('custom-cursor-dot');
+  const cursorHud = document.getElementById('custom-cursor-hud');
+  const cursorLabel = document.getElementById('custom-cursor-label');
+  const spark1 = document.getElementById('cursor-spark-1');
+  const spark2 = document.getElementById('cursor-spark-2');
+  const spark3 = document.getElementById('cursor-spark-3');
+
+  if (hasFinePointer && !reducedMotion && cursorDot && cursorHud) {
+    document.documentElement.classList.add('has-custom-cursor');
+
+    let mouseX = window.innerWidth / 2;
+    let mouseY = window.innerHeight / 2;
+    let hudX = mouseX;
+    let hudY = mouseY;
+    let s1x = mouseX, s1y = mouseY;
+    let s2x = mouseX, s2y = mouseY;
+    let s3x = mouseX, s3y = mouseY;
+    let cursorVisible = false;
+
+    const renderCursor = () => {
+      hudX += (mouseX - hudX) * 0.22;
+      hudY += (mouseY - hudY) * 0.22;
+
+      s1x += (hudX - s1x) * 0.35;
+      s1y += (hudY - s1y) * 0.35;
+
+      s2x += (s1x - s2x) * 0.30;
+      s2y += (s1y - s2y) * 0.30;
+
+      s3x += (s2x - s3x) * 0.25;
+      s3y += (s2y - s3y) * 0.25;
+
+      cursorDot.style.transform = `translate3d(${mouseX}px, ${mouseY}px, 0) translate(-50%, -50%)`;
+      cursorHud.style.transform = `translate3d(${hudX}px, ${hudY}px, 0) translate(-50%, -50%)`;
+
+      if (spark1) spark1.style.transform = `translate3d(${s1x}px, ${s1y}px, 0) translate(-50%, -50%)`;
+      if (spark2) spark2.style.transform = `translate3d(${s2x}px, ${s2y}px, 0) translate(-50%, -50%)`;
+      if (spark3) spark3.style.transform = `translate3d(${s3x}px, ${s3y}px, 0) translate(-50%, -50%)`;
+
+      requestAnimationFrame(renderCursor);
+    };
+    requestAnimationFrame(renderCursor);
+
+    window.addEventListener(
+      'pointermove',
+      (e) => {
+        if (e.pointerType === 'touch') return;
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+        if (!cursorVisible) {
+          cursorVisible = true;
+          cursorDot.style.opacity = '1';
+          cursorHud.style.opacity = '1';
+          if (spark1) spark1.style.opacity = '0.55';
+          if (spark2) spark2.style.opacity = '0.35';
+          if (spark3) spark3.style.opacity = '0.18';
+        }
+      },
+      { passive: true }
+    );
+
+    document.addEventListener('mouseleave', () => {
+      cursorVisible = false;
+      cursorDot.style.opacity = '0';
+      cursorHud.style.opacity = '0';
+      if (spark1) spark1.style.opacity = '0';
+      if (spark2) spark2.style.opacity = '0';
+      if (spark3) spark3.style.opacity = '0';
+    });
+
+    window.addEventListener('pointerdown', () => {
+      cursorHud.classList.add('is-pressed');
+      cursorDot.classList.add('is-pressed');
+    });
+
+    window.addEventListener('pointerup', () => {
+      cursorHud.classList.remove('is-pressed');
+      cursorDot.classList.remove('is-pressed');
+    });
+  }
+
+  // 2. Studio Audio Engine (Card Hover Sound + Button Click + Celebrate Visit Fanfare)
+  let sfxEnabled = true;
   let audioCtx: AudioContext | null = null;
+
+  function getUiVolumeScale(): number {
+    try {
+      const savedVol = localStorage.getItem('portfolio-sfx-volume');
+      if (savedVol !== null) {
+        const parsed = Number(savedVol);
+        if (!Number.isNaN(parsed) && parsed >= 0 && parsed <= 100) {
+          return parsed / 100;
+        }
+      }
+    } catch (_) {}
+    return 0.75;
+  }
 
   function ensureAudioCtx(): AudioContext | null {
     if (!audioCtx) {
-      const Ctx = window.AudioContext || (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+      const Ctx =
+        window.AudioContext ||
+        (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
       if (Ctx) audioCtx = new Ctx();
     }
     if (audioCtx && audioCtx.state === 'suspended') {
@@ -39,38 +154,81 @@
     return audioCtx;
   }
 
-  function playSynth(type: 'click' | 'hover' | 'key' | 'powerup') {
+  // Unlock AudioContext on first user interaction or scroll/move so card hover sounds work smoothly
+  ['pointerdown', 'pointermove', 'wheel', 'touchstart', 'keydown', 'click'].forEach((evt) => {
+    window.addEventListener(
+      evt,
+      () => {
+        ensureAudioCtx();
+      },
+      { passive: true }
+    );
+  });
+
+  function playSynth(type: 'click' | 'hover' | 'card-hover' | 'key' | 'powerup' | 'celebrate') {
     if (!sfxEnabled) return;
+    const volScale = getUiVolumeScale();
+    if (volScale <= 0) return;
+
     const ctx = ensureAudioCtx();
     if (!ctx) return;
 
     const now = ctx.currentTime;
 
-    if (type === 'hover') {
+    if (type === 'card-hover') {
+      // Soft tactile warm pop when sliding cursor onto a card
+      const osc = ctx.createOscillator();
+      const subOsc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = 'sine';
+      subOsc.type = 'triangle';
+
+      osc.frequency.setValueAtTime(340, now);
+      osc.frequency.exponentialRampToValueAtTime(580, now + 0.048);
+
+      subOsc.frequency.setValueAtTime(170, now);
+      subOsc.frequency.exponentialRampToValueAtTime(290, now + 0.048);
+
+      const peakGain = Math.min(0.08, 0.055 * volScale);
+      gain.gain.setValueAtTime(0.001, now);
+      gain.gain.linearRampToValueAtTime(peakGain, now + 0.008);
+      gain.gain.exponentialRampToValueAtTime(0.0008, now + 0.052);
+
+      osc.connect(gain);
+      subOsc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(now);
+      subOsc.start(now);
+      osc.stop(now + 0.055);
+      subOsc.stop(now + 0.055);
+    } else if (type === 'hover') {
+      // Crisp micro-tick for buttons/links
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(680, now);
-      osc.frequency.exponentialRampToValueAtTime(920, now + 0.025);
-      gain.gain.setValueAtTime(0.018, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.025);
+      osc.frequency.setValueAtTime(720, now);
+      osc.frequency.exponentialRampToValueAtTime(980, now + 0.022);
+      gain.gain.setValueAtTime(0.022 * volScale, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.024);
       osc.connect(gain);
       gain.connect(ctx.destination);
       osc.start(now);
-      osc.stop(now + 0.028);
+      osc.stop(now + 0.026);
     } else if (type === 'click' || type === 'key') {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = 'triangle';
-      const baseFreq = type === 'key' ? 240 + Math.random() * 60 : 320;
+      const baseFreq = type === 'key' ? 240 + Math.random() * 60 : 340;
       osc.frequency.setValueAtTime(baseFreq, now);
-      osc.frequency.exponentialRampToValueAtTime(75, now + 0.045);
-      gain.gain.setValueAtTime(0.08, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.045);
+      osc.frequency.exponentialRampToValueAtTime(85, now + 0.042);
+      gain.gain.setValueAtTime(0.075 * volScale, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.042);
       osc.connect(gain);
       gain.connect(ctx.destination);
       osc.start(now);
-      osc.stop(now + 0.05);
+      osc.stop(now + 0.046);
     } else if (type === 'powerup') {
       const notes = [440, 554.37, 659.25, 880];
       notes.forEach((freq, i) => {
@@ -78,14 +236,63 @@
         const gain = ctx.createGain();
         osc.type = 'sine';
         osc.frequency.setValueAtTime(freq, now + i * 0.07);
-        gain.gain.setValueAtTime(0.07, now + i * 0.07);
+        gain.gain.setValueAtTime(0.065 * volScale, now + i * 0.07);
         gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.07 + 0.18);
         osc.connect(gain);
         gain.connect(ctx.destination);
         osc.start(now + i * 0.07);
         osc.stop(now + i * 0.07 + 0.19);
       });
+    } else if (type === 'celebrate') {
+      // Festive Major-9th Victory Fanfare Arpeggio + Sparkle Chime
+      const fanfareNotes = [
+        { freq: 523.25, time: 0.0, dur: 0.14 },   // C5
+        { freq: 659.25, time: 0.07, dur: 0.14 },  // E5
+        { freq: 783.99, time: 0.14, dur: 0.14 },  // G5
+        { freq: 1046.5, time: 0.21, dur: 0.22 },  // C6
+        { freq: 987.77, time: 0.34, dur: 0.12 },  // B5
+        { freq: 1046.5, time: 0.43, dur: 0.45 },  // C6 Finale
+        { freq: 1318.51, time: 0.43, dur: 0.45 }, // E6 Harmony
+      ];
+
+      fanfareNotes.forEach((n) => {
+        const osc1 = ctx.createOscillator();
+        const osc2 = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc1.type = 'triangle';
+        osc2.type = 'sine';
+
+        osc1.frequency.setValueAtTime(n.freq, now + n.time);
+        osc2.frequency.setValueAtTime(n.freq * 1.5, now + n.time);
+
+        const gVal = Math.min(0.14, 0.1 * volScale);
+        gain.gain.setValueAtTime(0.001, now + n.time);
+        gain.gain.linearRampToValueAtTime(gVal, now + n.time + 0.015);
+        gain.gain.exponentialRampToValueAtTime(0.0008, now + n.time + n.dur);
+
+        osc1.connect(gain);
+        osc2.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc1.start(now + n.time);
+        osc2.start(now + n.time);
+        osc1.stop(now + n.time + n.dur + 0.02);
+        osc2.stop(now + n.time + n.dur + 0.02);
+      });
     }
+  }
+
+  function playCelebrateMp3AndSynth() {
+    ensureAudioCtx();
+    playSynth('celebrate');
+    const volScale = getUiVolumeScale();
+    if (volScale <= 0) return;
+    try {
+      const celebrateAudio = new Audio('https://www.myinstants.com/media/sounds/tada_1.mp3');
+      celebrateAudio.volume = Math.min(1, volScale * 0.85);
+      celebrateAudio.play().catch(() => {});
+    } catch (_) {}
   }
 
   function setSfxState(next: boolean) {
@@ -106,9 +313,120 @@
     setSfxState(!sfxEnabled);
   });
 
+  // Track Card Hover & Action Hover for both Custom Cursor morphing and Card Hover Sound
+  let lastHoveredCard: Element | null = null;
+  let lastHoveredAction: Element | null = null;
+  let lastCardSoundTime = 0;
+  let lastActionSoundTime = 0;
+
+  // Dynamic Contextual Micro-Label for HUD Viewfinder Cursor
+  function resolveCursorLabel(action: Element | null, card: Element | null): string {
+    if (action) {
+      if (action.closest('#hero-celebrate-btn')) return 'PARTY 🎉';
+      if (action.closest('.hero-sfx-pad')) return 'SOUND 🔊';
+      if (
+        action.closest('#yt-track-list') ||
+        action.closest('.station-preset-btn') ||
+        action.closest('#yt-play-toggle') ||
+        action.closest('#yt-next-btn') ||
+        action.closest('#yt-prev-btn')
+      ) {
+        return 'AUDIO 🎵';
+      }
+      if (action.closest('#theme-toggle-btn') || action.closest('#theme-toggle')) return 'THEME ✦';
+      if (action.closest('#lang-toggle-btn') || action.closest('#lang-toggle')) return 'LANG 🌐';
+      if (action.closest('#dev-id-flip-btn')) return 'FLIP ↻';
+      if (action.closest('#footer-arcade-trigger') || action.closest('#arcade-modal')) return 'ARCADE 🎮';
+      if (action.closest('#cli-run-btn')) return 'EXEC ⚡';
+      if (action.tagName.toLowerCase() === 'a') {
+        const href = action.getAttribute('href') || '';
+        if (href.startsWith('#')) return 'JUMP ↓';
+        if (href.startsWith('http') || action.getAttribute('target') === '_blank') return 'VISIT ↗';
+        return 'OPEN ↗';
+      }
+      return 'SELECT ✦';
+    }
+    if (card) {
+      if (card.closest('#hero-main-card')) return 'STUDIO';
+      if (card.closest('#projects')) return 'PROJECT';
+      if (card.closest('#stack')) return 'STACK';
+      if (card.closest('#about')) return 'ABOUT';
+      if (card.closest('#github')) return 'TELEMETRY';
+      return 'INSPECT';
+    }
+    return '';
+  }
+
+  document.addEventListener(
+    'pointerover',
+    (e) => {
+      const target = e.target as HTMLElement | null;
+      if (!target) return;
+
+      const actionEl = target.closest('a, button, [role="button"], input, textarea, select, summary');
+      const cardEl = target.closest(
+        'section:not(#contact) .tactile-card, section:not(#contact) .soft-panel, .hover-lift:not(#contact *):not(#contact)'
+      );
+
+      // Update Custom Cursor HUD & Dot visual states + Contextual HUD Label
+      if (cursorHud && cursorDot) {
+        const labelText = resolveCursorLabel(actionEl, cardEl);
+
+        if (actionEl) {
+          cursorHud.classList.add('is-action-hover');
+          cursorHud.classList.remove('is-card-hover');
+          cursorDot.classList.add('is-action-hover');
+        } else if (cardEl) {
+          cursorHud.classList.add('is-card-hover');
+          cursorHud.classList.remove('is-action-hover');
+          cursorDot.classList.remove('is-action-hover');
+        } else {
+          cursorHud.classList.remove('is-action-hover', 'is-card-hover');
+          cursorDot.classList.remove('is-action-hover');
+        }
+
+        if (cursorLabel) {
+          if (labelText) {
+            cursorLabel.textContent = labelText;
+            cursorLabel.classList.add('is-visible');
+          } else {
+            cursorLabel.classList.remove('is-visible');
+          }
+        }
+      }
+
+      // Play Card Hover Sound when sliding onto a new card
+      if (cardEl && cardEl !== lastHoveredCard) {
+        lastHoveredCard = cardEl;
+        const now = performance.now();
+        if (now - lastCardSoundTime > 75) {
+          lastCardSoundTime = now;
+          playSynth('card-hover');
+        }
+      } else if (!cardEl) {
+        lastHoveredCard = null;
+      }
+
+      // Play subtle micro-tick when hovering interactive buttons/links
+      if (actionEl && actionEl !== lastHoveredAction) {
+        lastHoveredAction = actionEl;
+        const now = performance.now();
+        if (now - lastActionSoundTime > 55) {
+          lastActionSoundTime = now;
+          playSynth('hover');
+        }
+      } else if (!actionEl) {
+        lastHoveredAction = null;
+      }
+    },
+    { passive: true }
+  );
+
   document.addEventListener('click', (e) => {
     const target = e.target as HTMLElement | null;
     if (target?.closest('button, a')) {
+      // Avoid double sound on soundboard pads or Celebrate button which play their own sound
+      if (target.closest('.hero-sfx-pad') || target.closest('#hero-celebrate-btn')) return;
       playSynth('click');
     }
   });
@@ -135,11 +453,19 @@
   let confettiAnimating = false;
 
   function launchFireworks() {
+    // Always play celebratory fanfare sound even if reduced motion is enabled
+    playCelebrateMp3AndSynth();
+    window.dispatchEvent(
+      new CustomEvent('portfolio:toast', {
+        detail: { message: '🎉 Terima kasih sudah berkunjung ke Studio Gus Adi!' },
+      })
+    );
+
     if (!confettiCanvas || reducedMotion) return;
     confettiCanvas.width = window.innerWidth;
     confettiCanvas.height = window.innerHeight;
 
-    const palette = ['#b85032', '#2f6f55', '#b47828', '#df7a5c', '#6eb093', '#d9a45b'];
+    const palette = ['#0d9488', '#2563eb', '#ea580c', '#7c3aed', '#10b981', '#f59e0b'];
     const origins = [
       [window.innerWidth * 0.25, window.innerHeight * 0.45],
       [window.innerWidth * 0.5, window.innerHeight * 0.35],
@@ -147,7 +473,7 @@
     ];
 
     origins.forEach(([ox, oy]) => {
-      for (let i = 0; i < 38; i++) {
+      for (let i = 0; i < 42; i++) {
         const angle = Math.random() * Math.PI * 2;
         const speed = 2.5 + Math.random() * 6.5;
         confettiPieces.push({
@@ -155,7 +481,7 @@
           y: oy,
           vx: Math.cos(angle) * speed,
           vy: Math.sin(angle) * speed - 2.2,
-          size: 4 + Math.random() * 4,
+          size: 4 + Math.random() * 4.5,
           color: palette[Math.floor(Math.random() * palette.length)],
           rot: Math.random() * Math.PI,
           vrot: (Math.random() - 0.5) * 0.25,
@@ -163,8 +489,6 @@
         });
       }
     });
-
-    playSynth('powerup');
 
     if (!confettiAnimating) {
       confettiAnimating = true;

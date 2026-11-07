@@ -44,20 +44,24 @@ const {
     <script is:inline>
       (function () {
         try {
+          const savedBgScene = localStorage.getItem('portfolio_bg_scene_v7');
+          const validScene =
+            savedBgScene && ['studio', 'space', 'sakura', 'fireflies', 'ocean', 'sunset'].includes(savedBgScene)
+              ? savedBgScene
+              : 'studio';
+          document.documentElement.setAttribute('data-bg-scene', validScene);
+
           const savedTheme = localStorage.getItem('portfolio_theme_v7');
-          const theme = savedTheme === 'dark' || savedTheme === 'light' ? savedTheme : 'light';
+          const darkScenes = ['space', 'fireflies', 'sunset'];
+          let theme = savedTheme === 'dark' || savedTheme === 'light' ? savedTheme : 'light';
+          if (darkScenes.includes(validScene)) {
+            theme = 'dark';
+          }
           document.documentElement.setAttribute('data-theme', theme);
 
           const savedAccent = localStorage.getItem('portfolio_accent_v7');
           if (savedAccent && ['emerald', 'coral', 'ocean', 'violet'].includes(savedAccent)) {
             document.documentElement.setAttribute('data-accent', savedAccent);
-          }
-
-          const savedBgScene = localStorage.getItem('portfolio_bg_scene_v7');
-          if (savedBgScene && ['studio', 'space', 'sakura', 'fireflies', 'ocean', 'sunset'].includes(savedBgScene)) {
-            document.documentElement.setAttribute('data-bg-scene', savedBgScene);
-          } else {
-            document.documentElement.setAttribute('data-bg-scene', 'studio');
           }
 
           const savedLang = localStorage.getItem('lang');
@@ -226,33 +230,65 @@ const {
         window.scrollTo({ top: 0, behavior: reducedMotion ? 'auto' : 'smooth' });
       });
 
-      // 2. Cursor Spotlight & 3D Perspective Tilt Effect
+      // 2. Cursor Spotlight & 3D Perspective Tilt on cards (EXCEPT #contact)
       if (!reducedMotion) {
+        let activeTiltTarget: HTMLElement | null = null;
+
         document.addEventListener(
           'mousemove',
           (e) => {
-            const spotTarget = (e.target as HTMLElement | null)?.closest<HTMLElement>('.spotlight-surface');
-            if (spotTarget) {
+            const target = e.target as HTMLElement | null;
+            if (!target) return;
+
+            // Update Cursor Spotlight coordinates on any card (except #contact)
+            const spotTarget = target.closest<HTMLElement>(
+              '.spotlight-surface, section:not(#contact) .tactile-card, section:not(#contact) .soft-panel'
+            );
+            if (spotTarget && !spotTarget.closest('#contact')) {
               const rect = spotTarget.getBoundingClientRect();
               spotTarget.style.setProperty('--spot-x', `${e.clientX - rect.left}px`);
               spotTarget.style.setProperty('--spot-y', `${e.clientY - rect.top}px`);
             }
 
-            const tiltTarget = (e.target as HTMLElement | null)?.closest<HTMLElement>('[data-tilt]');
-            if (tiltTarget) {
+            // Find innermost card to tilt (exclude #contact and flip-card-inner children)
+            const tiltTarget = target.closest<HTMLElement>(
+              '[data-tilt], section:not(#contact) .tactile-card, section:not(#contact) .soft-panel'
+            );
+
+            if (
+              tiltTarget &&
+              !tiltTarget.closest('#contact') &&
+              !tiltTarget.closest('.flip-card-inner')
+            ) {
+              if (activeTiltTarget && activeTiltTarget !== tiltTarget) {
+                activeTiltTarget.style.transform = '';
+              }
+              activeTiltTarget = tiltTarget;
               const rect = tiltTarget.getBoundingClientRect();
               const x = (e.clientX - rect.left) / rect.width - 0.5;
               const y = (e.clientY - rect.top) / rect.height - 0.5;
-              tiltTarget.style.transform = `perspective(900px) rotateX(${(-y * 5).toFixed(2)}deg) rotateY(${(x * 5).toFixed(2)}deg) translateY(-3px)`;
+              // Responsive physical 3D tilt + gentle tactile elevation
+              tiltTarget.style.transform = `perspective(900px) rotateX(${(-y * 4.5).toFixed(2)}deg) rotateY(${(x * 4.5).toFixed(2)}deg) translateY(-4px)`;
+            } else if (activeTiltTarget) {
+              activeTiltTarget.style.transform = '';
+              activeTiltTarget = null;
             }
           },
           { passive: true }
         );
 
-        document.querySelectorAll<HTMLElement>('[data-tilt]').forEach((card) => {
-          card.addEventListener('mouseleave', () => {
-            card.style.transform = '';
-          });
+        document.addEventListener('mouseout', (e) => {
+          const from = e.target as HTMLElement | null;
+          const to = e.relatedTarget as HTMLElement | null;
+          if (
+            activeTiltTarget &&
+            from &&
+            activeTiltTarget.contains(from) &&
+            (!to || !activeTiltTarget.contains(to))
+          ) {
+            activeTiltTarget.style.transform = '';
+            activeTiltTarget = null;
+          }
         });
       }
 

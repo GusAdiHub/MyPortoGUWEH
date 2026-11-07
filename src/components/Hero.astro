@@ -1,7 +1,7 @@
 ---
 import { profile } from '../data/profile';
 import { translations } from '../data/i18n';
-import { ArrowRight, Sparkles, Gamepad2, Copy, Music, Palette, Terminal, Square, Volume2, VolumeX, Headphones, Play, Pause, SkipBack, SkipForward, CloudRain } from 'lucide-astro';
+import { ArrowRight, Sparkles, Gamepad2, Copy, Music, Palette, Terminal, Square, Volume2, VolumeX, Headphones, Play, Pause, SkipBack, SkipForward, Shuffle, ExternalLink } from 'lucide-astro';
 
 interface MyInstantItem {
   id: string;
@@ -9,8 +9,191 @@ interface MyInstantItem {
   shortTitle: string;
   fullTitle: string;
   mp3Url: string;
-  fallbackSfx: string;
   tint: string;
+}
+
+interface PlaylistTrack {
+  videoId: string;
+  title: string;
+  artist: string;
+  duration: string;
+}
+
+const DEFAULT_PLAYLIST_ID = 'PLqIiu63tUd9yTmMIbywqHleGYFx5K0cIc';
+const LOFI_GIRL_PLAYLIST_ID = 'OLAK5uy_ktGIDvl8udJq3AoapBW28Ax61wCgYSdoc';
+const CHILLHOP_PLAYLIST_ID = 'PLt7bG0K25iXi9KIt6P6yStMp9ObzXjApm';
+
+const PLAYLIST_IDS = [
+  DEFAULT_PLAYLIST_ID,
+  LOFI_GIRL_PLAYLIST_ID,
+  CHILLHOP_PLAYLIST_ID,
+];
+
+let initialPlaylistTracks: PlaylistTrack[] = [];
+const preloadedPlaylistsMap: Record<string, PlaylistTrack[]> = {};
+
+function decodeXmlEntities(str: string): string {
+  return str
+    .replace(/&amp;/g, '&')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&apos;/g, "'")
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .trim();
+}
+
+function parseYoutubeRssXml(xml: string): PlaylistTrack[] {
+  const tracks: PlaylistTrack[] = [];
+  const seen = new Set<string>();
+  const entries = xml.split('<entry>');
+
+  for (let i = 1; i < entries.length; i++) {
+    const entry = entries[i];
+    const idMatch = /<yt:videoId>([^<]+)<\/yt:videoId>/.exec(entry);
+    const titleMatch = /<title>([^<]+)<\/title>/.exec(entry);
+    const authorMatch = /<author>\s*<name>([^<]+)<\/name>/.exec(entry);
+    if (!idMatch) continue;
+
+    const videoId = idMatch[1].trim();
+    if (seen.has(videoId)) continue;
+    seen.add(videoId);
+
+    const title = titleMatch ? decodeXmlEntities(titleMatch[1]) : `Lagu #${tracks.length + 1}`;
+    const rawArtist = authorMatch ? decodeXmlEntities(authorMatch[1]) : 'YouTube Music';
+    const artist = rawArtist.replace(/\s*-\s*Topic$/i, '').trim();
+
+    tracks.push({ videoId, title, artist, duration: '' });
+  }
+  return tracks;
+}
+
+function parseYoutubePlaylistHtml(html: string): PlaylistTrack[] {
+  const tracks: PlaylistTrack[] = [];
+  const seen = new Set<string>();
+
+  const decodeJsonText = (raw: string): string => {
+    try {
+      return JSON.parse(`"${raw}"`);
+    } catch (_) {
+      return raw
+        .replace(/\\u0026/g, '&')
+        .replace(/\\"/g, '"')
+        .replace(/\\\\/g, '\\');
+    }
+  };
+
+  const blocks = html.split('"playlistVideoRenderer":{');
+  for (let i = 1; i < blocks.length && tracks.length < 60; i++) {
+    const chunk = blocks[i].slice(0, 3500);
+    const idMatch = /"videoId":"([a-zA-Z0-9_-]{11})"/.exec(chunk);
+    if (!idMatch) continue;
+    const videoId = idMatch[1];
+    if (seen.has(videoId)) continue;
+
+    const titleMatch = /"title":\{"runs":\[\{"text":"((?:[^"\\]|\\.)*)"/.exec(chunk);
+    const simpleTitleMatch = /"title":\{"simpleText":"((?:[^"\\]|\\.)*)"/.exec(chunk);
+    const bylineMatch = /"shortBylineText":\{"runs":\[\{"text":"((?:[^"\\]|\\.)*)"/.exec(chunk);
+    const lenMatch = /"lengthText":\{(?:"accessibility":\{[^}]+\}\},)?"simpleText":"([^"]+)"/.exec(chunk);
+
+    const rawTitle = titleMatch?.[1] || simpleTitleMatch?.[1];
+    const title = rawTitle ? decodeJsonText(rawTitle) : '';
+    const rawArtist = bylineMatch ? decodeJsonText(bylineMatch[1]) : 'YouTube Music';
+    const artist = rawArtist.replace(/\s*-\s*Topic$/i, '').trim();
+    const duration = lenMatch ? lenMatch[1] : '';
+
+    seen.add(videoId);
+    tracks.push({ videoId, title, artist, duration });
+  }
+
+  // Fallback for OLAK5uy_ album pages that use playlistPanelVideoRenderer or musicResponsiveListItemRenderer
+  if (tracks.length === 0) {
+    const regex = /"videoId":"([a-zA-Z0-9_-]{11})"/g;
+    let match: RegExpExecArray | null;
+    while ((match = regex.exec(html)) !== null && tracks.length < 50) {
+      const vid = match[1];
+      if (!seen.has(vid)) {
+        seen.add(vid);
+        tracks.push({ videoId: vid, title: '', artist: 'YouTube Music', duration: '' });
+      }
+    }
+  }
+
+  return tracks;
+}
+
+async function fetchNoembedMeta(videoId: string, signal?: AbortSignal): Promise<{ title: string; artist: string } | null> {
+  try {
+    const res = await fetch(`https://noembed.com/embed?url=https://www.youtube.com/watch?v=${videoId}`, { signal });
+    if (!res.ok) return null;
+    const data = (await res.json()) as { title?: string; author_name?: string };
+    if (!data.title) return null;
+    return {
+      title: data.title.trim(),
+      artist: (data.author_name || 'YouTube Music').replace(/\s*-\s*Topic$/i, '').trim(),
+    };
+  } catch (_) {
+    return null;
+  }
+}
+
+async function fetchFastPlaylistTracks(playlistId: string): Promise<PlaylistTrack[]> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 5000);
+  const headers = {
+    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+    Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+    Cookie: 'SOCS=CAISHAgBEhJnd3NfMjAyMzA4MTAtMF9SQzIaAmVuIAEaBgiAo_CmBg; CONSENT=YES+cb.20210328-17-p0.en+FX+417',
+  };
+
+  try {
+    const [rssRes, htmlRes] = await Promise.allSettled([
+      fetch(`https://www.youtube.com/feeds/videos.xml?playlist_id=${playlistId}`, {
+        headers,
+        signal: controller.signal,
+      }),
+      fetch(`https://www.youtube.com/playlist?list=${playlistId}&hl=en`, {
+        headers,
+        signal: controller.signal,
+      }),
+    ]);
+
+    clearTimeout(timer);
+
+    let htmlTracks: PlaylistTrack[] = [];
+    let rssTracks: PlaylistTrack[] = [];
+
+    if (htmlRes.status === 'fulfilled' && htmlRes.value.ok) {
+      const htmlText = await htmlRes.value.text();
+      htmlTracks = parseYoutubePlaylistHtml(htmlText);
+    }
+
+    if (rssRes.status === 'fulfilled' && rssRes.value.ok) {
+      const xmlText = await rssRes.value.text();
+      rssTracks = parseYoutubeRssXml(xmlText);
+    }
+
+    const chosen = htmlTracks.length >= rssTracks.length && htmlTracks.length > 0 ? htmlTracks : rssTracks;
+
+    // Enrich any tracks missing titles via parallel noembed requests with independent timeout
+    const metaController = new AbortController();
+    const metaTimer = setTimeout(() => metaController.abort(), 3500);
+    await Promise.allSettled(
+      chosen.map(async (t, i) => {
+        if (!t.title) {
+          const meta = await fetchNoembedMeta(t.videoId, metaController.signal);
+          t.title = meta?.title || `Lagu #${i + 1}`;
+          t.artist = meta?.artist || t.artist || 'YouTube Music';
+        }
+      })
+    );
+    clearTimeout(metaTimer);
+
+    return chosen;
+  } catch (_) {
+    clearTimeout(timer);
+    return [];
+  }
 }
 
 const TINT_STYLES = [
@@ -21,34 +204,15 @@ const TINT_STYLES = [
   'bg-[var(--tint-violet)] text-violet-950 border-violet-600/20',
 ];
 
-// Default curated MyInstants MP3s (overridden/enriched by live fetch from myinstants.com below)
+// Verified working MyInstants CDN MP3s (enriched by live fetch from myinstants.com/en/categories/sound%20effects/gb/)
 let memePads: MyInstantItem[] = [
-  {
-    id: 'antek',
-    emoji: '📢',
-    shortTitle: 'Antek Asing',
-    fullTitle: '📢 Hey Antek-Antek Asing!',
-    mp3Url: 'https://www.myinstants.com/media/sounds/hidup-jokowi.mp3',
-    fallbackSfx: 'antek',
-    tint: TINT_STYLES[0],
-  },
-  {
-    id: 'gokgok',
-    emoji: '🐶',
-    shortTitle: 'Gok Gok!',
-    fullTitle: '🐶 Gok Gok Gok Gok!',
-    mp3Url: 'https://www.myinstants.com/media/sounds/gok-gok-gok.mp3',
-    fallbackSfx: 'gokgok',
-    tint: TINT_STYLES[1],
-  },
   {
     id: 'vineboom',
     emoji: '🗿',
     shortTitle: 'Vine Boom',
     fullTitle: '🗿 Vine Boom Sound Effect',
     mp3Url: 'https://www.myinstants.com/media/sounds/vine-boom.mp3',
-    fallbackSfx: 'chuaks',
-    tint: TINT_STYLES[2],
+    tint: TINT_STYLES[0],
   },
   {
     id: 'emotional',
@@ -56,8 +220,7 @@ let memePads: MyInstantItem[] = [
     shortTitle: 'Damage!',
     fullTitle: '💔 Emotional Damage!',
     mp3Url: 'https://www.myinstants.com/media/sounds/emotional-damage-meme.mp3',
-    fallbackSfx: 'mental',
-    tint: TINT_STYLES[3],
+    tint: TINT_STYLES[1],
   },
   {
     id: 'animewow',
@@ -65,17 +228,15 @@ let memePads: MyInstantItem[] = [
     shortTitle: 'Anime Wow',
     fullTitle: '✨ Anime Wow Sound Effect',
     mp3Url: 'https://www.myinstants.com/media/sounds/anime-wow-sound-effect.mp3',
-    fallbackSfx: 'bercyanda',
-    tint: TINT_STYLES[4],
+    tint: TINT_STYLES[2],
   },
   {
     id: 'bruh',
     emoji: '😐',
     shortTitle: 'Bruh',
-    fullTitle: '😐 Bruh Sound Effect #2',
+    fullTitle: '😐 Bruh Sound Effect',
     mp3Url: 'https://www.myinstants.com/media/sounds/movie_1.mp3',
-    fallbackSfx: 'chuaks',
-    tint: TINT_STYLES[0],
+    tint: TINT_STYLES[3],
   },
   {
     id: 'fail',
@@ -83,8 +244,7 @@ let memePads: MyInstantItem[] = [
     shortTitle: 'Spongebob',
     fullTitle: '🎺 Spongebob Fail Horn',
     mp3Url: 'https://www.myinstants.com/media/sounds/spongebob-fail.mp3',
-    fallbackSfx: 'mental',
-    tint: TINT_STYLES[1],
+    tint: TINT_STYLES[4],
   },
   {
     id: 'winxp',
@@ -92,7 +252,22 @@ let memePads: MyInstantItem[] = [
     shortTitle: 'XP Error',
     fullTitle: '💻 Windows XP Error',
     mp3Url: 'https://www.myinstants.com/media/sounds/erro.mp3',
-    fallbackSfx: 'kijang',
+    tint: TINT_STYLES[0],
+  },
+  {
+    id: 'fbi',
+    emoji: '🚨',
+    shortTitle: 'FBI Open Up',
+    fullTitle: '🚨 FBI Open Up!',
+    mp3Url: 'https://www.myinstants.com/media/sounds/fbi-open-up-sfx.mp3',
+    tint: TINT_STYLES[1],
+  },
+  {
+    id: 'wrong',
+    emoji: '❌',
+    shortTitle: 'Buzzer',
+    fullTitle: '❌ Loud Wrong Buzzer',
+    mp3Url: 'https://www.myinstants.com/media/sounds/wrong-answer-sound-effect.mp3',
     tint: TINT_STYLES[2],
   },
 ];
@@ -102,28 +277,55 @@ let gbCategoryPads: MyInstantItem[] = [];
 function parseMyInstantsHtml(html: string, limit = 8): { title: string; mp3Url: string }[] {
   const results: { title: string; mp3Url: string }[] = [];
   const seen = new Set<string>();
-  const regex = /play\('(\/media\/sounds\/[^']+\.mp3)'[^)]*\)[^>]*title="Play ([^"]+) sound"/gi;
-  let match: RegExpExecArray | null;
-  while ((match = regex.exec(html)) !== null && results.length < limit) {
-    const path = match[1];
-    const rawTitle = match[2]
+  const blocks = html.split(/class="instant\b/i);
+
+  for (let i = 1; i < blocks.length && results.length < limit; i++) {
+    const chunk = blocks[i].slice(0, 1800);
+    const mp3Match = /play\(\s*'(\/media\/sounds\/[^']+\.mp3)'/i.exec(chunk);
+    if (!mp3Match) continue;
+
+    const path = mp3Match[1];
+    const fullUrl = `https://www.myinstants.com${path}`;
+    if (seen.has(fullUrl)) continue;
+
+    const linkMatch = /class="[^"]*instant-link[^"]*"[^>]*>([^<]+)</i.exec(chunk);
+    const titleAttrMatch = /title="Play ([^"]+) sound"/i.exec(chunk);
+    const fallbackName = path
+      .split('/')
+      .pop()
+      ?.replace(/\.mp3$/i, '')
+      .replace(/[-_]+/g, ' ') || 'Sound';
+
+    const rawTitle = (linkMatch?.[1] || titleAttrMatch?.[1] || fallbackName)
       .replace(/&amp;/g, '&')
       .replace(/&#x27;/g, "'")
+      .replace(/&#39;/g, "'")
       .replace(/&quot;/g, '"')
       .trim();
-    const fullUrl = `https://www.myinstants.com${path}`;
-    if (!seen.has(fullUrl)) {
-      seen.add(fullUrl);
-      results.push({ title: rawTitle, mp3Url: fullUrl });
-    }
+
+    seen.add(fullUrl);
+    results.push({ title: rawTitle, mp3Url: fullUrl });
   }
   return results;
 }
 
+// Pre-fetch all 3 playlists (RSS + HTML + noembed) in parallel at SSR/build time
+try {
+  await Promise.allSettled(
+    PLAYLIST_IDS.map(async (pid) => {
+      const tracks = await fetchFastPlaylistTracks(pid);
+      if (tracks.length > 0) {
+        preloadedPlaylistsMap[pid] = tracks;
+      }
+    })
+  );
+  initialPlaylistTracks = preloadedPlaylistsMap[DEFAULT_PLAYLIST_ID] || [];
+} catch (_) {}
+
 // Fetch live sound effects from MyInstants GB category & Indo search at dev/build time
 try {
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 3800);
+  const timer = setTimeout(() => controller.abort(), 3200);
   const headers = {
     'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
     Accept: 'text/html',
@@ -137,12 +339,36 @@ try {
 
   clearTimeout(timer);
 
+  if (gbRes.status === 'fulfilled' && gbRes.value.ok) {
+    const html = await gbRes.value.text();
+    const found = parseMyInstantsHtml(html, 8);
+    const emojis = ['🔊', '💥', '🎵', '🔔', '⚡', '🎺', '🚨', '🎉'];
+    if (found.length >= 8) {
+      // Put live GB category sounds directly on Pack 1 and curated classics on Pack 2
+      gbCategoryPads = [...memePads];
+      memePads = found.map((item, idx) => ({
+        id: `gb-${idx}`,
+        emoji: emojis[idx % emojis.length],
+        shortTitle: item.title.slice(0, 12),
+        fullTitle: `${emojis[idx % emojis.length]} ${item.title}`,
+        mp3Url: item.mp3Url,
+        tint: TINT_STYLES[idx % TINT_STYLES.length],
+      }));
+    }
+  }
+
   if (antekRes.status === 'fulfilled' && antekRes.value.ok) {
     const html = await antekRes.value.text();
     const found = parseMyInstantsHtml(html, 1);
     if (found[0]) {
-      memePads[0].mp3Url = found[0].mp3Url;
-      memePads[0].fullTitle = `📢 ${found[0].title}`;
+      memePads[0] = {
+        id: 'antek',
+        emoji: '📢',
+        shortTitle: 'Antek Asing',
+        fullTitle: `📢 ${found[0].title}`,
+        mp3Url: found[0].mp3Url,
+        tint: TINT_STYLES[0],
+      };
     }
   }
 
@@ -150,27 +376,18 @@ try {
     const html = await gokRes.value.text();
     const found = parseMyInstantsHtml(html, 1);
     if (found[0]) {
-      memePads[1].mp3Url = found[0].mp3Url;
-      memePads[1].fullTitle = `🐶 ${found[0].title}`;
+      memePads[1] = {
+        id: 'gokgok',
+        emoji: '🐶',
+        shortTitle: 'Gok Gok!',
+        fullTitle: `🐶 ${found[0].title}`,
+        mp3Url: found[0].mp3Url,
+        tint: TINT_STYLES[1],
+      };
     }
   }
-
-  if (gbRes.status === 'fulfilled' && gbRes.value.ok) {
-    const html = await gbRes.value.text();
-    const found = parseMyInstantsHtml(html, 8);
-    const emojis = ['🔊', '💥', '🎵', '🔔', '⚡', '🎺', '🚨', '🎉'];
-    gbCategoryPads = found.map((item, idx) => ({
-      id: `gb-${idx}`,
-      emoji: emojis[idx % emojis.length],
-      shortTitle: item.title.slice(0, 12),
-      fullTitle: `${emojis[idx % emojis.length]} ${item.title}`,
-      mp3Url: item.mp3Url,
-      fallbackSfx: idx % 2 === 0 ? 'chuaks' : 'basuri',
-      tint: TINT_STYLES[idx % TINT_STYLES.length],
-    }));
-  }
 } catch (_) {
-  // Fallback to curated MyInstants CDN MP3 list above
+  // Fallback to verified MyInstants CDN MP3 list above
 }
 ---
 
@@ -191,12 +408,12 @@ try {
             <span data-lang="en">{profile.availabilityStatus.en}</span>
           </span>
 
-          <span class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[var(--tint-sky)] border border-blue-600/20 text-blue-950 font-extrabold -rotate-1">
+          <span class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[var(--tint-sky)] border border-blue-600/20 text-blue-950 font-extrabold">
             <Sparkles class="w-3.5 h-3.5 shrink-0 text-blue-700" />
             <span id="hero-rotating-badge">Web &amp; Backend Engineering</span>
           </span>
 
-          <span class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[var(--tint-amber)] border border-amber-600/20 text-amber-950 font-extrabold rotate-1">
+          <span class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[var(--tint-amber)] border border-amber-600/20 text-amber-950 font-extrabold">
             <span>📍 Bali, Indonesia</span>
           </span>
         </div>
@@ -228,8 +445,8 @@ try {
           </div>
 
           <!-- Giant Centerpiece Owner Name -->
-          <div class="space-y-2">
-            <h1 class="font-display text-5xl sm:text-7xl lg:text-[84px] font-extrabold tracking-tight leading-[0.96] text-[var(--text-primary)] flex flex-wrap items-baseline gap-x-4 gap-y-2">
+          <div class="space-y-3">
+            <h1 class="font-display text-5xl sm:text-7xl lg:text-[78px] font-extrabold tracking-tight leading-[1.08] text-[var(--text-primary)] flex flex-wrap items-center gap-x-4 gap-y-2 py-0.5">
               <span
                 id="hero-name-heading"
                 data-original={profile.name}
@@ -238,17 +455,17 @@ try {
               >
                 {profile.name}
               </span>
-              <span class="inline-flex items-center px-3 py-1 rounded-2xl bg-[var(--tint-mint)] border-2 border-[var(--accent-primary)] font-mono text-xs sm:text-sm font-extrabold text-teal-950 align-middle -translate-y-2 sm:-translate-y-4">
+              <span class="inline-flex items-center px-3.5 py-1 rounded-2xl bg-[var(--tint-mint)] border-2 border-[var(--accent-primary)] font-mono text-xs sm:text-sm font-extrabold text-teal-950">
                 @GusAdiHub
               </span>
             </h1>
 
-            <p class="font-display text-xl sm:text-3xl lg:text-[32px] font-bold tracking-tight leading-[1.2] text-[var(--text-primary)] pt-1">
+            <p class="font-display text-xl sm:text-2xl lg:text-[28px] font-bold tracking-tight leading-[1.38] text-[var(--text-primary)]">
               <span data-lang="id">
-                Merancang <span class="text-gradient-calm">aplikasi web</span>, sistem backend, &amp; eksperimen <span class="underline decoration-[var(--accent-primary)] decoration-wavy decoration-2 underline-offset-4">NLP interaktif</span>.
+                Merancang <span class="text-gradient-calm">aplikasi web</span>, sistem backend, &amp; eksperimen <span class="text-[var(--accent-primary)] font-extrabold">NLP interaktif</span>.
               </span>
               <span data-lang="en">
-                Crafting <span class="text-gradient-calm">web applications</span>, backend systems, &amp; interactive <span class="underline decoration-[var(--accent-primary)] decoration-wavy decoration-2 underline-offset-4">NLP experiments</span>.
+                Crafting <span class="text-gradient-calm">web applications</span>, backend systems, &amp; interactive <span class="text-[var(--accent-primary)] font-extrabold">NLP experiments</span>.
               </span>
             </p>
           </div>
@@ -344,21 +561,21 @@ try {
       </div>
     </div>
 
-    <!-- 2. Asymmetric 3-Pod Interactive Control Deck (Audio Synth + Theme Studio + Pocket Terminal) -->
-    <div class="grid grid-cols-1 md:grid-cols-12 gap-5 items-stretch">
-      <!-- POD A (5 Cols): MyInstants Live Soundboard (Plays real MP3s from myinstants.com + Indo Memes) -->
-      <div class="md:col-span-5 tactile-card p-5 flex flex-col justify-between gap-3 reveal-on-scroll font-sans" style="--stagger: 1;">
-        <div class="flex items-center justify-between gap-2">
-          <div class="inline-flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wider text-[var(--text-primary)]">
-            <Music class="w-4 h-4 text-[var(--accent-primary)]" />
+    <!-- 2. Spacious Interactive Control Deck (Pod A: 6 Cols Soundboard + Pod B: 6 Cols YT Music + Pod C: 12 Cols Pocket CLI) -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
+      <!-- POD A (6 Cols): MyInstants Live Soundboard (Plays real MP3s from myinstants.com + Indo Memes) -->
+      <div class="lg:col-span-6 tactile-card p-5 sm:p-6 flex flex-col justify-between gap-3.5 reveal-on-scroll font-sans" style="--stagger: 1;">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div class="inline-flex items-center gap-2 text-xs sm:text-sm font-extrabold uppercase tracking-wider text-[var(--text-primary)]">
+            <Music class="w-4 h-4 text-[var(--accent-primary)] shrink-0" />
             <span>MyInstants Soundboard</span>
           </div>
-          <div class="flex items-center gap-1">
+          <div class="flex flex-wrap items-center gap-1.5">
             {gbCategoryPads.length > 0 && (
               <button
                 type="button"
                 id="sfx-pack-toggle-btn"
-                class="px-2 py-0.5 rounded-full bg-[var(--bg-elevated)] hover:border-[var(--accent-primary)] text-[10px] font-bold text-[var(--text-primary)] cursor-pointer"
+                class="px-2.5 py-1 rounded-full bg-[var(--bg-elevated)] hover:border-[var(--accent-primary)] text-[11px] font-bold text-[var(--text-primary)] cursor-pointer"
                 title="Ganti antara Meme Pilihan & MyInstants GB Category"
               >
                 🔄 Pack
@@ -367,7 +584,7 @@ try {
             <button
               type="button"
               id="sfx-stop-btn"
-              class="px-2 py-0.5 rounded-full bg-rose-100 text-rose-900 font-sans text-[10px] font-extrabold hover:scale-105 cursor-pointer inline-flex items-center gap-1"
+              class="px-2.5 py-1 rounded-full bg-rose-100 text-rose-900 font-sans text-[11px] font-extrabold hover:scale-105 cursor-pointer inline-flex items-center gap-1"
               title="Hentikan suara"
             >
               <Square class="w-2.5 h-2.5 fill-current" />
@@ -376,7 +593,7 @@ try {
             <button
               type="button"
               id="sfx-random-btn"
-              class="px-2.5 py-0.5 rounded-full bg-[var(--accent-primary)] text-[var(--accent-ink)] font-sans text-[10px] font-extrabold hover:scale-105 active:scale-95 transition-transform cursor-pointer"
+              class="px-3 py-1 rounded-full bg-[var(--accent-primary)] text-[var(--accent-ink)] font-sans text-[11px] font-extrabold hover:scale-105 active:scale-95 transition-transform cursor-pointer"
               title="Putar suara acak!"
             >
               🎲 Acak
@@ -384,22 +601,22 @@ try {
           </div>
         </div>
 
-        <div class="flex items-center justify-between text-[11px]">
-          <span id="synth-note-status" class="px-2.5 py-0.5 rounded-full bg-[var(--tint-mint)] text-teal-900 font-mono text-[10px] font-bold truncate max-w-[200px]">
+        <div class="flex flex-wrap items-center justify-between gap-2 text-xs">
+          <span id="synth-note-status" class="px-3 py-1 rounded-full bg-[var(--tint-mint)] text-teal-900 font-mono text-[11px] font-bold truncate max-w-[260px]">
             Klik Tombol MyInstants ♪
           </span>
           <a
             href="https://www.myinstants.com/en/categories/sound%20effects/gb/"
             target="_blank"
             rel="noopener noreferrer"
-            class="text-[10px] font-bold text-[var(--accent-primary)] hover:underline"
+            class="text-[11px] font-bold text-[var(--accent-primary)] hover:underline whitespace-nowrap"
           >
             myinstants.com ↗
           </a>
         </div>
 
         <!-- Dedicated Soundboard Volume Control Bar -->
-        <div class="flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-[var(--bg-elevated)]/80 border border-[var(--border-subtle)]">
+        <div class="flex items-center gap-3 px-3.5 py-2 rounded-xl bg-[var(--bg-elevated)]/80 border border-[var(--border-subtle)]">
           <button
             type="button"
             id="sfx-mute-btn"
@@ -423,48 +640,46 @@ try {
 
           <span
             id="sfx-volume-label"
-            class="font-mono text-[10px] font-extrabold text-[var(--text-primary)] min-w-[34px] text-right"
+            class="font-mono text-[11px] font-extrabold text-[var(--text-primary)] min-w-[38px] text-right"
           >
             75%
           </span>
         </div>
 
-        <!-- Pack 1: Curated Indo Memes + Viral MyInstants MP3s -->
-        <div id="sfx-grid-pack-1" class="grid grid-cols-4 gap-2">
+        <!-- Pack 1: Live MyInstants GB Category + Indo Memes (Pure MP3, Zero AI TTS) -->
+        <div id="sfx-grid-pack-1" class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
           {memePads.map((pad) => (
             <button
               type="button"
-              data-sfx={pad.fallbackSfx}
               data-mp3={pad.mp3Url}
               data-sfx-label={pad.fullTitle}
-              class={`hero-sfx-pad rounded-2xl p-2.5 hover:scale-105 active:scale-90 border text-center transition-all cursor-pointer select-none ${pad.tint}`}
+              class={`hero-sfx-pad rounded-2xl p-3 hover:scale-105 active:scale-95 border text-center transition-all cursor-pointer select-none ${pad.tint}`}
             >
               <div class="text-xl leading-none">{pad.emoji}</div>
-              <div class="text-[10px] font-extrabold mt-1 leading-tight truncate">{pad.shortTitle}</div>
+              <div class="text-[11px] font-extrabold mt-1.5 leading-snug truncate">{pad.shortTitle}</div>
             </button>
           ))}
         </div>
 
-        <!-- Pack 2: Live Fetched from https://www.myinstants.com/en/categories/sound%20effects/gb/ -->
+        <!-- Pack 2: Extra MyInstants Sound Pack -->
         {gbCategoryPads.length > 0 && (
-          <div id="sfx-grid-pack-2" class="hidden grid grid-cols-4 gap-2">
+          <div id="sfx-grid-pack-2" class="hidden grid grid-cols-2 sm:grid-cols-4 gap-2.5">
             {gbCategoryPads.map((pad) => (
               <button
                 type="button"
-                data-sfx={pad.fallbackSfx}
                 data-mp3={pad.mp3Url}
                 data-sfx-label={pad.fullTitle}
-                class={`hero-sfx-pad rounded-2xl p-2.5 hover:scale-105 active:scale-90 border text-center transition-all cursor-pointer select-none ${pad.tint}`}
+                class={`hero-sfx-pad rounded-2xl p-3 hover:scale-105 active:scale-95 border text-center transition-all cursor-pointer select-none ${pad.tint}`}
               >
                 <div class="text-xl leading-none">{pad.emoji}</div>
-                <div class="text-[10px] font-extrabold mt-1 leading-tight truncate">{pad.shortTitle}</div>
+                <div class="text-[11px] font-extrabold mt-1.5 leading-snug truncate">{pad.shortTitle}</div>
               </button>
             ))}
           </div>
         )}
 
         <!-- Normal-Font Direct Email Bar -->
-        <div class="pt-2 border-t border-[var(--border-subtle)] flex items-center justify-between gap-2 text-xs font-sans">
+        <div class="pt-2.5 border-t border-[var(--border-subtle)] flex flex-wrap items-center justify-between gap-2 text-xs sm:text-sm font-sans">
           <span class="text-[var(--text-secondary)] truncate">
             <strong class="text-[var(--text-primary)] font-bold font-sans">{profile.email}</strong>
           </span>
@@ -472,63 +687,167 @@ try {
             type="button"
             id="hero-quick-copy-email"
             data-email={profile.email}
-            class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-[var(--bg-elevated)] hover:bg-[var(--accent-primary)] hover:text-white text-[var(--text-primary)] font-bold cursor-pointer transition-colors shrink-0"
+            class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-[var(--bg-elevated)] hover:bg-[var(--accent-primary)] hover:text-white text-[var(--text-primary)] text-xs font-bold cursor-pointer transition-colors shrink-0"
           >
-            <Copy class="w-3 h-3" />
-            <span data-lang="id">Salin</span>
-            <span data-lang="en">Copy</span>
+            <Copy class="w-3.5 h-3.5" />
+            <span data-lang="id">Salin Email</span>
+            <span data-lang="en">Copy Email</span>
           </button>
         </div>
       </div>
 
-      <!-- POD B (4 Cols): Multi-Station Lo-Fi Chill Beats Player + Studio Customizer -->
-      <div class="md:col-span-4 tactile-card p-5 flex flex-col justify-between gap-3 reveal-on-scroll font-sans" style="--stagger: 2;">
-        <!-- Header: Lo-Fi Chill Radio + Animated Equalizer -->
-        <div class="flex items-center justify-between gap-2">
-          <div class="inline-flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wider text-[var(--text-primary)]">
-            <Headphones class="w-4 h-4 text-[var(--accent-primary)]" />
-            <span>Lo-Fi Chill Beats</span>
+      <!-- POD B (6 Cols): Audio-Only YouTube Music Player + Clickable Song Tracklist -->
+      <div class="lg:col-span-6 tactile-card p-5 sm:p-6 flex flex-col justify-between gap-3 reveal-on-scroll font-sans" style="--stagger: 2;">
+        <!-- Clipped 200x200 YouTube Audio Engine (200x200 prevents Chromium 1x1 iframe throttling; w-0 h-0 overflow-hidden prevents any page scroll overflow!) -->
+        <div class="relative w-0 h-0 overflow-hidden pointer-events-none" aria-hidden="true">
+          <iframe
+            id="yt-hidden-player"
+            width="200"
+            height="200"
+            src="https://www.youtube.com/embed/videoseries?list=PLqIiu63tUd9yTmMIbywqHleGYFx5K0cIc&enablejsapi=1&rel=0&playsinline=1"
+            title="YouTube Music Audio Engine"
+            allow="autoplay; encrypted-media"
+            class="absolute top-0 left-0 w-[200px] h-[200px] opacity-0 pointer-events-none border-0"
+            aria-hidden="true"
+            tabindex="-1"
+          ></iframe>
+        </div>
+
+        <!-- Header: Audio-Only YT Music Deck + Track Counter + Direct Link -->
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div class="inline-flex items-center gap-2 text-xs sm:text-sm font-extrabold uppercase tracking-wider text-[var(--text-primary)]">
+            <Headphones class="w-4 h-4 text-[var(--accent-primary)] shrink-0" />
+            <span>YT Music Audio</span>
           </div>
           <div class="inline-flex items-center gap-2">
-            <div id="lofi-eq-bars" class="flex items-end gap-0.5 h-3 opacity-35 transition-opacity" aria-hidden="true">
-              <span class="w-1 h-1.5 bg-[var(--accent-primary)] rounded-full transition-all duration-150"></span>
-              <span class="w-1 h-3 bg-[var(--accent-secondary)] rounded-full transition-all duration-150"></span>
-              <span class="w-1 h-2 bg-[var(--accent-primary)] rounded-full transition-all duration-150"></span>
-              <span class="w-1 h-2.5 bg-[var(--accent-secondary)] rounded-full transition-all duration-150"></span>
-            </div>
-            <span id="lofi-status-badge" class="px-2 py-0.5 rounded-full bg-[var(--bg-elevated)] font-mono text-[10px] font-bold text-[var(--text-muted)]">
-              STANDBY
+            <span
+              id="yt-track-badge"
+              class="px-2.5 py-0.5 rounded-full bg-[var(--bg-elevated)] font-mono text-[11px] font-bold text-[var(--text-secondary)] whitespace-nowrap"
+            >
+              {initialPlaylistTracks.length > 0 ? `1 / ${initialPlaylistTracks.length} Lagu` : 'Memuat Lagu...'}
             </span>
+            <a
+              id="yt-music-external-link"
+              href="https://music.youtube.com/playlist?list=PLqIiu63tUd9yTmMIbywqHleGYFx5K0cIc&si=LQa37hlR6a-nVSj1"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[var(--tint-mint)] text-teal-950 font-sans text-[11px] font-extrabold hover:underline whitespace-nowrap"
+              title="Buka Playlist di YouTube Music"
+            >
+              <span>YT Music</span>
+              <ExternalLink class="w-3 h-3" />
+            </a>
           </div>
         </div>
 
-        <!-- Now Playing Display + Transport Controls -->
-        <div class="p-3 rounded-2xl bg-[var(--tint-violet)] border border-violet-600/20 flex items-center justify-between gap-2">
-          <div class="min-w-0">
-            <div id="lofi-track-title" class="font-display text-xs sm:text-sm font-extrabold text-violet-950 truncate">
-              ☕ Midnight Study Beats
-            </div>
-            <div id="lofi-track-sub" class="font-mono text-[10px] font-bold text-violet-900/80 truncate">
-              74 BPM · Rhodes Jazz 9th + Vinyl
-            </div>
+        <!-- Audio-Only Now Playing Card (Song Title + Artist + Cover Thumbnail + Equalizer, NO VIDEO) -->
+        <div class="p-3 rounded-2xl bg-[var(--tint-violet)] border border-violet-600/20 flex items-center gap-3.5">
+          <div class="relative w-12 h-12 rounded-xl overflow-hidden bg-violet-950/15 border border-violet-600/25 shrink-0 flex items-center justify-center">
+            <img
+              id="yt-cover-art"
+              src={
+                initialPlaylistTracks[0]
+                  ? `https://i.ytimg.com/vi/${initialPlaylistTracks[0].videoId}/mqdefault.jpg`
+                  : 'https://i.ytimg.com/vi/jfKfPfyJRdk/mqdefault.jpg'
+              }
+              alt="Album Cover"
+              class="w-full h-full object-cover"
+              loading="lazy"
+            />
           </div>
 
-          <div class="flex items-center gap-1 shrink-0">
+          <div class="min-w-0 flex-1 space-y-0.5">
+            <div class="flex items-center gap-2">
+              <span class="px-2 py-0.5 rounded bg-violet-950/10 font-mono text-[10px] font-extrabold uppercase text-violet-900">
+                NOW PLAYING
+              </span>
+              <div id="yt-eq-bars" class="flex items-end gap-0.5 h-3 opacity-35 transition-opacity" aria-hidden="true">
+                <span class="w-0.5 h-1.5 bg-[var(--accent-primary)] rounded-full transition-all duration-150"></span>
+                <span class="w-0.5 h-2.5 bg-[var(--accent-secondary)] rounded-full transition-all duration-150"></span>
+                <span class="w-0.5 h-1 bg-[var(--accent-primary)] rounded-full transition-all duration-150"></span>
+                <span class="w-0.5 h-2 bg-[var(--accent-secondary)] rounded-full transition-all duration-150"></span>
+              </div>
+            </div>
+            <div
+              id="yt-now-title"
+              class="font-display text-sm sm:text-base font-extrabold text-violet-950 truncate leading-snug"
+              title={initialPlaylistTracks[0]?.title || 'Pilih lagu di daftar bawah untuk memutar'}
+            >
+              {initialPlaylistTracks[0]?.title || 'Pilih Lagu di Daftar Playlist'}
+            </div>
+            <div id="yt-now-artist" class="font-sans text-xs font-semibold text-violet-900/80 truncate">
+              {initialPlaylistTracks[0]?.artist || 'Playlist YouTube Music Gus Adi'}
+            </div>
+          </div>
+        </div>
+
+        <!-- Scrollable Clickable Song Tracklist (Click Any Track to Play Directly!) -->
+        <div class="rounded-2xl border border-[var(--border-subtle)] bg-[var(--bg-elevated)]/55 p-2">
+          <div class="px-2 py-1 flex flex-wrap items-center justify-between gap-2 text-[11px] font-extrabold uppercase tracking-wider text-[var(--text-muted)]">
+            <span>📋 Daftar Lagu (Klik untuk Pilih)</span>
+            <span id="yt-playlist-name-tag" class="font-mono text-[10px] text-[var(--accent-primary)]">Playlist Gus Adi</span>
+          </div>
+          <div
+            id="yt-tracklist"
+            data-playlists-map={JSON.stringify(preloadedPlaylistsMap)}
+            class="max-h-[124px] overflow-y-auto space-y-1 pr-1 mt-1"
+            role="listbox"
+            aria-label="Daftar lagu di playlist"
+          >
+            {initialPlaylistTracks.length > 0 ? (
+              initialPlaylistTracks.map((track, idx) => (
+                <button
+                  type="button"
+                  data-track-idx={idx}
+                  data-video-id={track.videoId}
+                  data-track-title={track.title}
+                  data-track-artist={track.artist}
+                  class={`yt-track-item w-full text-left px-3 py-1.5 rounded-xl flex items-center justify-between gap-2 text-xs transition-all cursor-pointer ${
+                    idx === 0
+                      ? 'bg-[var(--accent-primary)] text-[var(--accent-ink)] font-extrabold shadow-2xs'
+                      : 'bg-[var(--bg-surface)]/85 hover:bg-[var(--bg-surface)] text-[var(--text-primary)] font-semibold'
+                  }`}
+                >
+                  <div class="flex items-center gap-2.5 min-w-0">
+                    <span class="font-mono text-[10px] opacity-75 shrink-0">
+                      {String(idx + 1).padStart(2, '0')}
+                    </span>
+                    <div class="min-w-0">
+                      <div class="truncate text-xs leading-snug">{track.title}</div>
+                      <div class="truncate text-[10px] opacity-75 leading-tight">{track.artist}</div>
+                    </div>
+                  </div>
+                  {track.duration && (
+                    <span class="font-mono text-[10px] opacity-75 shrink-0">{track.duration}</span>
+                  )}
+                </button>
+              ))
+            ) : (
+              <div id="yt-tracklist-loading" class="px-3 py-3 text-center text-xs font-semibold text-[var(--text-muted)]">
+                ⏳ Memuat daftar judul lagu dari playlist YouTube Music...
+              </div>
+            )}
+          </div>
+        </div>
+
+        <!-- Transport Controls + Volume Slider -->
+        <div class="flex flex-wrap items-center justify-between gap-3 px-3 py-2 rounded-xl bg-[var(--bg-elevated)]/80 border border-[var(--border-subtle)]">
+          <div class="flex items-center gap-1.5 shrink-0">
             <button
               type="button"
               id="lofi-prev-btn"
-              class="p-1.5 rounded-xl bg-white/80 hover:bg-white text-violet-950 cursor-pointer transition-transform active:scale-90"
-              title="Lagu Lo-Fi Sebelumnya"
-              aria-label="Previous Lo-Fi track"
+              class="p-1.5 rounded-lg bg-[var(--bg-surface)] hover:bg-[var(--accent-primary)] hover:text-white text-[var(--text-primary)] cursor-pointer transition-colors active:scale-90"
+              title="Lagu Sebelumnya"
+              aria-label="Previous track"
             >
               <SkipBack class="w-3.5 h-3.5" />
             </button>
             <button
               type="button"
               id="lofi-play-btn"
-              class="px-3 py-1.5 rounded-xl bg-[var(--accent-primary)] text-[var(--accent-ink)] font-sans text-xs font-extrabold inline-flex items-center gap-1 cursor-pointer shadow-2xs hover:scale-105 active:scale-95 transition-transform"
-              title="Putar / Jeda Lagu Lo-Fi"
-              aria-label="Play or pause Lo-Fi music"
+              class="px-3 py-1.5 rounded-lg bg-[var(--accent-primary)] text-[var(--accent-ink)] font-sans text-xs font-extrabold inline-flex items-center gap-1.5 cursor-pointer shadow-2xs hover:scale-105 active:scale-95 transition-transform"
+              title="Putar / Jeda Lagu"
+              aria-label="Play or pause track"
             >
               <Play id="lofi-icon-play" class="w-3.5 h-3.5 fill-current" />
               <Pause id="lofi-icon-pause" class="w-3.5 h-3.5 fill-current hidden" />
@@ -537,128 +856,128 @@ try {
             <button
               type="button"
               id="lofi-next-btn"
-              class="p-1.5 rounded-xl bg-white/80 hover:bg-white text-violet-950 cursor-pointer transition-transform active:scale-90"
-              title="Lagu Lo-Fi Berikutnya"
-              aria-label="Next Lo-Fi track"
+              class="p-1.5 rounded-lg bg-[var(--bg-surface)] hover:bg-[var(--accent-primary)] hover:text-white text-[var(--text-primary)] cursor-pointer transition-colors active:scale-90"
+              title="Lagu Berikutnya"
+              aria-label="Next track"
             >
               <SkipForward class="w-3.5 h-3.5" />
             </button>
+            <button
+              type="button"
+              id="lofi-shuffle-btn"
+              class="p-1.5 rounded-lg bg-[var(--bg-surface)] hover:bg-[var(--accent-primary)] hover:text-white text-[var(--text-primary)] cursor-pointer transition-colors active:scale-90"
+              title="Acak Lagu (Shuffle)"
+              aria-label="Shuffle playlist"
+            >
+              <Shuffle class="w-3.5 h-3.5" />
+            </button>
+          </div>
+
+          <div class="flex items-center gap-2 flex-1 min-w-[120px]">
+            <Volume2 class="w-4 h-4 text-[var(--accent-primary)] shrink-0" />
+            <label for="lofi-volume-slider" class="sr-only">Volume Musik</label>
+            <input
+              id="lofi-volume-slider"
+              type="range"
+              min="0"
+              max="100"
+              value="70"
+              class="w-full h-1.5 rounded-lg appearance-none bg-[var(--border-strong)] accent-[var(--accent-primary)] cursor-pointer"
+            />
+            <span id="lofi-volume-label" class="font-mono text-[11px] font-extrabold text-[var(--text-primary)] min-w-[34px] text-right">
+              70%
+            </span>
           </div>
         </div>
 
-        <!-- 5 Selectable Lo-Fi Station Pills -->
-        <div class="flex flex-wrap gap-1.5" role="group" aria-label="Pilih lagu Lo-Fi">
+        <!-- Selectable Playlist Presets -->
+        <div class="flex flex-wrap items-center gap-1.5" role="group" aria-label="Pilih Playlist Musik">
           <button
             type="button"
-            data-lofi-idx="0"
-            class="lofi-station-btn px-2.5 py-1 rounded-xl bg-[var(--accent-primary)] text-[var(--accent-ink)] text-[10px] font-extrabold cursor-pointer transition-all"
+            data-station-type="playlist"
+            data-playlist-id="PLqIiu63tUd9yTmMIbywqHleGYFx5K0cIc"
+            data-playlist-url="https://music.youtube.com/playlist?list=PLqIiu63tUd9yTmMIbywqHleGYFx5K0cIc&si=LQa37hlR6a-nVSj1"
+            data-playlist-title="Playlist Gus Adi"
+            class="lofi-station-btn px-3 py-1 rounded-xl bg-[var(--accent-primary)] text-[var(--accent-ink)] text-[11px] font-extrabold cursor-pointer transition-all"
           >
-            ☕ Study Beats
+            🎵 Playlist Gus Adi
           </button>
           <button
             type="button"
-            data-lofi-idx="1"
-            class="lofi-station-btn px-2.5 py-1 rounded-xl bg-[var(--bg-elevated)] text-[var(--text-primary)] hover:border-[var(--accent-primary)] text-[10px] font-bold cursor-pointer transition-all"
+            data-station-type="playlist"
+            data-playlist-id="OLAK5uy_ktGIDvl8udJq3AoapBW28Ax61wCgYSdoc"
+            data-playlist-url="https://music.youtube.com/playlist?list=OLAK5uy_ktGIDvl8udJq3AoapBW28Ax61wCgYSdoc&si=JUhFIXdTYZSX3Hmu"
+            data-playlist-title="Lofi Girl"
+            class="lofi-station-btn px-3 py-1 rounded-xl bg-[var(--bg-elevated)] text-[var(--text-primary)] hover:border-[var(--accent-primary)] text-[11px] font-bold cursor-pointer transition-all"
           >
-            🌧️ Bali Rain
+            ☕ Lofi Girl
           </button>
           <button
             type="button"
-            data-lofi-idx="2"
-            class="lofi-station-btn px-2.5 py-1 rounded-xl bg-[var(--bg-elevated)] text-[var(--text-primary)] hover:border-[var(--accent-primary)] text-[10px] font-bold cursor-pointer transition-all"
+            data-station-type="playlist"
+            data-playlist-id="PLt7bG0K25iXi9KIt6P6yStMp9ObzXjApm"
+            data-playlist-url="https://music.youtube.com/playlist?list=PLt7bG0K25iXi9KIt6P6yStMp9ObzXjApm&si=2MzyyB9ObomVJPA9"
+            data-playlist-title="Chillhop"
+            class="lofi-station-btn px-3 py-1 rounded-xl bg-[var(--bg-elevated)] text-[var(--text-primary)] hover:border-[var(--accent-primary)] text-[11px] font-bold cursor-pointer transition-all"
           >
-            🌙 Night Drive
+            🌙 Chillhop
           </button>
-          <button
-            type="button"
-            data-lofi-idx="3"
-            class="lofi-station-btn px-2.5 py-1 rounded-xl bg-[var(--bg-elevated)] text-[var(--text-primary)] hover:border-[var(--accent-primary)] text-[10px] font-bold cursor-pointer transition-all"
-          >
-            🍃 Ubud Breeze
-          </button>
-          <button
-            type="button"
-            data-lofi-idx="4"
-            class="lofi-station-btn px-2.5 py-1 rounded-xl bg-[var(--bg-elevated)] text-[var(--text-primary)] hover:border-[var(--accent-primary)] text-[10px] font-bold cursor-pointer transition-all"
-          >
-            👾 8-Bit Chill
-          </button>
-        </div>
-
-        <!-- Lo-Fi Volume Slider + Rain/Vinyl Ambience Toggle -->
-        <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[var(--bg-elevated)]/80 border border-[var(--border-subtle)]">
-          <Volume2 class="w-3.5 h-3.5 text-[var(--accent-primary)] shrink-0" />
-          <label for="lofi-volume-slider" class="sr-only">Volume Lo-Fi</label>
-          <input
-            id="lofi-volume-slider"
-            type="range"
-            min="0"
-            max="100"
-            value="65"
-            class="w-full h-1.5 rounded-lg appearance-none bg-[var(--border-strong)] accent-[var(--accent-primary)] cursor-pointer"
-          />
-          <span id="lofi-volume-label" class="font-mono text-[10px] font-extrabold text-[var(--text-primary)] min-w-[30px] text-right">
-            65%
-          </span>
-          <button
-            type="button"
-            id="lofi-rain-btn"
-            class="px-2 py-0.5 rounded-lg bg-[var(--tint-sky)] text-blue-950 font-sans text-[10px] font-extrabold inline-flex items-center gap-1 cursor-pointer shrink-0"
-            title="Toggle efek derau piringan hitam / hujan"
-          >
-            <CloudRain class="w-3 h-3 text-blue-700" />
-            <span>Vinyl</span>
-          </button>
-        </div>
-
-        <!-- Compact Studio Theme & Canvas FX Footer -->
-        <div class="pt-2 border-t border-[var(--border-subtle)] flex items-center justify-between gap-1.5">
-          <div class="flex items-center gap-1.5" role="group" aria-label="Pilih warna aksen">
-            <Palette class="w-3.5 h-3.5 text-[var(--text-muted)] mr-0.5" />
-            <button type="button" data-hero-accent="emerald" data-hero-accent-label="Mint Emerald" class="hero-accent-btn w-4 h-4 rounded-full bg-[#0d9488] hover:scale-125 transition-transform cursor-pointer" title="Mint Emerald"></button>
-            <button type="button" data-hero-accent="coral" data-hero-accent-label="Sunset Coral" class="hero-accent-btn w-4 h-4 rounded-full bg-[#ea580c] hover:scale-125 transition-transform cursor-pointer" title="Sunset Coral"></button>
-            <button type="button" data-hero-accent="ocean" data-hero-accent-label="Royal Ocean" class="hero-accent-btn w-4 h-4 rounded-full bg-[#2563eb] hover:scale-125 transition-transform cursor-pointer" title="Royal Ocean"></button>
-            <button type="button" data-hero-accent="violet" data-hero-accent-label="Electric Violet" class="hero-accent-btn w-4 h-4 rounded-full bg-[#7c3aed] hover:scale-125 transition-transform cursor-pointer" title="Electric Violet"></button>
-          </div>
-          <div class="flex items-center gap-1">
-            <button type="button" id="hero-fx-serpent" class="px-2 py-0.5 rounded-full bg-[var(--bg-elevated)] hover:bg-[var(--accent-primary)] hover:text-white text-[10px] font-bold cursor-pointer transition-colors" title="Animasi Ular Latar">🐍</button>
-            <button type="button" id="hero-fx-matrix" class="px-2 py-0.5 rounded-full bg-[var(--bg-elevated)] hover:bg-[var(--accent-primary)] hover:text-white text-[10px] font-bold cursor-pointer transition-colors" title="Efek Matrix">🌧️</button>
-            <button type="button" id="hero-fx-barrel" class="px-2 py-0.5 rounded-full bg-[var(--bg-elevated)] hover:bg-[var(--accent-primary)] hover:text-white text-[10px] font-bold cursor-pointer transition-colors" title="360 Spin">🔄</button>
-          </div>
         </div>
       </div>
 
-      <!-- POD C (3 Cols): Pocket Interactive Terminal -->
-      <div class="md:col-span-3 tactile-card p-5 flex flex-col justify-between gap-3 reveal-on-scroll font-mono text-xs" style="--stagger: 3;">
-        <div class="flex items-center justify-between">
-          <span class="inline-flex items-center gap-1.5 font-sans text-xs font-extrabold uppercase tracking-wider text-[var(--text-primary)]">
-            <Terminal class="w-4 h-4 text-[var(--accent-primary)]" />
-            <span>&gt;_ Pocket CLI</span>
-          </span>
-          <span id="hero-uptime-counter" class="text-[10px] text-[var(--text-muted)]">00:00:01</span>
-        </div>
+      <!-- POD C (12 Cols Full-Width Bar): Pocket Interactive Terminal + Studio Accent & FX Bar -->
+      <div class="lg:col-span-12 tactile-card p-4 sm:p-5 reveal-on-scroll font-mono text-xs" style="--stagger: 3;">
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+          <!-- Left 4 Cols: Terminal Brand + Quick Preset Chips + Studio FX -->
+          <div class="md:col-span-5 flex flex-wrap items-center justify-between gap-2.5">
+            <div class="inline-flex items-center gap-2 font-sans text-xs sm:text-sm font-extrabold uppercase tracking-wider text-[var(--text-primary)]">
+              <Terminal class="w-4 h-4 text-[var(--accent-primary)] shrink-0" />
+              <span>&gt;_ Pocket CLI</span>
+              <span id="hero-uptime-counter" class="font-mono text-[11px] font-normal text-[var(--text-muted)]">00:00:01</span>
+            </div>
 
-        <div class="flex flex-wrap gap-1 text-[10px]">
-          <button type="button" data-shell-cmd="whoami" class="shell-preset-btn px-2 py-0.5 rounded-full bg-[var(--bg-elevated)] hover:text-[var(--accent-primary)] cursor-pointer">whoami</button>
-          <button type="button" data-shell-cmd="stack" class="shell-preset-btn px-2 py-0.5 rounded-full bg-[var(--bg-elevated)] hover:text-[var(--accent-primary)] cursor-pointer">stack</button>
-          <button type="button" data-shell-cmd="ular" class="shell-preset-btn px-2 py-0.5 rounded-full bg-[var(--bg-elevated)] text-[var(--accent-primary)] cursor-pointer">ular</button>
-          <button type="button" data-shell-cmd="party" class="shell-preset-btn px-2 py-0.5 rounded-full bg-[var(--bg-elevated)] text-[var(--accent-secondary)] cursor-pointer">party</button>
-        </div>
+            <div class="flex flex-wrap items-center gap-1.5 text-[11px]">
+              <button type="button" data-shell-cmd="whoami" class="shell-preset-btn px-2.5 py-1 rounded-full bg-[var(--bg-elevated)] hover:text-[var(--accent-primary)] cursor-pointer">whoami</button>
+              <button type="button" data-shell-cmd="stack" class="shell-preset-btn px-2.5 py-1 rounded-full bg-[var(--bg-elevated)] hover:text-[var(--accent-primary)] cursor-pointer">stack</button>
+              <button type="button" data-shell-cmd="ular" class="shell-preset-btn px-2.5 py-1 rounded-full bg-[var(--bg-elevated)] text-[var(--accent-primary)] cursor-pointer">ular</button>
+              <button type="button" data-shell-cmd="party" class="shell-preset-btn px-2.5 py-1 rounded-full bg-[var(--bg-elevated)] text-[var(--accent-secondary)] cursor-pointer">party</button>
+            </div>
+          </div>
 
-        <div id="hero-shell-output" class="space-y-1 text-[11px] h-[74px] overflow-y-auto p-2.5 rounded-xl bg-[var(--bg-elevated)]/70">
-          <div class="text-[var(--status-ok)]">&gt; Ready. Ketik help / klik chip.</div>
-        </div>
+          <!-- Center 4 Cols: Live Shell Output + Input -->
+          <div class="md:col-span-5 flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+            <div id="hero-shell-output" class="flex-1 space-y-1 text-[11px] max-h-[54px] overflow-y-auto px-3 py-2 rounded-xl bg-[var(--bg-elevated)]/70">
+              <div class="text-[var(--status-ok)]">&gt; Ready. Ketik help / klik chip.</div>
+            </div>
 
-        <form id="hero-shell-form" class="border-b-2 border-[var(--border-subtle)] focus-within:border-[var(--accent-primary)] pb-1 flex items-center gap-1.5">
-          <span class="text-[var(--accent-primary)] font-bold">$</span>
-          <input
-            id="hero-shell-input"
-            type="text"
-            placeholder="perintah..."
-            autocomplete="off"
-            class="w-full bg-transparent text-xs text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none"
-          />
-        </form>
+            <form id="hero-shell-form" class="sm:w-44 border-b-2 border-[var(--border-subtle)] focus-within:border-[var(--accent-primary)] pb-1 flex items-center gap-1.5 shrink-0">
+              <span class="text-[var(--accent-primary)] font-bold">$</span>
+              <input
+                id="hero-shell-input"
+                type="text"
+                placeholder="ketik perintah..."
+                autocomplete="off"
+                class="w-full bg-transparent text-xs text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none"
+              />
+            </form>
+          </div>
+
+          <!-- Right 2 Cols: Accent Dots & Canvas FX -->
+          <div class="md:col-span-2 flex items-center justify-between md:justify-end gap-2 font-sans">
+            <div class="flex items-center gap-1.5" role="group" aria-label="Pilih warna aksen">
+              <Palette class="w-3.5 h-3.5 text-[var(--text-muted)]" />
+              <button type="button" data-hero-accent="emerald" data-hero-accent-label="Mint Emerald" class="hero-accent-btn w-3.5 h-3.5 rounded-full bg-[#0d9488] hover:scale-125 transition-transform cursor-pointer" title="Mint Emerald"></button>
+              <button type="button" data-hero-accent="coral" data-hero-accent-label="Sunset Coral" class="hero-accent-btn w-3.5 h-3.5 rounded-full bg-[#ea580c] hover:scale-125 transition-transform cursor-pointer" title="Sunset Coral"></button>
+              <button type="button" data-hero-accent="ocean" data-hero-accent-label="Royal Ocean" class="hero-accent-btn w-3.5 h-3.5 rounded-full bg-[#2563eb] hover:scale-125 transition-transform cursor-pointer" title="Royal Ocean"></button>
+              <button type="button" data-hero-accent="violet" data-hero-accent-label="Electric Violet" class="hero-accent-btn w-3.5 h-3.5 rounded-full bg-[#7c3aed] hover:scale-125 transition-transform cursor-pointer" title="Electric Violet"></button>
+            </div>
+            <div class="flex items-center gap-1">
+              <button type="button" id="hero-fx-serpent" class="px-2 py-1 rounded-full bg-[var(--bg-elevated)] hover:bg-[var(--accent-primary)] hover:text-white text-[11px] font-bold cursor-pointer transition-colors" title="Animasi Ular Latar">🐍</button>
+              <button type="button" id="hero-fx-matrix" class="px-2 py-1 rounded-full bg-[var(--bg-elevated)] hover:bg-[var(--accent-primary)] hover:text-white text-[11px] font-bold cursor-pointer transition-colors" title="Efek Matrix">🌧️</button>
+              <button type="button" id="hero-fx-barrel" class="px-2 py-1 rounded-full bg-[var(--bg-elevated)] hover:bg-[var(--accent-primary)] hover:text-white text-[11px] font-bold cursor-pointer transition-colors" title="360 Spin">🔄</button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -698,9 +1017,7 @@ try {
     }, 3000);
   }
 
-  // 3. Indonesian Viral Meme Soundboard (id-ID Voice SpeechSynthesis + WebAudio Meme Stingers + Volume Control)
-  let audioCtx: AudioContext | null = null;
-  let masterGain: GainNode | null = null;
+  // 3. Pure MyInstants MP3 Soundboard (Zero AI SpeechSynthesis / Zero Synth Collision)
   const noteStatus = document.getElementById('synth-note-status');
   const volSlider = document.getElementById('sfx-volume-slider') as HTMLInputElement | null;
   const volLabel = document.getElementById('sfx-volume-label');
@@ -710,8 +1027,9 @@ try {
 
   let sfxVolume = 0.75;
   let isSfxMuted = false;
+  let activeAudio: HTMLAudioElement | null = null;
 
-  // Restore saved volume safely
+  // Restore saved soundboard volume safely
   try {
     const savedVol = localStorage.getItem('portfolio-sfx-volume');
     if (savedVol !== null) {
@@ -745,230 +1063,7 @@ try {
     if (activeAudio) {
       activeAudio.volume = effective;
     }
-    if (masterGain && audioCtx) {
-      masterGain.gain.setValueAtTime(effective, audioCtx.currentTime);
-    }
   }
-
-  function getCtx(): { ctx: AudioContext; out: AudioNode } | null {
-    try {
-      const AudioContextClass =
-        window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-      if (!audioCtx) {
-        audioCtx = new AudioContextClass();
-        masterGain = audioCtx.createGain();
-        masterGain.gain.setValueAtTime(getEffectiveVolume(), audioCtx.currentTime);
-        masterGain.connect(audioCtx.destination);
-      }
-      if (audioCtx.state === 'suspended') audioCtx.resume();
-      return { ctx: audioCtx, out: masterGain || audioCtx.destination };
-    } catch (_) {
-      return null;
-    }
-  }
-
-  function speakIndoMeme(text: string, pitch = 1.0, rate = 1.05) {
-    try {
-      const vol = getEffectiveVolume();
-      if (vol <= 0 || !('speechSynthesis' in window)) return;
-      window.speechSynthesis.cancel();
-      const utter = new SpeechSynthesisUtterance(text);
-      utter.lang = 'id-ID';
-      utter.pitch = pitch;
-      utter.rate = rate;
-      utter.volume = vol;
-
-      const voices = window.speechSynthesis.getVoices();
-      const indoVoice =
-        voices.find((v) => v.lang.toLowerCase().includes('id-id') || v.lang.toLowerCase().includes('id_id')) ||
-        voices.find((v) => v.lang.toLowerCase().startsWith('id')) ||
-        voices.find((v) => v.lang.toLowerCase().includes('ms'));
-      if (indoVoice) utter.voice = indoVoice;
-
-      window.speechSynthesis.speak(utter);
-    } catch (_) {}
-  }
-
-  // Preload voices in browser
-  if ('speechSynthesis' in window) {
-    window.speechSynthesis.getVoices();
-    window.speechSynthesis.onvoiceschanged = () => {
-      window.speechSynthesis.getVoices();
-    };
-  }
-
-  function playVineBoom(ctx: AudioContext, out: AudioNode, startAt = 0) {
-    const now = ctx.currentTime + startAt;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(135, now);
-    osc.frequency.exponentialRampToValueAtTime(32, now + 0.55);
-    gain.gain.setValueAtTime(0.28, now);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
-    osc.connect(gain);
-    gain.connect(out);
-    osc.start(now);
-    osc.stop(now + 0.62);
-  }
-
-  function playFunnySfx(type: string, label: string) {
-    const audioEnv = getCtx();
-    if (noteStatus) {
-      noteStatus.textContent = label;
-    }
-    window.dispatchEvent(new CustomEvent('portfolio:toast', { detail: { message: label } }));
-
-    if (!audioEnv || getEffectiveVolume() <= 0) return;
-    const { ctx, out } = audioEnv;
-    const now = ctx.currentTime;
-
-    if (type === 'antek') {
-      // "HEY ANTEK-ANTEK ASING!!" + Dramatic Podium Horn + Vine Boom
-      speakIndoMeme('Hei! Antek antek asing! Jangan macam-macam!', 0.82, 1.08);
-      playVineBoom(ctx, out, 0);
-      [220, 277.18, 329.63].forEach((freq) => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(freq, now);
-        gain.gain.setValueAtTime(0.05, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
-        osc.connect(gain);
-        gain.connect(out);
-        osc.start(now);
-        osc.stop(now + 0.46);
-      });
-    } else if (type === 'gokgok') {
-      // "GOK GOK GOK GOK GOK!!" + Rapid Energetic Bark Synth
-      speakIndoMeme('Gok! Gok! Gok! Gok! Gok! Guk guk guk!', 1.35, 1.35);
-      [0, 0.14, 0.28, 0.42, 0.56].forEach((offset, idx) => {
-        const osc = ctx.createOscillator();
-        const filter = ctx.createBiquadFilter();
-        const gain = ctx.createGain();
-        osc.type = 'sawtooth';
-        const baseF = idx % 2 === 0 ? 320 : 390;
-        osc.frequency.setValueAtTime(baseF, now + offset);
-        osc.frequency.exponentialRampToValueAtTime(580, now + offset + 0.04);
-        osc.frequency.exponentialRampToValueAtTime(190, now + offset + 0.11);
-
-        filter.type = 'bandpass';
-        filter.frequency.setValueAtTime(950, now + offset);
-        filter.Q.setValueAtTime(3.5, now + offset);
-
-        gain.gain.setValueAtTime(0.14, now + offset);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + offset + 0.11);
-
-        osc.connect(filter);
-        filter.connect(gain);
-        gain.connect(out);
-        osc.start(now + offset);
-        osc.stop(now + offset + 0.12);
-      });
-    } else if (type === 'basuri') {
-      // "Om Telolet Om!" + Iconic Basuri V3 Snaking Bus Horn Melody!
-      speakIndoMeme('Om, telolet om!', 1.2, 1.15);
-      const basuriNotes = [
-        { f: 523.25, t: 0.25, d: 0.11 }, // C5
-        { f: 659.25, t: 0.37, d: 0.11 }, // E5
-        { f: 783.99, t: 0.49, d: 0.11 }, // G5
-        { f: 1046.5, t: 0.61, d: 0.16 }, // C6
-        { f: 783.99, t: 0.78, d: 0.11 }, // G5
-        { f: 1046.5, t: 0.90, d: 0.14 }, // C6
-        { f: 987.77, t: 1.05, d: 0.11 }, // B5
-        { f: 880.00, t: 1.17, d: 0.11 }, // A5
-        { f: 783.99, t: 1.29, d: 0.11 }, // G5
-        { f: 659.25, t: 1.41, d: 0.11 }, // E5
-        { f: 783.99, t: 1.53, d: 0.28 }, // G5
-      ];
-      basuriNotes.forEach((n) => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(n.f, now + n.t);
-        gain.gain.setValueAtTime(0.08, now + n.t);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + n.t + n.d);
-        osc.connect(gain);
-        gain.connect(out);
-        osc.start(now + n.t);
-        osc.stop(now + n.t + n.d + 0.01);
-      });
-    } else if (type === 'bercyanda') {
-      // "Bercyandaaa~ Bercyandaaa~" + Sparkle Chime
-      speakIndoMeme('Bercyandaaa! Bercyandaaa!', 1.55, 1.05);
-      [587.33, 880, 1174.66, 1567.98].forEach((f, i) => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(f, now + i * 0.06);
-        gain.gain.setValueAtTime(0.08, now + i * 0.06);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.06 + 0.35);
-        osc.connect(gain);
-        gain.connect(out);
-        osc.start(now + i * 0.06);
-        osc.stop(now + i * 0.06 + 0.36);
-      });
-    } else if (type === 'chuaks') {
-      // "CHUAAAKS!!" + Heavy Vine Boom Drop
-      speakIndoMeme('Chuaaaks!', 1.25, 1.25);
-      playVineBoom(ctx, out, 0.12);
-      playVineBoom(ctx, out, 0.42);
-    } else if (type === 'slebew') {
-      // "SLEBEWWW!!" + Laser Drop + Confetti
-      speakIndoMeme('Slebewww!', 0.9, 1.1);
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(980, now);
-      osc.frequency.exponentialRampToValueAtTime(65, now + 0.45);
-      gain.gain.setValueAtTime(0.11, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.48);
-      osc.connect(gain);
-      gain.connect(out);
-      osc.start(now);
-      osc.stop(now + 0.5);
-      window.dispatchEvent(new CustomEvent('portfolio:fireworks'));
-    } else if (type === 'kijang') {
-      // HT Walkie-Talkie Beep + "Kijang satu, kijang satu, ganti!"
-      [0, 0.07].forEach((offset) => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'square';
-        osc.frequency.setValueAtTime(1850, now + offset);
-        gain.gain.setValueAtTime(0.06, now + offset);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + offset + 0.05);
-        osc.connect(gain);
-        gain.connect(out);
-        osc.start(now + offset);
-        osc.stop(now + offset + 0.055);
-      });
-      speakIndoMeme('Kijang satu, kijang satu, target terpantau aman, ganti!', 0.78, 1.15);
-    } else if (type === 'mental') {
-      // "Waduh, kena mental bos!" + Sad Trombone Womp Womp
-      speakIndoMeme('Waduh, kena mental bos!', 1.1, 1.12);
-      const notes = [
-        { f1: 293.66, f2: 285, t: 0.15, d: 0.2 },
-        { f1: 277.18, f2: 268, t: 0.38, d: 0.2 },
-        { f1: 261.63, f2: 252, t: 0.61, d: 0.2 },
-        { f1: 246.94, f2: 190, t: 0.84, d: 0.5 },
-      ];
-      notes.forEach((n) => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(n.f1, now + n.t);
-        osc.frequency.linearRampToValueAtTime(n.f2, now + n.t + n.d);
-        gain.gain.setValueAtTime(0.06, now + n.t);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + n.t + n.d);
-        osc.connect(gain);
-        gain.connect(out);
-        osc.start(now + n.t);
-        osc.stop(now + n.t + n.d + 0.02);
-      });
-    }
-  }
-
-  let activeAudio: HTMLAudioElement | null = null;
 
   syncVolumeUI();
 
@@ -995,10 +1090,12 @@ try {
   function stopAllSfx() {
     try {
       if (activeAudio) {
-        activeAudio.pause();
-        activeAudio.currentTime = 0;
+        const audioToStop = activeAudio;
         activeAudio = null;
+        audioToStop.pause();
+        audioToStop.currentTime = 0;
       }
+      // Ensure any leftover browser speechSynthesis from other tabs/scripts is silenced
       if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
       }
@@ -1008,44 +1105,50 @@ try {
     } catch (_) {}
   }
 
-  function playMyInstantOrFallback(mp3Url: string, fallbackSfx: string, label: string) {
+  function playMyInstantMp3(mp3Url: string, label: string) {
     stopAllSfx();
     const vol = getEffectiveVolume();
     if (noteStatus) {
-      noteStatus.textContent = vol <= 0 ? `🔇 (Muted) ${label}` : label;
+      noteStatus.textContent = vol <= 0 ? `🔇 (Muted) ${label}` : `🔊 ${label}`;
     }
     window.dispatchEvent(new CustomEvent('portfolio:toast', { detail: { message: label } }));
 
-    if (vol <= 0) return;
+    if (vol <= 0 || !mp3Url) return;
 
-    if (mp3Url) {
-      try {
-        const audio = new Audio(mp3Url);
-        audio.volume = vol;
-        activeAudio = audio;
-        audio.play().catch(() => {
-          playFunnySfx(fallbackSfx, label);
-        });
-        return;
-      } catch (_) {
-        playFunnySfx(fallbackSfx, label);
-      }
-    } else {
-      playFunnySfx(fallbackSfx, label);
-    }
+    try {
+      const audio = new Audio(mp3Url);
+      audio.volume = vol;
+      activeAudio = audio;
+      audio.addEventListener('ended', () => {
+        if (activeAudio === audio) {
+          activeAudio = null;
+          if (noteStatus) noteStatus.textContent = '✓ Selesai';
+        }
+      });
+      audio.play().catch((err) => {
+        // Ignore AbortError when user rapidly clicks another soundboard pad
+        if (err && err.name === 'AbortError') return;
+        if (noteStatus) {
+          noteStatus.textContent = '⚠️ Gagal memuat MP3';
+        }
+      });
+    } catch (_) {}
   }
 
   const sfxPads = document.querySelectorAll<HTMLButtonElement>('.hero-sfx-pad');
   sfxPads.forEach((pad) => {
-    pad.addEventListener('click', () => {
+    pad.addEventListener('click', (e) => {
+      e.stopPropagation();
       const mp3Url = pad.getAttribute('data-mp3') || '';
-      const sfx = pad.getAttribute('data-sfx') || 'antek';
       const label = pad.getAttribute('data-sfx-label') || 'MyInstants!';
-      playMyInstantOrFallback(mp3Url, sfx, label);
+      playMyInstantMp3(mp3Url, label);
     });
   });
 
-  document.getElementById('sfx-stop-btn')?.addEventListener('click', stopAllSfx);
+  document.getElementById('sfx-stop-btn')?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    stopAllSfx();
+  });
 
   const pack1 = document.getElementById('sfx-grid-pack-1');
   const pack2 = document.getElementById('sfx-grid-pack-2');
@@ -1055,7 +1158,8 @@ try {
     pack2.classList.toggle('hidden');
   });
 
-  document.getElementById('sfx-random-btn')?.addEventListener('click', () => {
+  document.getElementById('sfx-random-btn')?.addEventListener('click', (e) => {
+    e.stopPropagation();
     if (!sfxPads.length) return;
     const randomPad = sfxPads[Math.floor(Math.random() * sfxPads.length)];
     randomPad.click();
@@ -1084,451 +1188,344 @@ try {
     } catch (_) {}
   });
 
-  // 5. Multi-Station Lo-Fi Chill Beats Synthesizer & Radio Deck
-  interface LofiStation {
-    title: string;
-    sub: string;
-    bpm: number;
-    wave: OscillatorType;
-    melodyWave: OscillatorType;
-    cutoff: number;
-    chords: number[][];
-    bass: number[];
-    melody: number[];
-    style: 'boombap' | 'rain' | 'drive' | 'breeze' | 'chip';
+  // 5. Audio-Only YouTube Music Player + Interactive Clickable Tracklist (Default: PLqIiu63tUd9yTmMIbywqHleGYFx5K0cIc)
+  interface YtVideoData {
+    video_id?: string;
+    title?: string;
+    author?: string;
   }
 
-  const LOFI_STATIONS: LofiStation[] = [
-    {
-      title: '☕ Midnight Study Beats',
-      sub: '74 BPM · Rhodes Jazz 9th + Boom-Bap',
-      bpm: 74,
-      wave: 'triangle',
-      melodyWave: 'sine',
-      cutoff: 1050,
-      // Dm9 -> G13 -> Cmaj9 -> A7b13
-      chords: [
-        [293.66, 349.23, 440.0, 523.25, 659.25],
-        [196.0, 349.23, 440.0, 493.88, 659.25],
-        [261.63, 329.63, 392.0, 493.88, 587.33],
-        [220.0, 329.63, 392.0, 440.0, 554.37],
-      ],
-      bass: [73.42, 98.0, 65.41, 110.0],
-      melody: [523.25, 587.33, 659.25, 783.99, 880.0, 1046.5],
-      style: 'boombap',
-    },
-    {
-      title: '🌧️ Rainy Bali Cafe',
-      sub: '68 BPM · Dreamy Lo-Fi Keys + Soft Rain',
-      bpm: 68,
-      wave: 'sine',
-      melodyWave: 'triangle',
-      cutoff: 880,
-      // Fmaj9 -> Em7 -> Dm9 -> Cmaj9
-      chords: [
-        [174.61, 261.63, 329.63, 440.0, 523.25],
-        [164.81, 246.94, 293.66, 392.0, 493.88],
-        [146.83, 220.0, 293.66, 349.23, 440.0],
-        [130.81, 261.63, 329.63, 392.0, 493.88],
-      ],
-      bass: [87.31, 82.41, 73.42, 65.41],
-      melody: [523.25, 659.25, 783.99, 880.0, 1046.5, 1174.66],
-      style: 'rain',
-    },
-    {
-      title: '🌙 Tokyo Night Drive',
-      sub: '84 BPM · Nocturnal Chillhop Groove',
-      bpm: 84,
-      wave: 'sawtooth',
-      melodyWave: 'triangle',
-      cutoff: 760,
-      // Am9 -> Fmaj7 -> Dm9 -> E7#9
-      chords: [
-        [220.0, 261.63, 329.63, 392.0, 493.88],
-        [174.61, 261.63, 329.63, 440.0, 523.25],
-        [293.66, 349.23, 440.0, 523.25, 659.25],
-        [164.81, 246.94, 329.63, 392.0, 466.16],
-      ],
-      bass: [110.0, 87.31, 73.42, 82.41],
-      melody: [440.0, 523.25, 659.25, 783.99, 880.0, 987.77],
-      style: 'drive',
-    },
-    {
-      title: '🍃 Ubud Morning Breeze',
-      sub: '72 BPM · Kalimba Plucks & Warm Pad',
-      bpm: 72,
-      wave: 'triangle',
-      melodyWave: 'sine',
-      cutoff: 1150,
-      // Gmaj9 -> Bm7 -> Em9 -> Cmaj9
-      chords: [
-        [196.0, 246.94, 293.66, 369.99, 440.0],
-        [246.94, 293.66, 369.99, 440.0, 587.33],
-        [164.81, 246.94, 293.66, 369.99, 493.88],
-        [261.63, 329.63, 392.0, 493.88, 587.33],
-      ],
-      bass: [98.0, 123.47, 82.41, 65.41],
-      melody: [587.33, 659.25, 783.99, 880.0, 987.77, 1174.66],
-      style: 'breeze',
-    },
-    {
-      title: '👾 8-Bit Arcade Chill',
-      sub: '78 BPM · Cozy Chiptune Lo-Fi Beats',
-      bpm: 78,
-      wave: 'square',
-      melodyWave: 'square',
-      cutoff: 680,
-      // Cmaj7 -> A7 -> Dm7 -> G13
-      chords: [
-        [261.63, 329.63, 392.0, 493.88],
-        [220.0, 277.18, 329.63, 392.0],
-        [293.66, 349.23, 440.0, 523.25],
-        [196.0, 246.94, 349.23, 440.0],
-      ],
-      bass: [65.41, 110.0, 73.42, 98.0],
-      melody: [523.25, 659.25, 783.99, 1046.5, 880.0, 659.25],
-      style: 'chip',
-    },
-  ];
+  interface YtPlayerInstance {
+    playVideo: () => void;
+    pauseVideo: () => void;
+    nextVideo: () => void;
+    previousVideo: () => void;
+    playVideoAt: (index: number) => void;
+    setVolume: (volume: number) => void;
+    setShuffle: (shufflePlaylist: boolean) => void;
+    setLoop: (loopPlaylists: boolean) => void;
+    getPlaylist: () => string[] | null;
+    getPlaylistIndex: () => number;
+    getVideoData: () => YtVideoData;
+    getPlayerState: () => number;
+    cueVideoById: (videoId: string) => void;
+    loadVideoById: (videoId: string) => void;
+    cuePlaylist: (playlist: string | string[] | { listType: string; list: string; index?: number }, index?: number) => void;
+    loadPlaylist: (playlist: string | string[] | { listType: string; list: string; index?: number }, index?: number) => void;
+  }
 
-  const lofiTitleEl = document.getElementById('lofi-track-title');
-  const lofiSubEl = document.getElementById('lofi-track-sub');
-  const lofiStatusEl = document.getElementById('lofi-status-badge');
+  interface TrackMeta {
+    videoId: string;
+    title: string;
+    artist: string;
+  }
+
+  const ytExternalLink = document.getElementById('yt-music-external-link') as HTMLAnchorElement | null;
+  const ytTrackBadge = document.getElementById('yt-track-badge');
+  const ytCoverArt = document.getElementById('yt-cover-art') as HTMLImageElement | null;
+  const ytEqBars = document.getElementById('yt-eq-bars');
+  const ytNowTitle = document.getElementById('yt-now-title');
+  const ytNowArtist = document.getElementById('yt-now-artist');
+  const ytTracklistEl = document.getElementById('yt-tracklist');
+  const ytPlaylistNameTag = document.getElementById('yt-playlist-name-tag');
+
   const lofiPlayBtn = document.getElementById('lofi-play-btn');
   const lofiPlayLabel = document.getElementById('lofi-play-label');
   const lofiIconPlay = document.getElementById('lofi-icon-play');
   const lofiIconPause = document.getElementById('lofi-icon-pause');
   const lofiPrevBtn = document.getElementById('lofi-prev-btn');
   const lofiNextBtn = document.getElementById('lofi-next-btn');
+  const lofiShuffleBtn = document.getElementById('lofi-shuffle-btn');
   const lofiVolSlider = document.getElementById('lofi-volume-slider') as HTMLInputElement | null;
   const lofiVolLabel = document.getElementById('lofi-volume-label');
-  const lofiRainBtn = document.getElementById('lofi-rain-btn');
-  const lofiEqBars = document.getElementById('lofi-eq-bars');
   const lofiStationBtns = document.querySelectorAll<HTMLButtonElement>('.lofi-station-btn');
 
-  let lofiIdx = 0;
-  let lofiPlaying = false;
-  let lofiVolume = 0.65;
-  let lofiVinylOn = true;
-  let lofiStep = 0;
-  let lofiTimer: number | null = null;
-  let lofiMasterGain: GainNode | null = null;
-  let lofiVinylSource: AudioBufferSourceNode | null = null;
-  let lofiVinylGain: GainNode | null = null;
+  let ytPlayer: YtPlayerInstance | null = null;
+  let ytReady = false;
+  let ytPlaying = false;
+  let ytShuffled = false;
+  let ytVolume = 70;
+  let currentStationType: 'playlist' | 'video' = 'playlist';
+  let currentPlaylistId = 'PLqIiu63tUd9yTmMIbywqHleGYFx5K0cIc';
+  let currentPlaylistTitle = 'Playlist Gus Adi';
+  let currentTrackIndex = 0;
+  let playlistTracks: TrackMeta[] = [];
+  let stalePlaylistSignature = '';
+  let syncTimers: ReturnType<typeof setTimeout>[] = [];
 
-  // Restore saved Lo-Fi volume
+  // Preloaded playlists map from SSR/build-time (0ms instant tracklist for all 3 preset playlists!)
+  const playlistsCacheMap: Record<string, TrackMeta[]> = {};
+  const metaCache = new Map<string, { title: string; artist: string }>();
+
+  try {
+    const rawPreloaded = ytTracklistEl?.getAttribute('data-playlists-map');
+    if (rawPreloaded) {
+      const parsedPreloaded = JSON.parse(rawPreloaded) as Record<string, TrackMeta[]>;
+      Object.entries(parsedPreloaded).forEach(([pid, tracks]) => {
+        if (Array.isArray(tracks) && tracks.length > 0) {
+          playlistsCacheMap[pid] = tracks;
+          tracks.forEach((t) => {
+            if (t.videoId && t.title) {
+              metaCache.set(t.videoId, { title: t.title, artist: t.artist || 'YouTube Music' });
+            }
+          });
+        }
+      });
+    }
+  } catch (_) {}
+
+  // Load any additional cached tracks & metadata from localStorage
+  try {
+    const rawCache = localStorage.getItem('portfolio-yt-meta-cache-v1');
+    if (rawCache) {
+      const parsed = JSON.parse(rawCache) as Record<string, { title: string; artist: string }>;
+      Object.entries(parsed).forEach(([k, v]) => {
+        if (v && v.title) metaCache.set(k, v);
+      });
+    }
+    const rawPlaylistsCache = localStorage.getItem('portfolio-yt-playlists-cache-v3');
+    if (rawPlaylistsCache) {
+      const parsedPl = JSON.parse(rawPlaylistsCache) as Record<string, TrackMeta[]>;
+      Object.entries(parsedPl).forEach(([pid, tracks]) => {
+        if (Array.isArray(tracks) && tracks.length > (playlistsCacheMap[pid]?.length || 0)) {
+          playlistsCacheMap[pid] = tracks;
+        }
+      });
+    }
+  } catch (_) {}
+
+  function saveMetaCache() {
+    try {
+      const obj: Record<string, { title: string; artist: string }> = {};
+      metaCache.forEach((v, k) => {
+        obj[k] = v;
+      });
+      localStorage.setItem('portfolio-yt-meta-cache-v1', JSON.stringify(obj));
+      if (playlistTracks.length > 0) {
+        playlistsCacheMap[currentPlaylistId] = playlistTracks;
+        localStorage.setItem('portfolio-yt-playlists-cache-v3', JSON.stringify(playlistsCacheMap));
+      }
+    } catch (_) {}
+  }
+
+  // Restore saved YT Music volume
   try {
     const savedLofiVol = localStorage.getItem('portfolio-lofi-volume');
     if (savedLofiVol !== null) {
       const parsed = Number(savedLofiVol);
       if (!Number.isNaN(parsed) && parsed >= 0 && parsed <= 100) {
-        lofiVolume = parsed / 100;
+        ytVolume = parsed;
         if (lofiVolSlider) lofiVolSlider.value = String(parsed);
         if (lofiVolLabel) lofiVolLabel.textContent = `${parsed}%`;
       }
     }
   } catch (_) {}
 
-  function ensureLofiBus(): { ctx: AudioContext; out: GainNode } | null {
-    const env = getCtx();
-    if (!env) return null;
-    const { ctx } = env;
-    if (!lofiMasterGain) {
-      lofiMasterGain = ctx.createGain();
-      lofiMasterGain.gain.setValueAtTime(lofiVolume, ctx.currentTime);
-      lofiMasterGain.connect(ctx.destination);
+  // Read any SSR-rendered tracks or preloaded map immediately (0ms!)
+  function readInitialDomTracks() {
+    if (playlistsCacheMap[currentPlaylistId]?.length) {
+      playlistTracks = [...playlistsCacheMap[currentPlaylistId]];
+      bindTracklistButtons();
+      return;
     }
-    return { ctx, out: lofiMasterGain };
+    if (!ytTracklistEl) return;
+    const items = ytTracklistEl.querySelectorAll<HTMLButtonElement>('.yt-track-item');
+    if (!items.length) return;
+    playlistTracks = Array.from(items).map((btn) => {
+      const videoId = btn.getAttribute('data-video-id') || '';
+      const title = btn.getAttribute('data-track-title') || 'Lagu';
+      const artist = btn.getAttribute('data-track-artist') || 'YouTube Music';
+      if (videoId) metaCache.set(videoId, { title, artist });
+      return { videoId, title, artist };
+    });
+    playlistsCacheMap[currentPlaylistId] = [...playlistTracks];
+    bindTracklistButtons();
   }
 
-  function startVinylTexture() {
-    const bus = ensureLofiBus();
-    if (!bus) return;
-    stopVinylTexture();
-    if (!lofiVinylOn) return;
-
-    const { ctx, out } = bus;
-    const bufLen = ctx.sampleRate * 3;
-    const buffer = ctx.createBuffer(1, bufLen, ctx.sampleRate);
-    const data = buffer.getChannelData(0);
-    let b0 = 0;
-    let b1 = 0;
-    let b2 = 0;
-    for (let i = 0; i < bufLen; i++) {
-      const white = Math.random() * 2 - 1;
-      b0 = 0.997 * b0 + white * 0.029;
-      b1 = 0.985 * b1 + white * 0.032;
-      b2 = 0.95 * b2 + white * 0.045;
-      // Subtle vinyl dust pops
-      const pop = Math.random() > 0.9985 ? (Math.random() * 2 - 1) * 0.35 : 0;
-      data[i] = (b0 + b1 + b2) * 0.14 + pop;
-    }
-
-    const src = ctx.createBufferSource();
-    src.buffer = buffer;
-    src.loop = true;
-
-    const filter = ctx.createBiquadFilter();
-    filter.type = 'bandpass';
-    filter.frequency.setValueAtTime(1100, ctx.currentTime);
-    filter.Q.setValueAtTime(0.7, ctx.currentTime);
-
-    const vGain = ctx.createGain();
-    const isRainTrack = LOFI_STATIONS[lofiIdx].style === 'rain';
-    vGain.gain.setValueAtTime(isRainTrack ? 0.18 : 0.09, ctx.currentTime);
-
-    src.connect(filter);
-    filter.connect(vGain);
-    vGain.connect(out);
-    src.start();
-
-    lofiVinylSource = src;
-    lofiVinylGain = vGain;
-  }
-
-  function stopVinylTexture() {
-    try {
-      if (lofiVinylSource) {
-        lofiVinylSource.stop();
-        lofiVinylSource.disconnect();
-        lofiVinylSource = null;
-      }
-      if (lofiVinylGain) {
-        lofiVinylGain.disconnect();
-        lofiVinylGain = null;
-      }
-    } catch (_) {}
-  }
-
-  function playLofiKick(ctx: AudioContext, out: AudioNode, time: number, punch = 0.26) {
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(118, time);
-    osc.frequency.exponentialRampToValueAtTime(36, time + 0.14);
-    gain.gain.setValueAtTime(punch, time);
-    gain.gain.exponentialRampToValueAtTime(0.001, time + 0.22);
-    osc.connect(gain);
-    gain.connect(out);
-    osc.start(time);
-    osc.stop(time + 0.24);
-  }
-
-  function playLofiSnare(ctx: AudioContext, out: AudioNode, time: number, level = 0.12) {
-    // Warm rimshot body + filtered noise snap
-    const osc = ctx.createOscillator();
-    const oscGain = ctx.createGain();
-    osc.type = 'triangle';
-    osc.frequency.setValueAtTime(210, time);
-    osc.frequency.exponentialRampToValueAtTime(95, time + 0.07);
-    oscGain.gain.setValueAtTime(level, time);
-    oscGain.gain.exponentialRampToValueAtTime(0.001, time + 0.09);
-    osc.connect(oscGain);
-    oscGain.connect(out);
-    osc.start(time);
-    osc.stop(time + 0.1);
-
-    const len = Math.floor(ctx.sampleRate * 0.11);
-    const nBuf = ctx.createBuffer(1, len, ctx.sampleRate);
-    const ch = nBuf.getChannelData(0);
-    for (let i = 0; i < len; i++) {
-      ch[i] = (Math.random() * 2 - 1) * Math.exp(-i / (ctx.sampleRate * 0.035));
-    }
-    const nSrc = ctx.createBufferSource();
-    nSrc.buffer = nBuf;
-    const filt = ctx.createBiquadFilter();
-    filt.type = 'bandpass';
-    filt.frequency.setValueAtTime(1650, time);
-    const nGain = ctx.createGain();
-    nGain.gain.setValueAtTime(level * 0.85, time);
-    nGain.gain.exponentialRampToValueAtTime(0.001, time + 0.1);
-    nSrc.connect(filt);
-    filt.connect(nGain);
-    nGain.connect(out);
-    nSrc.start(time);
-  }
-
-  function playLofiHat(ctx: AudioContext, out: AudioNode, time: number, open = false) {
-    const dur = open ? 0.14 : 0.045;
-    const len = Math.floor(ctx.sampleRate * dur);
-    const nBuf = ctx.createBuffer(1, len, ctx.sampleRate);
-    const ch = nBuf.getChannelData(0);
-    for (let i = 0; i < len; i++) {
-      ch[i] = (Math.random() * 2 - 1) * Math.exp(-i / (ctx.sampleRate * (open ? 0.05 : 0.014)));
-    }
-    const nSrc = ctx.createBufferSource();
-    nSrc.buffer = nBuf;
-    const filt = ctx.createBiquadFilter();
-    filt.type = 'highpass';
-    filt.frequency.setValueAtTime(5200, time);
-    const gain = ctx.createGain();
-    gain.gain.setValueAtTime(open ? 0.05 : 0.035, time);
-    gain.gain.exponentialRampToValueAtTime(0.001, time + dur);
-    nSrc.connect(filt);
-    filt.connect(gain);
-    gain.connect(out);
-    nSrc.start(time);
-  }
-
-  function playLofiChord(
-    ctx: AudioContext,
-    out: AudioNode,
-    freqs: number[],
-    station: LofiStation,
-    durSec: number
-  ) {
-    const now = ctx.currentTime;
-    const filter = ctx.createBiquadFilter();
-    filter.type = 'lowpass';
-    filter.frequency.setValueAtTime(station.cutoff, now);
-    filter.Q.setValueAtTime(1.2, now);
-    filter.connect(out);
-
-    freqs.forEach((f, idx) => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = station.wave;
-      // Gentle analog tape detune
-      const detune = (idx % 2 === 0 ? 1 : -1) * 4.5;
-      osc.detune.setValueAtTime(detune, now);
-      osc.frequency.setValueAtTime(f, now);
-
-      const strumDelay = idx * 0.022;
-      const noteStart = now + strumDelay;
-      const peakGain = station.wave === 'sawtooth' || station.wave === 'square' ? 0.032 : 0.055;
-
-      gain.gain.setValueAtTime(0.0001, noteStart);
-      gain.gain.linearRampToValueAtTime(peakGain, noteStart + 0.08);
-      gain.gain.exponentialRampToValueAtTime(0.0008, noteStart + durSec);
-
-      osc.connect(gain);
-      gain.connect(filter);
-      osc.start(noteStart);
-      osc.stop(noteStart + durSec + 0.04);
+  function bindTracklistButtons() {
+    if (!ytTracklistEl) return;
+    const buttons = ytTracklistEl.querySelectorAll<HTMLButtonElement>('.yt-track-item');
+    buttons.forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const idx = Number(btn.getAttribute('data-track-idx') || '0');
+        playTrackAtIndex(idx);
+      });
     });
   }
 
-  function playLofiBassNote(ctx: AudioContext, out: AudioNode, freq: number, durSec: number) {
-    const now = ctx.currentTime;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(freq, now);
-    gain.gain.setValueAtTime(0.001, now);
-    gain.gain.linearRampToValueAtTime(0.16, now + 0.03);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + durSec);
-    osc.connect(gain);
-    gain.connect(out);
-    osc.start(now);
-    osc.stop(now + durSec + 0.02);
+  function renderTracklistUI() {
+    if (!ytTracklistEl) return;
+    const prevScroll = ytTracklistEl.scrollTop;
+    if (!playlistTracks.length) {
+      ytTracklistEl.innerHTML =
+        '<div class="px-3 py-3 text-center text-[11px] font-semibold text-[var(--text-muted)]">⏳ Memuat daftar judul lagu...</div>';
+      return;
+    }
+
+    ytTracklistEl.innerHTML = playlistTracks
+      .map((t, idx) => {
+        const active = idx === currentTrackIndex;
+        const rowClass = active
+          ? 'bg-[var(--accent-primary)] text-[var(--accent-ink)] font-extrabold shadow-2xs'
+          : 'bg-[var(--bg-surface)]/85 hover:bg-[var(--bg-surface)] text-[var(--text-primary)] font-semibold';
+        const safeTitle = t.title.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        const safeArtist = t.artist.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        return `
+          <button
+            type="button"
+            data-track-idx="${idx}"
+            data-video-id="${t.videoId}"
+            class="yt-track-item w-full text-left px-2.5 py-1.5 rounded-xl flex items-center justify-between gap-2 text-xs transition-all cursor-pointer ${rowClass}"
+          >
+            <div class="flex items-center gap-2 min-w-0">
+              <span class="font-mono text-[10px] opacity-75 shrink-0">${String(idx + 1).padStart(2, '0')}</span>
+              <div class="min-w-0">
+                <div class="truncate text-[11px] leading-tight">${safeTitle}</div>
+                <div class="truncate text-[9px] opacity-75 leading-tight">${safeArtist}</div>
+              </div>
+            </div>
+            <span class="font-mono text-[10px] shrink-0">${active && ytPlaying ? '🔊' : '▶'}</span>
+          </button>
+        `;
+      })
+      .join('');
+
+    ytTracklistEl.scrollTop = prevScroll;
+    bindTracklistButtons();
   }
 
-  function playLofiMelodyPluck(ctx: AudioContext, out: AudioNode, freq: number, station: LofiStation) {
-    const now = ctx.currentTime;
-    const osc = ctx.createOscillator();
-    const filt = ctx.createBiquadFilter();
-    const gain = ctx.createGain();
+  // Full parallel metadata resolution for any uncached video IDs
+  async function resolveTrackMetadata(videoIds: string[], targetPid: string) {
+    const toFetch = videoIds.filter((id) => !metaCache.has(id));
+    if (!toFetch.length) {
+      saveMetaCache();
+      return;
+    }
 
-    osc.type = station.melodyWave;
-    osc.frequency.setValueAtTime(freq, now);
+    let updatedCount = 0;
+    await Promise.allSettled(
+      toFetch.map(async (vid) => {
+        try {
+          const res = await fetch(`https://noembed.com/embed?url=https://www.youtube.com/watch?v=${vid}`);
+          if (!res.ok) return;
+          const data = (await res.json()) as { title?: string; author_name?: string };
+          if (data.title) {
+            const cleanArtist = (data.author_name || 'YouTube Music').replace(/\s*-\s*Topic$/i, '').trim();
+            metaCache.set(vid, { title: data.title, artist: cleanArtist });
+            updatedCount++;
+            if (currentPlaylistId === targetPid) {
+              playlistTracks = videoIds.map((id, idx) => {
+                const cached = metaCache.get(id);
+                return {
+                  videoId: id,
+                  title: cached?.title || `Lagu #${idx + 1}`,
+                  artist: cached?.artist || 'YouTube Music',
+                };
+              });
+              renderTracklistUI();
+              syncNowPlayingDisplay();
+            }
+          }
+        } catch (_) {}
+      })
+    );
 
-    filt.type = 'lowpass';
-    filt.frequency.setValueAtTime(station.cutoff * 1.6, now);
-
-    const peak = station.melodyWave === 'square' ? 0.035 : 0.065;
-    gain.gain.setValueAtTime(0.001, now);
-    gain.gain.linearRampToValueAtTime(peak, now + 0.015);
-    gain.gain.exponentialRampToValueAtTime(0.0008, now + 0.52);
-
-    osc.connect(filt);
-    filt.connect(gain);
-    gain.connect(out);
-    osc.start(now);
-    osc.stop(now + 0.55);
+    if (updatedCount > 0) {
+      saveMetaCache();
+    }
   }
 
-  function animateEqualizer() {
-    if (!lofiEqBars) return;
-    const spans = lofiEqBars.querySelectorAll<HTMLElement>('span');
-    spans.forEach((bar) => {
-      if (!lofiPlaying) {
-        bar.style.height = '4px';
-      } else {
-        const h = 4 + Math.floor(Math.random() * 10);
-        bar.style.height = `${h}px`;
+  function syncPlaylistFromPlayer() {
+    if (currentStationType === 'video') return;
+    if (!ytPlayer || typeof ytPlayer.getPlaylist !== 'function') return;
+    const ids = ytPlayer.getPlaylist();
+    if (!ids || !ids.length) return;
+
+    const nextIds = ids.join(',');
+    // Ignore stale playlist IDs left over from the previous playlist before cuePlaylist finishes
+    if (stalePlaylistSignature && nextIds === stalePlaylistSignature) return;
+
+    const currentIds = playlistTracks.map((t) => t.videoId).join(',');
+    if (currentIds !== nextIds && (playlistTracks.length === 0 || ids.length >= playlistTracks.length)) {
+      playlistTracks = ids.map((vid, idx) => {
+        const cached = metaCache.get(vid);
+        return {
+          videoId: vid,
+          title: cached?.title || `Lagu #${idx + 1}`,
+          artist: cached?.artist || 'YouTube Music',
+        };
+      });
+      playlistsCacheMap[currentPlaylistId] = [...playlistTracks];
+      renderTracklistUI();
+      syncNowPlayingDisplay();
+      resolveTrackMetadata(ids, currentPlaylistId);
+    }
+  }
+
+  function schedulePlaylistSync(targetPid: string) {
+    syncTimers.forEach((t) => clearTimeout(t));
+    syncTimers = [250, 600, 1200, 2200].map((delay) =>
+      setTimeout(() => {
+        if (currentPlaylistId === targetPid) {
+          syncPlaylistFromPlayer();
+        }
+      }, delay)
+    );
+  }
+
+  function syncNowPlayingDisplay() {
+    if (currentStationType === 'playlist' && ytPlayer && typeof ytPlayer.getPlaylistIndex === 'function') {
+      const idx = ytPlayer.getPlaylistIndex();
+      if (typeof idx === 'number' && idx >= 0 && idx < playlistTracks.length) {
+        currentTrackIndex = idx;
       }
-    });
+    }
+
+    const total = playlistTracks.length;
+    if (ytTrackBadge) {
+      ytTrackBadge.textContent = total > 0 ? `${currentTrackIndex + 1} / ${total} Lagu` : 'Siap Diputar';
+    }
+
+    let activeTitle = playlistTracks[currentTrackIndex]?.title || 'Pilih Lagu di Daftar Playlist';
+    let activeArtist = playlistTracks[currentTrackIndex]?.artist || currentPlaylistTitle;
+    let activeVid = playlistTracks[currentTrackIndex]?.videoId || '';
+
+    if (ytPlayer && typeof ytPlayer.getVideoData === 'function') {
+      const vData = ytPlayer.getVideoData();
+      if (vData && vData.title && vData.video_id) {
+        // Only apply player videoData if it belongs to our active tracklist
+        const matchIdx = playlistTracks.findIndex((t) => t.videoId === vData.video_id);
+        if (matchIdx >= 0) {
+          activeTitle = vData.title;
+          activeArtist = (vData.author || activeArtist).replace(/\s*-\s*Topic$/i, '').trim();
+          activeVid = vData.video_id;
+          metaCache.set(vData.video_id, { title: activeTitle, artist: activeArtist });
+          playlistTracks[matchIdx].title = activeTitle;
+          playlistTracks[matchIdx].artist = activeArtist;
+        }
+      }
+    }
+
+    if (ytNowTitle) {
+      ytNowTitle.textContent = activeTitle;
+      ytNowTitle.title = activeTitle;
+    }
+    if (ytNowArtist) {
+      ytNowArtist.textContent = activeArtist;
+    }
+    if (ytCoverArt && activeVid) {
+      const nextThumb = `https://i.ytimg.com/vi/${activeVid}/mqdefault.jpg`;
+      if (ytCoverArt.src !== nextThumb) {
+        ytCoverArt.src = nextThumb;
+      }
+    }
   }
 
-  function runLofiStep() {
-    if (!lofiPlaying) return;
-    const bus = ensureLofiBus();
-    if (!bus) return;
-
-    const { ctx, out } = bus;
-    const station = LOFI_STATIONS[lofiIdx];
-    const stepDurSec = 60 / station.bpm / 4; // 16th note duration
-    const barStep = lofiStep % 16;
-    const chordIdx = Math.floor(lofiStep / 16) % station.chords.length;
-    // Slight MPC lo-fi swing on odd 16th steps
-    const swingOffset = barStep % 2 === 1 ? stepDurSec * 0.18 : 0;
-    const hitTime = ctx.currentTime + swingOffset;
-
-    // 1. Trigger lush warm chord on beat 1 (barStep === 0) and gentle re-strum on beat 3 (barStep === 8)
-    if (barStep === 0) {
-      playLofiChord(ctx, out, station.chords[chordIdx], station, stepDurSec * 15.5);
-      playLofiBassNote(ctx, out, station.bass[chordIdx], stepDurSec * 7.5);
-    } else if (barStep === 8) {
-      playLofiBassNote(ctx, out, station.bass[chordIdx], stepDurSec * 5.5);
-    } else if (barStep === 14 && station.style === 'drive') {
-      playLofiBassNote(ctx, out, station.bass[chordIdx] * 1.5, stepDurSec * 1.8);
-    }
-
-    // 2. Drum groove per station style
-    if (station.style === 'boombap' || station.style === 'chip') {
-      if (barStep === 0 || barStep === 7 || barStep === 10) playLofiKick(ctx, out, hitTime, 0.24);
-      if (barStep === 4 || barStep === 12) playLofiSnare(ctx, out, hitTime, 0.11);
-      if (barStep % 2 === 0) playLofiHat(ctx, out, hitTime, barStep === 14);
-    } else if (station.style === 'rain') {
-      if (barStep === 0 || barStep === 10) playLofiKick(ctx, out, hitTime, 0.18);
-      if (barStep === 4 || barStep === 12) playLofiSnare(ctx, out, hitTime, 0.07);
-      if (barStep % 4 === 0) playLofiHat(ctx, out, hitTime, false);
-    } else if (station.style === 'drive') {
-      if (barStep === 0 || barStep === 6 || barStep === 10) playLofiKick(ctx, out, hitTime, 0.27);
-      if (barStep === 4 || barStep === 12) playLofiSnare(ctx, out, hitTime, 0.13);
-      if (barStep % 2 === 0 || barStep === 15) playLofiHat(ctx, out, hitTime, barStep === 6);
-    } else if (station.style === 'breeze') {
-      if (barStep === 0 || barStep === 9) playLofiKick(ctx, out, hitTime, 0.2);
-      if (barStep === 4 || barStep === 12) playLofiSnare(ctx, out, hitTime, 0.085);
-      if (barStep % 2 === 0) playLofiHat(ctx, out, hitTime, false);
-    }
-
-    // 3. Improvised gentle Lo-Fi melody plucks
-    const melodyTriggerSteps = [2, 6, 9, 11, 14];
-    if (melodyTriggerSteps.includes(barStep) && Math.random() > 0.32) {
-      const noteFreq = station.melody[(lofiStep + chordIdx * 2) % station.melody.length];
-      playLofiMelodyPluck(ctx, out, noteFreq, station);
-    }
-
-    animateEqualizer();
-    lofiStep++;
-  }
-
-  function syncLofiUI() {
-    const station = LOFI_STATIONS[lofiIdx];
-    if (lofiTitleEl) lofiTitleEl.textContent = station.title;
-    if (lofiSubEl) lofiSubEl.textContent = station.sub;
-
-    if (lofiStatusEl) {
-      lofiStatusEl.textContent = lofiPlaying ? `LIVE · ${station.bpm} BPM` : 'STANDBY';
-      lofiStatusEl.className = lofiPlaying
-        ? 'px-2 py-0.5 rounded-full bg-[var(--tint-mint)] font-mono text-[10px] font-extrabold text-teal-950'
-        : 'px-2 py-0.5 rounded-full bg-[var(--bg-elevated)] font-mono text-[10px] font-bold text-[var(--text-muted)]';
-    }
-
-    if (lofiPlayLabel) lofiPlayLabel.textContent = lofiPlaying ? 'Pause' : 'Play';
+  function syncYtUI() {
+    if (lofiPlayLabel) lofiPlayLabel.textContent = ytPlaying ? 'Pause' : 'Play';
     if (lofiIconPlay && lofiIconPause) {
-      if (lofiPlaying) {
+      if (ytPlaying) {
         lofiIconPlay.classList.add('hidden');
         lofiIconPause.classList.remove('hidden');
       } else {
@@ -1536,119 +1533,299 @@ try {
         lofiIconPause.classList.add('hidden');
       }
     }
-
-    if (lofiEqBars) {
-      lofiEqBars.style.opacity = lofiPlaying ? '1' : '0.35';
+    if (ytEqBars) {
+      ytEqBars.style.opacity = ytPlaying ? '1' : '0.35';
+    }
+    if (ytPlaylistNameTag) {
+      ytPlaylistNameTag.textContent = currentPlaylistTitle;
     }
 
-    lofiStationBtns.forEach((btn, i) => {
-      if (i === lofiIdx) {
+    lofiStationBtns.forEach((btn) => {
+      const pid = btn.getAttribute('data-playlist-id') || '';
+      if (pid === currentPlaylistId) {
         btn.className =
-          'lofi-station-btn px-2.5 py-1 rounded-xl bg-[var(--accent-primary)] text-[var(--accent-ink)] text-[10px] font-extrabold cursor-pointer transition-all shadow-2xs';
+          'lofi-station-btn px-3 py-1 rounded-xl bg-[var(--accent-primary)] text-[var(--accent-ink)] text-[11px] font-extrabold cursor-pointer transition-all shadow-2xs';
       } else {
         btn.className =
-          'lofi-station-btn px-2.5 py-1 rounded-xl bg-[var(--bg-elevated)] text-[var(--text-primary)] hover:border-[var(--accent-primary)] text-[10px] font-bold cursor-pointer transition-all';
+          'lofi-station-btn px-3 py-1 rounded-xl bg-[var(--bg-elevated)] text-[var(--text-primary)] hover:border-[var(--accent-primary)] text-[11px] font-bold cursor-pointer transition-all';
       }
     });
 
-    if (lofiRainBtn) {
-      lofiRainBtn.className = lofiVinylOn
-        ? 'px-2 py-0.5 rounded-lg bg-[var(--tint-sky)] text-blue-950 font-sans text-[10px] font-extrabold inline-flex items-center gap-1 cursor-pointer shrink-0'
-        : 'px-2 py-0.5 rounded-lg bg-[var(--bg-surface)] text-[var(--text-muted)] font-sans text-[10px] font-bold inline-flex items-center gap-1 cursor-pointer shrink-0 opacity-60';
-    }
+    syncNowPlayingDisplay();
+    renderTracklistUI();
   }
 
-  function startLofiPlayback() {
-    const bus = ensureLofiBus();
-    if (!bus) return;
-    if (lofiTimer) window.clearInterval(lofiTimer);
+  function playTrackAtIndex(index: number) {
+    if (index < 0) return;
+    currentTrackIndex = index;
+    ytPlaying = true;
+    const chosenTrack = playlistTracks[index];
 
-    lofiPlaying = true;
-    const station = LOFI_STATIONS[lofiIdx];
-    const stepMs = (60 / station.bpm / 4) * 1000;
-
-    startVinylTexture();
-    runLofiStep();
-    lofiTimer = window.setInterval(runLofiStep, stepMs);
-    syncLofiUI();
-
+    if (ytPlayer && ytReady) {
+      ytPlayer.setVolume(ytVolume);
+      if (currentStationType === 'video' && chosenTrack?.videoId) {
+        ytPlayer.loadVideoById(chosenTrack.videoId);
+      } else {
+        const playerIds = ytPlayer.getPlaylist?.() || [];
+        const hasCurrentPlaylistLoaded =
+          playerIds.length > index &&
+          (!chosenTrack?.videoId || playerIds.includes(chosenTrack.videoId));
+        if (hasCurrentPlaylistLoaded) {
+          ytPlayer.playVideoAt(index);
+        } else {
+          const knownIds = playlistTracks.map((t) => t.videoId).filter(Boolean);
+          if (knownIds.length > 0) {
+            ytPlayer.loadPlaylist(knownIds, index);
+          } else {
+            ytPlayer.loadPlaylist({
+              listType: 'playlist',
+              list: currentPlaylistId,
+              index,
+            });
+          }
+        }
+      }
+    }
+    syncYtUI();
+    const chosenTitle = chosenTrack?.title || `Lagu #${index + 1}`;
     window.dispatchEvent(
       new CustomEvent('portfolio:toast', {
-        detail: { message: `🎧 Memutar Lo-Fi: ${station.title}` },
+        detail: { message: `🎵 Memutar: ${chosenTitle}` },
       })
     );
   }
 
-  function stopLofiPlayback() {
-    lofiPlaying = false;
-    if (lofiTimer) {
-      window.clearInterval(lofiTimer);
-      lofiTimer = null;
+  function toggleYtPlayback(forceState?: boolean) {
+    ytPlaying = typeof forceState === 'boolean' ? forceState : !ytPlaying;
+    if (ytPlayer && ytReady) {
+      if (ytPlaying) {
+        ytPlayer.setVolume(ytVolume);
+        if (currentStationType === 'video') {
+          const vid = playlistTracks[0]?.videoId || currentPlaylistId;
+          const vData = ytPlayer.getVideoData?.();
+          if (vData?.video_id === vid) {
+            ytPlayer.playVideo();
+          } else {
+            ytPlayer.loadVideoById(vid);
+          }
+        } else {
+          ytPlayer.playVideo();
+        }
+      } else {
+        ytPlayer.pauseVideo();
+      }
     }
-    stopVinylTexture();
-    animateEqualizer();
-    syncLofiUI();
+    syncYtUI();
   }
 
-  function selectLofiStation(newIdx: number, autoPlay = true) {
-    lofiIdx = (newIdx + LOFI_STATIONS.length) % LOFI_STATIONS.length;
-    lofiStep = 0;
-    if (autoPlay || lofiPlaying) {
-      startLofiPlayback();
+  // Equalizer bar animation while audio is playing
+  setInterval(() => {
+    if (!ytEqBars) return;
+    const bars = ytEqBars.querySelectorAll<HTMLElement>('span');
+    bars.forEach((bar) => {
+      if (!ytPlaying) {
+        bar.style.height = '4px';
+      } else {
+        bar.style.height = `${4 + Math.floor(Math.random() * 8)}px`;
+      }
+    });
+  }, 220);
+
+  // Attach Official YouTube IFrame Player API to existing 200x200 off-screen iframe
+  function initYoutubeAudioEngine() {
+    const w = window as unknown as {
+      YT?: {
+        Player: new (
+          id: string,
+          opts: Record<string, unknown>
+        ) => YtPlayerInstance;
+      };
+      onYouTubeIframeAPIReady?: () => void;
+    };
+
+    const createPlayer = () => {
+      if (!w.YT || !w.YT.Player) return;
+      ytPlayer = new w.YT.Player('yt-hidden-player', {
+        events: {
+          onReady: () => {
+            ytReady = true;
+            ytPlayer?.setVolume(ytVolume);
+            ytPlayer?.setLoop(true);
+            syncPlaylistFromPlayer();
+            syncYtUI();
+          },
+          onStateChange: (event: { data: number }) => {
+            // YT.PlayerState: UNSTARTED === -1, ENDED === 0, PLAYING === 1, PAUSED === 2, BUFFERING === 3, CUED === 5
+            if (event.data === 1) {
+              ytPlaying = true;
+              syncPlaylistFromPlayer();
+              syncYtUI();
+            } else if (event.data === 2 || event.data === 0) {
+              ytPlaying = false;
+              syncYtUI();
+            } else if (event.data === 5 || event.data === -1 || event.data === 3) {
+              syncPlaylistFromPlayer();
+              syncYtUI();
+            }
+          },
+        },
+      });
+    };
+
+    if (w.YT && w.YT.Player) {
+      createPlayer();
     } else {
-      syncLofiUI();
+      const prevCallback = w.onYouTubeIframeAPIReady;
+      w.onYouTubeIframeAPIReady = () => {
+        if (typeof prevCallback === 'function') prevCallback();
+        createPlayer();
+      };
+      if (!document.getElementById('yt-iframe-api-script')) {
+        const tag = document.createElement('script');
+        tag.id = 'yt-iframe-api-script';
+        tag.src = 'https://www.youtube.com/iframe_api';
+        tag.async = true;
+        document.head.appendChild(tag);
+      }
     }
   }
+
+  readInitialDomTracks();
+  initYoutubeAudioEngine();
 
   lofiPlayBtn?.addEventListener('click', () => {
-    if (lofiPlaying) {
-      stopLofiPlayback();
-    } else {
-      startLofiPlayback();
-    }
+    toggleYtPlayback();
   });
 
   lofiPrevBtn?.addEventListener('click', () => {
-    selectLofiStation(lofiIdx - 1, true);
+    if (ytPlayer && ytReady) {
+      if (currentStationType === 'video') {
+        playTrackAtIndex(0);
+      } else {
+        ytPlayer.previousVideo();
+        ytPlaying = true;
+        syncYtUI();
+      }
+    }
   });
 
   lofiNextBtn?.addEventListener('click', () => {
-    selectLofiStation(lofiIdx + 1, true);
+    if (ytPlayer && ytReady) {
+      if (currentStationType === 'video') {
+        playTrackAtIndex(0);
+      } else {
+        ytPlayer.nextVideo();
+        ytPlaying = true;
+        syncYtUI();
+      }
+    }
   });
 
-  lofiStationBtns.forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const idx = Number(btn.getAttribute('data-lofi-idx') || '0');
-      if (idx === lofiIdx && lofiPlaying) {
-        stopLofiPlayback();
-      } else {
-        selectLofiStation(idx, true);
-      }
-    });
+  lofiShuffleBtn?.addEventListener('click', () => {
+    if (!playlistTracks.length) return;
+    ytShuffled = !ytShuffled;
+    const randomIdx = Math.floor(Math.random() * playlistTracks.length);
+    if (ytPlayer && ytReady && currentStationType === 'playlist') {
+      ytPlayer.setShuffle(ytShuffled);
+    }
+    playTrackAtIndex(randomIdx);
   });
 
   lofiVolSlider?.addEventListener('input', () => {
     const val = Math.max(0, Math.min(100, Number(lofiVolSlider.value)));
-    lofiVolume = val / 100;
+    ytVolume = val;
     if (lofiVolLabel) lofiVolLabel.textContent = `${val}%`;
-    if (lofiMasterGain && audioCtx) {
-      lofiMasterGain.gain.setValueAtTime(lofiVolume, audioCtx.currentTime);
+    if (ytPlayer && ytReady) {
+      ytPlayer.setVolume(val);
     }
     try {
       localStorage.setItem('portfolio-lofi-volume', String(val));
     } catch (_) {}
   });
 
-  lofiRainBtn?.addEventListener('click', () => {
-    lofiVinylOn = !lofiVinylOn;
-    if (lofiPlaying) {
-      if (lofiVinylOn) startVinylTexture();
-      else stopVinylTexture();
-    }
-    syncLofiUI();
+  lofiStationBtns.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const pid = btn.getAttribute('data-playlist-id') || 'PLqIiu63tUd9yTmMIbywqHleGYFx5K0cIc';
+      const stype = (btn.getAttribute('data-station-type') as 'playlist' | 'video') || 'playlist';
+      if (pid === currentPlaylistId && playlistTracks.length > 0) return;
+
+      const purl =
+        btn.getAttribute('data-playlist-url') ||
+        (stype === 'video'
+          ? `https://music.youtube.com/watch?v=${pid}`
+          : `https://music.youtube.com/playlist?list=${pid}`);
+      const ptitle = btn.getAttribute('data-playlist-title') || 'Playlist';
+
+      // Remember current player playlist IDs so syncPlaylistFromPlayer ignores stale IDs while cueing
+      if (ytPlayer && typeof ytPlayer.getPlaylist === 'function') {
+        const prevIds = ytPlayer.getPlaylist();
+        if (prevIds && prevIds.length > 0) {
+          stalePlaylistSignature = prevIds.join(',');
+        }
+      }
+
+      currentStationType = stype;
+      currentPlaylistId = pid;
+      currentPlaylistTitle = ptitle;
+      currentTrackIndex = 0;
+      ytPlaying = false;
+
+      if (stype === 'video') {
+        const vid = btn.getAttribute('data-video-id') || pid;
+        if (playlistsCacheMap[pid]?.length) {
+          playlistTracks = [...playlistsCacheMap[pid]];
+        } else {
+          const cached = metaCache.get(vid);
+          playlistTracks = [
+            {
+              videoId: vid,
+              title: cached?.title || `${ptitle} — Lofi & Chill Mix`,
+              artist: cached?.artist || 'YouTube Music',
+            },
+          ];
+          playlistsCacheMap[pid] = [...playlistTracks];
+        }
+        resolveTrackMetadata([vid], pid);
+      } else {
+        // Load pre-fetched tracks for this playlist in 0ms!
+        playlistTracks = playlistsCacheMap[pid] ? [...playlistsCacheMap[pid]] : [];
+      }
+
+      renderTracklistUI();
+
+      if (ytExternalLink) {
+        ytExternalLink.href = purl;
+      }
+      if (ytPlayer && ytReady) {
+        ytPlayer.pauseVideo();
+        if (stype === 'video') {
+          const vid = btn.getAttribute('data-video-id') || pid;
+          ytPlayer.cueVideoById(vid);
+        } else {
+          const knownIds = playlistTracks.map((t) => t.videoId).filter(Boolean);
+          if (knownIds.length > 0) {
+            ytPlayer.cuePlaylist(knownIds, 0);
+          } else {
+            ytPlayer.cuePlaylist({
+              listType: 'playlist',
+              list: pid,
+              index: 0,
+            });
+          }
+          schedulePlaylistSync(pid);
+        }
+        ytPlayer.setVolume(ytVolume);
+      }
+      syncYtUI();
+      window.dispatchEvent(
+        new CustomEvent('portfolio:toast', {
+          detail: { message: `📋 Daftar lagu siap: ${ptitle} (Klik lagu / Play untuk memutar)` },
+        })
+      );
+    });
   });
 
-  syncLofiUI();
+  syncYtUI();
 
   // 6. Studio Theme Accent Buttons, Background Ambience Worlds & Canvas FX
   const bgSceneBtns = document.querySelectorAll<HTMLButtonElement>('.hero-bg-scene-btn');
@@ -1719,14 +1896,11 @@ try {
 
     if (cmd === 'help') {
       resLine.textContent = 'whoami, lofi, stack, projects, ular, party, clear';
-    } else if (cmd === 'lofi') {
-      if (lofiPlaying) {
-        stopLofiPlayback();
-        resLine.textContent = '⏸ Radio Lo-Fi dijeda.';
-      } else {
-        startLofiPlayback();
-        resLine.textContent = `🎧 Memutar ${LOFI_STATIONS[lofiIdx].title}`;
-      }
+    } else if (cmd === 'lofi' || cmd === 'music') {
+      toggleYtPlayback();
+      resLine.textContent = ytPlaying
+        ? `🎧 Memutar ${currentPlaylistTitle}`
+        : '⏸ Playlist YT Music dijeda.';
     } else if (cmd === 'game' || cmd === 'arcade' || cmd === 'ular') {
       window.dispatchEvent(new CustomEvent('portfolio:open-arcade', { detail: { tab: 'snake' } }));
       resLine.textContent = 'Membuka Arcade...';

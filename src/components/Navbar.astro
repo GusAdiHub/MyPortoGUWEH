@@ -10,54 +10,54 @@ const hasExperience = experiences.length > 0;
 <header class="sticky top-4 z-40 px-4 sm:px-6 pointer-events-none select-none">
   <div class="max-w-6xl mx-auto flex items-center justify-between gap-2 rounded-full bg-[var(--bg-surface)]/95 backdrop-blur-md border-2 border-[var(--border-subtle)] shadow-[var(--card-shadow)] px-4 sm:px-5 py-2.5 pointer-events-auto transition-all duration-200">
     <!-- Brand Name + Live Studio Badge -->
-    <div class="flex items-center gap-3 pl-1">
+    <div class="flex items-center gap-2.5 pl-1 shrink-0">
       <a
         href="#hero"
-        class="inline-flex items-center gap-2 font-display font-bold text-base sm:text-lg tracking-tight text-[var(--text-primary)] hover:text-[var(--accent-primary)] transition-colors"
+        class="inline-flex items-center gap-2 font-display font-bold text-base sm:text-lg tracking-tight text-[var(--text-primary)] hover:text-[var(--accent-primary)] transition-colors whitespace-nowrap"
       >
-        <span class="w-2.5 h-2.5 rounded-full bg-[var(--accent-primary)] status-pulse-dot" aria-hidden="true"></span>
+        <span class="w-2.5 h-2.5 rounded-full bg-[var(--accent-primary)] status-pulse-dot shrink-0" aria-hidden="true"></span>
         <span>Gus Adi<span class="text-[var(--accent-primary)]">.</span></span>
       </a>
-      <span class="hidden lg:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[var(--tint-mint)] text-[var(--accent-primary)] font-sans text-[11px] font-bold">
+      <span class="hidden xl:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-[var(--tint-mint)] text-[var(--accent-primary)] font-sans text-[11px] font-bold whitespace-nowrap">
         Bali, Indonesia
       </span>
     </div>
 
     <!-- Clean Pill Links (Desktop — Reordered Spatial Studio Flow) -->
-    <nav class="hidden md:flex items-center gap-1 font-sans text-xs sm:text-sm font-medium text-[var(--text-secondary)]" aria-label="Main Navigation">
-      <a href="#projects" data-nav-section="projects" class="nav-anchor px-3.5 py-1.5 rounded-full hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] transition-all">
+    <nav class="hidden lg:flex items-center gap-0.5 xl:gap-1 font-sans text-xs sm:text-sm font-semibold text-[var(--text-secondary)] whitespace-nowrap" aria-label="Main Navigation">
+      <a href="#projects" data-nav-section="projects" class="nav-anchor px-3 py-1.5 rounded-full hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] transition-all">
         <span data-lang="id">{translations.id.nav.projects}</span>
         <span data-lang="en">{translations.en.nav.projects}</span>
       </a>
-      <a href="#stack" data-nav-section="stack" class="nav-anchor px-3.5 py-1.5 rounded-full hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] transition-all">
+      <a href="#stack" data-nav-section="stack" class="nav-anchor px-3 py-1.5 rounded-full hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] transition-all">
         <span data-lang="id">{translations.id.nav.stack}</span>
         <span data-lang="en">{translations.en.nav.stack}</span>
       </a>
-      <a href="#about" data-nav-section="about" class="nav-anchor px-3.5 py-1.5 rounded-full hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] transition-all">
+      <a href="#about" data-nav-section="about" class="nav-anchor px-3 py-1.5 rounded-full hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] transition-all">
         <span data-lang="id">{translations.id.nav.about}</span>
         <span data-lang="en">{translations.en.nav.about}</span>
       </a>
       {hasExperience && (
-        <a href="#experience" data-nav-section="experience" class="nav-anchor px-3.5 py-1.5 rounded-full hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] transition-all">
+        <a href="#experience" data-nav-section="experience" class="nav-anchor px-3 py-1.5 rounded-full hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] transition-all">
           <span data-lang="id">{translations.id.nav.experience}</span>
           <span data-lang="en">{translations.en.nav.experience}</span>
         </a>
       )}
-      <a href="#github" data-nav-section="github" class="nav-anchor px-3.5 py-1.5 rounded-full hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] transition-all">
+      <a href="#github" data-nav-section="github" class="nav-anchor px-3 py-1.5 rounded-full hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] transition-all">
         <span data-lang="id">{translations.id.nav.github}</span>
         <span data-lang="en">{translations.en.nav.github}</span>
       </a>
-      <a href="#contact" data-nav-section="contact" class="nav-anchor px-3.5 py-1.5 rounded-full hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] transition-all">
+      <a href="#contact" data-nav-section="contact" class="nav-anchor px-3 py-1.5 rounded-full hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)] transition-all">
         <span data-lang="id">{translations.id.nav.contact}</span>
         <span data-lang="en">{translations.en.nav.contact}</span>
       </a>
     </nav>
 
     <!-- Interactive Studio Controls (Accent Dots + Search + Arcade + Lang + Theme) -->
-    <div class="flex items-center gap-1.5 font-sans text-xs">
+    <div class="flex items-center gap-1.5 font-sans text-xs shrink-0">
       <!-- Live 4-Accent Color Switcher Pill -->
       <div
-        class="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)]"
+        class="hidden xl:inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-[var(--bg-elevated)] border border-[var(--border-subtle)]"
         role="group"
         aria-label="Pilih warna aksen"
         title="Ubah Warna Aksen Studio"
@@ -148,7 +148,7 @@ const hasExperience = experiences.length > 0;
       <button
         type="button"
         id="mobile-menu-btn"
-        class="md:hidden p-2 rounded-full hover:bg-[var(--bg-elevated)] text-[var(--text-primary)] cursor-pointer"
+        class="lg:hidden p-2 rounded-full hover:bg-[var(--bg-elevated)] text-[var(--text-primary)] cursor-pointer"
         aria-expanded="false"
         aria-controls="mobile-menu"
         aria-label="Toggle navigation menu"
@@ -162,7 +162,7 @@ const hasExperience = experiences.length > 0;
   <!-- Clean Mobile Popover Menu -->
   <div
     id="mobile-menu"
-    class="hidden md:hidden max-w-6xl mx-auto mt-2 rounded-3xl bg-[var(--bg-surface)] border-2 border-[var(--border-subtle)] shadow-xl px-5 py-4 flex flex-col gap-2.5 font-sans text-sm pointer-events-auto"
+    class="hidden lg:hidden max-w-6xl mx-auto mt-2 rounded-3xl bg-[var(--bg-surface)] border-2 border-[var(--border-subtle)] shadow-xl px-5 py-4 flex flex-col gap-2.5 font-sans text-sm pointer-events-auto"
   >
     <a href="#projects" class="mobile-nav-link py-1.5 font-semibold text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
       <span data-lang="id">{translations.id.nav.projects}</span>
@@ -249,12 +249,25 @@ const hasExperience = experiences.length > 0;
   const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
   updateThemeUI(currentTheme);
 
+  window.addEventListener('portfolio:set-bg-scene', () => {
+    const updatedTheme = document.documentElement.getAttribute('data-theme') || 'light';
+    updateThemeUI(updatedTheme);
+  });
+
   themeBtn?.addEventListener('click', (e) => {
     const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
     const nextTheme = isDark ? 'light' : 'dark';
 
     const applyTheme = () => {
       document.documentElement.setAttribute('data-theme', nextTheme);
+      // If switching to light mode while a dark background scene is active, reset scene to 'studio'
+      const curScene = document.documentElement.getAttribute('data-bg-scene') || 'studio';
+      if (nextTheme === 'light' && ['space', 'fireflies', 'sunset'].includes(curScene)) {
+        document.documentElement.setAttribute('data-bg-scene', 'studio');
+        try {
+          localStorage.setItem('portfolio_bg_scene_v7', 'studio');
+        } catch (_) {}
+      }
       try {
         localStorage.setItem('portfolio_theme_v7', nextTheme);
       } catch (_) {}

@@ -46,22 +46,22 @@
     --bg-elevated: #242c40;
     --bg-glass: rgba(26, 32, 48, 0.88);
     --text-primary: #f4f6fb;
-    --text-secondary: #b8c2d9;
-    --text-muted: #7f8ba6;
-    --border-subtle: #2b354d;
-    --border-strong: #475575;
+    --text-secondary: #cbd5e8;
+    --text-muted: #94a3b8;
+    --border-subtle: #2e3a54;
+    --border-strong: #4f6085;
     --border-focus: #2dd4bf;
     --card-shadow: 0 6px 0px #0b0e17, 0 14px 30px -8px rgba(0, 0, 0, 0.45);
     --card-shadow-hover: 0 10px 0px var(--accent-primary), 0 20px 38px -10px rgba(45, 212, 191, 0.2);
-    --accent-primary: #14b8a6;
-    --accent-ink: #0f172a;
-    --accent-secondary: #60a5fa;
-    --accent-tertiary: #fb923c;
-    --tint-mint: rgba(20, 184, 166, 0.14);
-    --tint-sky: rgba(96, 165, 250, 0.14);
-    --tint-amber: rgba(251, 146, 60, 0.14);
-    --tint-rose: rgba(244, 63, 94, 0.14);
-    --tint-violet: rgba(167, 139, 250, 0.14);
+    --accent-primary: #0d9488;
+    --accent-ink: #ffffff;
+    --accent-secondary: #3b82f6;
+    --accent-tertiary: #f97316;
+    --tint-mint: rgba(20, 184, 166, 0.2);
+    --tint-sky: rgba(59, 130, 246, 0.2);
+    --tint-amber: rgba(245, 158, 11, 0.2);
+    --tint-rose: rgba(244, 63, 94, 0.2);
+    --tint-violet: rgba(139, 92, 246, 0.22);
     --status-ok: #34d399;
     --status-warn: #fbbf24;
     --status-err: #fb7185;
@@ -74,6 +74,68 @@
     --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     --font-serif: 'Space Grotesk', 'Outfit', sans-serif;
     --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+  }
+
+  /* High-contrast text inside pastel tint surfaces when Dark Mode / Dark Ambience Scene is active */
+  [data-theme="dark"] .text-teal-950,
+  [data-theme="dark"] .text-teal-900,
+  [data-theme="dark"] .text-teal-800,
+  [data-theme="dark"] .text-teal-700 {
+    color: #ccfbf1 !important;
+  }
+
+  [data-theme="dark"] .text-blue-950,
+  [data-theme="dark"] .text-blue-900,
+  [data-theme="dark"] .text-blue-800,
+  [data-theme="dark"] .text-blue-700 {
+    color: #dbeafe !important;
+  }
+
+  [data-theme="dark"] .text-amber-950,
+  [data-theme="dark"] .text-amber-900,
+  [data-theme="dark"] .text-amber-800,
+  [data-theme="dark"] .text-amber-700,
+  [data-theme="dark"] .text-amber-950\/85 {
+    color: #fef3c7 !important;
+  }
+
+  [data-theme="dark"] .text-rose-950,
+  [data-theme="dark"] .text-rose-900,
+  [data-theme="dark"] .text-rose-800,
+  [data-theme="dark"] .text-rose-700 {
+    color: #ffe4e6 !important;
+  }
+
+  [data-theme="dark"] .text-violet-950,
+  [data-theme="dark"] .text-violet-900,
+  [data-theme="dark"] .text-violet-900\/80,
+  [data-theme="dark"] .text-violet-800,
+  [data-theme="dark"] .text-violet-700 {
+    color: #ede9fe !important;
+  }
+
+  [data-theme="dark"] .text-teal-950\/85,
+  [data-theme="dark"] .text-teal-900\/85 {
+    color: #99f6e4 !important;
+  }
+
+  [data-theme="dark"] .text-blue-900\/85 {
+    color: #bfdbfe !important;
+  }
+
+  [data-theme="dark"] .text-amber-900\/85 {
+    color: #fde68a !important;
+  }
+
+  [data-theme="dark"] .bg-white,
+  [data-theme="dark"] .bg-white\/90,
+  [data-theme="dark"] .bg-white\/85 {
+    background-color: var(--bg-elevated) !important;
+    color: var(--text-primary) !important;
+  }
+
+  [data-theme="dark"] .bg-rose-100 {
+    background-color: rgba(244, 63, 94, 0.25) !important;
   }
 
   /* Live Accent Theme Switcher Presets */
@@ -210,7 +272,7 @@ html[lang="en"] [data-lang="id"] {
   background-clip: text;
 }
 
-/* Tactile Neo-Studio Card */
+/* Tactile Neo-Studio Card & Panels */
 .soft-panel,
 .tactile-card {
   background-color: var(--bg-surface);
@@ -221,6 +283,35 @@ html[lang="en"] [data-lang="id"] {
     transform 280ms cubic-bezier(0.22, 1, 0.36, 1),
     box-shadow 280ms cubic-bezier(0.22, 1, 0.36, 1),
     border-color 220ms ease;
+  position: relative;
+}
+
+/* Card Hover Animation (Elevated Shadow + Border Highlight) - ALL sections EXCEPT #contact */
+section:not(#contact) .tactile-card,
+section:not(#contact) .soft-panel {
+  will-change: transform;
+  transform-style: preserve-3d;
+}
+
+section:not(#contact) .tactile-card:hover,
+section:not(#contact) .soft-panel:hover,
+.hover-lift:not(#contact *):hover {
+  border-color: var(--accent-primary);
+  box-shadow: var(--card-shadow-hover);
+}
+
+/* Contact section strictly excluded from hover animation/lift/spotlight */
+#contact .tactile-card,
+#contact .tactile-card:hover,
+#contact .soft-panel,
+#contact .soft-panel:hover {
+  transform: none !important;
+  border-color: var(--border-subtle) !important;
+  box-shadow: var(--card-shadow) !important;
+}
+#contact .tactile-card::before,
+#contact .soft-panel::before {
+  display: none !important;
 }
 
 .hover-lift {
@@ -230,7 +321,7 @@ html[lang="en"] [data-lang="id"] {
     border-color 220ms ease;
 }
 
-.hover-lift:hover {
+.hover-lift:not(#contact *):hover {
   transform: translateY(-5px);
   border-color: var(--accent-primary);
   box-shadow: var(--card-shadow-hover);
@@ -249,6 +340,8 @@ html[lang="en"] [data-lang="id"] {
 .flip-card-inner {
   position: relative;
   width: 100%;
+  display: grid;
+  grid-template-columns: 1fr;
   transition: transform 650ms cubic-bezier(0.22, 1, 0.36, 1);
   transform-style: preserve-3d;
 }
@@ -259,14 +352,36 @@ html[lang="en"] [data-lang="id"] {
 
 .flip-card-front,
 .flip-card-back {
+  grid-area: 1 / 1;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
+  transition: opacity 220ms ease, visibility 220ms ease;
+}
+
+.flip-card-front {
+  transform: rotateY(0deg) translateZ(1px);
+  z-index: 2;
 }
 
 .flip-card-back {
-  position: absolute;
-  inset: 0;
-  transform: rotateY(180deg);
+  transform: rotateY(180deg) translateZ(1px);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.flip-card-inner.is-flipped .flip-card-front {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.flip-card-inner.is-flipped .flip-card-back {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  z-index: 3;
 }
 
 /* Spatial Bento Collage Background Grid Accent */
@@ -284,28 +399,45 @@ html[lang="en"] [data-lang="id"] {
   background-size: 32px 32px;
 }
 
-/* Cursor-Following Spotlight */
-.spotlight-surface {
+/* Cursor-Following Spotlight on Cards (EXCEPT #contact) */
+.spotlight-surface,
+section:not(#contact) .tactile-card,
+section:not(#contact) .soft-panel {
   position: relative;
   overflow: hidden;
 }
 
-.spotlight-surface::before {
+.spotlight-surface::before,
+section:not(#contact) .tactile-card:not(.flip-card-inner *)::before,
+section:not(#contact) .soft-panel::before {
   content: '';
   position: absolute;
   inset: 0;
   pointer-events: none;
   background: radial-gradient(
-    450px circle at var(--spot-x, 50%) var(--spot-y, 50%),
+    420px circle at var(--spot-x, 50%) var(--spot-y, 50%),
     rgba(13, 148, 136, 0.08),
-    transparent 60%
+    transparent 65%
   );
   opacity: 0;
   transition: opacity 280ms ease;
+  z-index: 1;
 }
 
-.spotlight-surface:hover::before {
+.spotlight-surface:hover::before,
+section:not(#contact) .tactile-card:not(.flip-card-inner *):hover::before,
+section:not(#contact) .soft-panel:hover::before {
   opacity: 1;
+}
+
+[data-theme="dark"] .spotlight-surface::before,
+[data-theme="dark"] section:not(#contact) .tactile-card:not(.flip-card-inner *)::before,
+[data-theme="dark"] section:not(#contact) .soft-panel::before {
+  background: radial-gradient(
+    420px circle at var(--spot-x, 50%) var(--spot-y, 50%),
+    rgba(45, 212, 191, 0.12),
+    transparent 65%
+  );
 }
 
 /* Kinetic Marquee Animations */
@@ -469,7 +601,7 @@ body.is-glitching {
 
 .reveal-on-scroll.is-visible {
   opacity: 1;
-  transform: translateY(0) scale(1);
+  transform: none;
 }
 
 /* Tactile Pill Button */
@@ -564,6 +696,234 @@ body.is-glitching {
 ::view-transition-new(root) {
   animation: none;
   mix-blend-mode: normal;
+}
+
+/* Cyber HUD Viewfinder Precision Cursor (Desktop / Fine Pointer Only) */
+@media (pointer: fine) {
+  html.has-custom-cursor,
+  html.has-custom-cursor body,
+  html.has-custom-cursor a,
+  html.has-custom-cursor button,
+  html.has-custom-cursor [role="button"],
+  html.has-custom-cursor .cursor-pointer {
+    cursor: none !important;
+  }
+
+  html.has-custom-cursor input[type="text"],
+  html.has-custom-cursor input[type="email"],
+  html.has-custom-cursor input[type="search"],
+  html.has-custom-cursor textarea {
+    cursor: text !important;
+  }
+}
+
+/* Precision Center Diamond Core */
+.custom-cursor-dot {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 14px;
+  height: 14px;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0;
+  will-change: transform, opacity;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 160ms ease;
+}
+
+.custom-cursor-core {
+  width: 6px;
+  height: 6px;
+  background-color: var(--accent-primary);
+  border-radius: 1.5px;
+  transform: rotate(45deg);
+  box-shadow: 0 0 10px var(--accent-primary);
+  transition:
+    transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 180ms ease,
+    box-shadow 180ms ease,
+    width 180ms ease,
+    height 180ms ease;
+}
+
+.custom-cursor-dot.is-action-hover .custom-cursor-core {
+  width: 8px;
+  height: 8px;
+  background-color: var(--accent-secondary);
+  box-shadow: 0 0 14px var(--accent-secondary);
+  transform: rotate(90deg) scale(1.15);
+}
+
+.custom-cursor-dot.is-pressed .custom-cursor-core {
+  transform: rotate(135deg) scale(0.7);
+  background-color: #ffffff;
+  box-shadow: 0 0 16px #ffffff;
+}
+
+/* Trailing HUD Viewfinder Reticle */
+.custom-cursor-hud {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 36px;
+  height: 36px;
+  pointer-events: none;
+  z-index: 9998;
+  opacity: 0;
+  will-change: transform, width, height, opacity;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    width 240ms cubic-bezier(0.22, 1, 0.36, 1),
+    height 240ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 180ms ease;
+}
+
+/* 4 Tactical Viewfinder Corner Brackets */
+.hud-corner {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  pointer-events: none;
+  transition:
+    border-color 200ms ease,
+    transform 240ms cubic-bezier(0.22, 1, 0.36, 1),
+    width 200ms ease,
+    height 200ms ease,
+    filter 200ms ease;
+}
+
+.hud-tl {
+  top: 0;
+  left: 0;
+  border-top: 2px solid var(--accent-primary);
+  border-left: 2px solid var(--accent-primary);
+  border-top-left-radius: 3px;
+}
+
+.hud-tr {
+  top: 0;
+  right: 0;
+  border-top: 2px solid var(--accent-primary);
+  border-right: 2px solid var(--accent-primary);
+  border-top-right-radius: 3px;
+}
+
+.hud-bl {
+  bottom: 0;
+  left: 0;
+  border-bottom: 2px solid var(--accent-primary);
+  border-left: 2px solid var(--accent-primary);
+  border-bottom-left-radius: 3px;
+}
+
+.hud-br {
+  bottom: 0;
+  right: 0;
+  border-bottom: 2px solid var(--accent-primary);
+  border-right: 2px solid var(--accent-primary);
+  border-bottom-right-radius: 3px;
+}
+
+/* Dynamic State: Card Framing Viewfinder */
+.custom-cursor-hud.is-card-hover {
+  width: 54px;
+  height: 54px;
+}
+
+.custom-cursor-hud.is-card-hover .hud-corner {
+  border-color: var(--accent-secondary);
+  width: 12px;
+  height: 12px;
+  border-radius: 4px;
+  filter: drop-shadow(0 0 4px rgba(37, 99, 235, 0.4));
+}
+
+/* Dynamic State: Action Lock-On Target (Rotates into Diamond Crosshair) */
+.custom-cursor-hud.is-action-hover {
+  width: 48px;
+  height: 48px;
+}
+
+.custom-cursor-hud.is-action-hover .hud-corner {
+  border-color: var(--accent-primary);
+  width: 11px;
+  height: 11px;
+  filter: drop-shadow(0 0 6px var(--accent-primary));
+}
+
+/* Dynamic State: Mouse Down Clamping Shutter */
+.custom-cursor-hud.is-pressed {
+  width: 22px !important;
+  height: 22px !important;
+}
+
+.custom-cursor-hud.is-pressed .hud-corner {
+  width: 6px;
+  height: 6px;
+  border-color: #ffffff !important;
+  filter: drop-shadow(0 0 8px var(--accent-primary));
+}
+
+/* Contextual Micro-Label HUD Chip */
+.hud-label {
+  position: absolute;
+  top: 100%;
+  margin-top: 8px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-primary);
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  padding: 2.5px 7px;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.14);
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(-3px) scale(0.92);
+  transition: opacity 160ms ease, transform 180ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.hud-label.is-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+[data-theme="dark"] .hud-label {
+  background-color: var(--bg-elevated);
+  border-color: var(--border-subtle);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45);
+}
+
+/* 3 Inertia Trailing Comet Sparks */
+.cursor-ghost-spark {
+  position: fixed;
+  top: 0;
+  left: 0;
+  border-radius: 9999px;
+  background-color: var(--accent-primary);
+  box-shadow: 0 0 8px var(--accent-primary);
+  pointer-events: none;
+  z-index: 9997;
+  opacity: 0;
+  will-change: transform, opacity;
+  transition: opacity 180ms ease, background-color 180ms ease;
+}
+
+@media (pointer: coarse), (prefers-reduced-motion: reduce) {
+  .custom-cursor-dot,
+  .custom-cursor-hud,
+  .cursor-ghost-spark {
+    display: none !important;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

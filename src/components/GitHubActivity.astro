@@ -100,10 +100,10 @@ try {
 
 <section id="github" class="w-full py-8 sm:py-12">
   <div class="w-full max-w-6xl mx-auto px-4 sm:px-8 space-y-6">
-    <!-- Unified GitHub Live Telemetry Board (No Template SectionHeader) -->
-    <div class="reveal-on-scroll space-y-4 font-sans">
+    <!-- Unified GitHub Live Telemetry Board (Wrapped in Tactile Card so text never collides with background canvas) -->
+    <div class="reveal-on-scroll tactile-card p-5 sm:p-7 space-y-5 font-sans">
       <div class="flex flex-wrap items-center justify-between gap-3">
-        <div class="flex items-center gap-3">
+        <div class="flex flex-wrap items-center gap-3">
           <span class="px-3 py-1 rounded-full bg-[var(--tint-violet)] text-violet-950 font-mono text-xs font-extrabold">
             LIVE GITHUB TELEMETRY
           </span>
@@ -112,7 +112,7 @@ try {
             <span data-lang="en">{translations.en.github.header}</span>
           </h2>
         </div>
-        <span class="font-mono text-xs font-bold text-[var(--text-muted)]">
+        <span class="px-3 py-1 rounded-full bg-[var(--bg-elevated)] font-mono text-xs font-bold text-[var(--text-primary)]">
           GusAdi (@{initialStats.login})
         </span>
       </div>
@@ -284,8 +284,8 @@ try {
       </div>
     </div>
 
-    <!-- 3. Recent Public Repositories: Open Hairline List Rows (No Boxy Cards) -->
-    <div class="reveal-on-scroll pt-6 border-t border-[var(--border-subtle)] space-y-4 font-sans" style="--stagger: 2;">
+    <!-- 3. Recent Public Repositories: Tactile Card Container for High Contrast -->
+    <div class="reveal-on-scroll tactile-card p-6 sm:p-7 space-y-4 font-sans" style="--stagger: 2;">
       <div class="flex flex-wrap items-baseline justify-between gap-2">
         <div>
           <h3 class="text-lg sm:text-xl font-bold text-[var(--text-primary)]">
